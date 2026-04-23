@@ -14,6 +14,7 @@ const elementThemeStyle = computed(() => {
     '--el-color-primary-dark-2': `color-mix(in srgb, ${primaryColor} 80%, black)`
   }
 })
+
 </script>
 
 <template>
