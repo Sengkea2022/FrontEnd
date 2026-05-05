@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import "element-plus/theme-chalk/dark/css-vars.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+/* :root {
+  --primary: #ff40d9;
+  --el-color-primary: var(--primary) !important;
+  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, white) !important;
+  --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, white) !important;
+  --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, white) !important;
+  --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, white) !important;
+  --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, white) !important;
+  --el-color-primary-dark-2: color-mix(in srgb, var(--primary) 80%, black) !important;
+} */
+
+@layer base {
+
+  html {
+    background-color: white;
+    color: black;
+  }
+
+  .dark {
+    background-color: #111111;
+    color: #ebf4f1;
+  }
+}
