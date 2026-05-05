@@ -1,6 +1,5 @@
 <script setup>
 definePageMeta({ layout: 'guest' })
-
 import { ref } from 'vue'
 
 const form = ref({
@@ -18,16 +17,29 @@ const formRef = ref(null)
 const onSubmit = () => {
     if (!formRef.value) return
 
-    formRef.value.validate((valid) => {
+    formRef.value.validate(async (valid) => {
         if (valid) {
-            console.log('Login', form.value)
+            try {
+                res = await $fetch('/api/auth/login', {
+                    method: 'POST',
+                    body: form.value
+                })
+                if (res.success) {
+                    message.success('Login successful!')
+                    navigateTo('/')
+                }
+            } catch (e) {
+                message.error('Login failed!')
+            }
         }
     })
 }
+
+
 </script>
 <template>
     <div class="flex items-center justify-center min-h-screen">
-        <el-form :model="form" :rules="rules" ref="formRef" class="!space-y-4">
+        <el-form :model="form" :rules="rules" ref="formRef" class="">
             <el-card>
                 <template #header>
                     <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
