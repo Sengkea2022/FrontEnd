@@ -28,7 +28,7 @@ const testBackendConnection = async () => {
 
 <template>
   <div>
-    <h1>Index Page</h1>
+    <h1>component</h1>
     <p>
       App config primary color:
       <strong :style="{ color: appConfig.theme.primary }">
