@@ -27,7 +27,7 @@ const onSubmit = () => {
 </script>
 <template>
     <div class="flex items-center justify-center min-h-screen">
-        <el-form :model="form" :rules="rules" ref="formRef" class="!space-y-4">
+        <el-form :model="form" :rules="rules" ref="formRef" class="">
             <el-card>
                 <template #header>
                     <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
