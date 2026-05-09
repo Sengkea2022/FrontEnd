@@ -1,9 +1,10 @@
 <script setup>
+definePageMeta({ layout: 'default', middleware: 'auth' })
 </script>
 
 <template>
   <div>
-    <h1>Default Layout</h1>
+    <Navbar/>
     <slot />
   </div>
 </template>
