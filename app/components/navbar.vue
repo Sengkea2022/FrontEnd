@@ -1,15 +1,21 @@
 <script setup>
-import { SwitchButton } from '@element-plus/icons-vue'
+import { House, Moon, Sunny, SwitchButton } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-const isDarkMode = ref(false)
 const router = useRouter()
+const route = useRoute()
 const { fetch } = useApi()
-const colorMode = useColorMode();
+const colorMode = useColorMode()
+const appConfig = useAppConfig()
 const authToken = useCookie('auth_token')
 
+const navItems = [
+  { label: 'Home', to: '/' },
+  { label: 'Dashboard', to: '/dashboard' }
+]
+
 const toggleDarkMode = () => {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark';
+  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 
 const logout = async () => {
@@ -33,16 +39,54 @@ const logout = async () => {
 </script>
 
 <template>
-  <nav class="flex justify-between items-center px-5 py-2 border">
-    <h1>My App</h1>
-    <div class="flex space-x-5">
-      <el-icon @click="toggleDarkMode">
-        <Sunny v-if="colorMode.preference === 'dark'" />
-        <Moon v-else />
-      </el-icon>
-      <el-icon @click="logout" v-if="authToken">
-        <SwitchButton />
-      </el-icon>
+  <nav class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-6">
+        <NuxtLink to="/" class="flex items-center gap-3">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-sm"
+            :style="{ backgroundColor: appConfig.theme.primary }"
+          >
+            <el-icon><House /></el-icon>
+          </div>
+          <div>
+            <p class="text-sm font-semibold tracking-[0.18em] text-slate-400 dark:text-slate-500">
+              FRONTEND
+            </p>
+            <p class="text-base font-semibold text-slate-900 dark:text-white">
+              Control Panel
+            </p>
+          </div>
+        </NuxtLink>
+
+        <div class="hidden items-center gap-2 md:flex">
+          <NuxtLink
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="rounded-full px-4 py-2 text-sm font-medium transition"
+            :class="route.path === item.to ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <el-button circle @click="toggleDarkMode">
+          <el-icon>
+            <Sunny v-if="colorMode.preference === 'dark'" />
+            <Moon v-else />
+          </el-icon>
+        </el-button>
+
+        <el-button v-if="authToken" type="danger" plain round @click="logout">
+          <el-icon class="mr-1">
+            <SwitchButton />
+          </el-icon>
+          Logout
+        </el-button>
+      </div>
     </div>
   </nav>
 </template>
