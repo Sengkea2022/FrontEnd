@@ -30,19 +30,19 @@ const onSubmit = () => {
             
             loading.value = true
             try {
-                const res = await fetch('/api/auth/login', { // ✅ Added /api and declared const
+                const { token } = await fetch('/api/auth/login', { // ✅ Added /api and declared const
                     method: 'POST',
                     body: form.value
                 })
                 
                 // ✅ Your API returns token directly, not res.success
-                if (res.token) {
+                if (token) {
                     // ✅ Save token
                     const authToken = useCookie('auth_token')
-                    authToken.value = res.token
+                    authToken.value = token
                     
                     ElMessage.success('Login successful!')
-                    await router.push('/') // ✅ Use await
+                    await router.push('/dashboard') // ✅ Use await
                 } else {
                     ElMessage.error('Login failed: No token received')
                 }
