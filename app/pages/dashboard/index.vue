@@ -31,14 +31,40 @@ const tasks = [
   'Approve pending registrations',
   'Verify backup status'
 ]
+
+const stores = [
+  {
+    id: 1,
+    name: 'Central Market Store',
+    city: 'Phnom Penh',
+    type: 'Retail',
+    manager: 'Dara Sok',
+    status: 'Active'
+  },
+  {
+    id: 2,
+    name: 'Riverside Booking Hub',
+    city: 'Siem Reap',
+    type: 'Booking',
+    manager: 'Sophea Lim',
+    status: 'Active'
+  },
+  {
+    id: 3,
+    name: 'Airport Service Point',
+    city: 'Phnom Penh',
+    type: 'Service',
+    manager: 'Vanna Chum',
+    status: 'Maintenance'
+  }
+]
 </script>
 
 <template>
   <section class="min-h-screen px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
     <div class="mx-auto flex max-w-7xl flex-col gap-6">
-      <header
-        class="overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br from-white via-orange-50 to-slate-50 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]"
-      >
+
+      <el-card class="overflow-hidden bg-gradient-to-br from-white via-orange-50 to-slate-50 !rounded-xl">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
             <p
@@ -63,14 +89,11 @@ const tasks = [
             </el-button>
           </div>
         </div>
-      </header>
+      </el-card>
 
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <article
-          v-for="item in stats"
-          :key="item.label"
-          class="rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"
-        >
+        <el-card class="overflow-hidden !rounded-xl" v-for="item in stats"
+          :key="item.label">
           <p class="text-sm font-medium uppercase tracking-[0.22em] text-slate-400">
             {{ item.label }}
           </p>
@@ -80,11 +103,44 @@ const tasks = [
           <p class="mt-3 text-sm font-semibold" :style="{ color: appConfig.theme.primary }">
             {{ item.change }}
           </p>
-        </article>
+        </el-card>
       </div>
 
+      <el-card class="overflow-hidden !rounded-xl">
+        <div class="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-semibold text-slate-950">
+              Store List
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              Store branches and booking locations managed from the dashboard.
+            </p>
+          </div>
+
+          <NuxtLink to="/store">
+            <el-button type="primary" plain round>
+              Open Store Products
+            </el-button>
+          </NuxtLink>
+        </div>
+
+        <el-table :data="stores" stripe class="w-full">
+          <el-table-column prop="name" label="Store Name" min-width="220" />
+          <el-table-column prop="city" label="City" min-width="140" />
+          <el-table-column prop="type" label="Type" min-width="140" />
+          <el-table-column prop="manager" label="Manager" min-width="160" />
+          <el-table-column label="Status" min-width="140">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'Active' ? 'success' : 'info'" round>
+                {{ row.status }}
+              </el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-card>
+
       <div class="grid gap-4 xl:grid-cols-3">
-        <article class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm xl:col-span-2">
+        <el-card class="overflow-hidden !rounded-xl xl:col-span-2">
           <div class="mb-6 flex items-center justify-between gap-4">
             <div>
               <h2 class="text-xl font-semibold text-slate-950">
@@ -124,7 +180,7 @@ const tasks = [
               </span>
             </div>
           </div>
-        </article>
+        </el-card>
 
         <aside class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
           <div class="mb-5">

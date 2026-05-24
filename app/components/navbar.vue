@@ -11,7 +11,11 @@ const authToken = useCookie('auth_token')
 
 const navItems = [
   { label: 'Home', to: '/' },
-  { label: 'Dashboard', to: '/dashboard' }
+  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Store', to: '/store' },
+  { label: 'Orders', to: '/orders' },
+  { label: 'Customers', to: '/customers' },
+  { label: 'Guest Links', to: '/guest-links' }
 ]
 
 const toggleDarkMode = () => {
