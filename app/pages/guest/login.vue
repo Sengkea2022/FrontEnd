@@ -6,14 +6,14 @@ definePageMeta({ layout: 'guest' })
 
 const { fetch } = useApi()
 const router = useRouter()
+const { t } = useI18n()
 
 const form = ref({
-    username: '',
+    email: '',
     password: ''
 })
 
 const rules = {
-    username: [{ required: true, message: 'Please enter username', trigger: 'blur' }],
     email: [{ required: true, message: 'Please enter email', trigger: 'blur' }],
     password: [{ required: true, message: 'Please enter password', trigger: 'blur' }]
 }
@@ -65,19 +65,20 @@ const onSubmit = () => {
                     <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
                 </template>
 
-                <el-form-item label="email" prop="email">
+                <el-form-item :label="t('email')" prop="email">
                     <el-input 
                         v-model="form.email" 
                         placeholder="Enter email"
                         :disabled="loading"
                     />
                 </el-form-item>
-                <el-form-item label="Password" prop="password">
+                <el-form-item :label="t('password')" prop="password">
                     <el-input 
                         v-model="form.password" 
                         type="password" 
                         placeholder="Enter password"
                         :disabled="loading"
+                        prefix-icon="el-icon-password"
                     />
                 </el-form-item>
                 <el-form-item>

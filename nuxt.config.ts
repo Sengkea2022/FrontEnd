@@ -12,6 +12,7 @@ export default defineNuxtConfig({
     '@nuxtjs/color-mode',
     '@pinia/nuxt',
     '@element-plus/nuxt',
+    '@nuxtjs/i18n',
   ],
 
   runtimeConfig: {
@@ -38,5 +39,14 @@ export default defineNuxtConfig({
 
   pinia: {
     storesDirs: []
-  }
+  },
+
+
+  i18n: {
+    locales: [
+      { code: 'en', language: 'en-US', file: 'en.json' },
+      { code: 'km', language: 'km-KH', file: 'km.json' }
+    ],
+    defaultLocale: 'en',
+  },
 })
