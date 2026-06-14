@@ -59,7 +59,7 @@ const onSubmit = () => {
 
 <template>
     <div class="flex items-center justify-center min-h-screen">
-        <el-form :model="form" :rules="rules" ref="formRef">
+        <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
             <el-card>
                 <template #header>
                     <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
@@ -70,6 +70,8 @@ const onSubmit = () => {
                         v-model="form.email" 
                         placeholder="Enter email"
                         :disabled="loading"
+                        prefix-icon="Message"
+                        clearable
                     />
                 </el-form-item>
                 <el-form-item :label="t('password')" prop="password">
@@ -78,7 +80,10 @@ const onSubmit = () => {
                         type="password" 
                         placeholder="Enter password"
                         :disabled="loading"
-                        prefix-icon="el-icon-password"
+                        prefix-icon="Lock"
+                        show-password
+                        clearable
+                        @keyup.enter="onSubmit"
                     />
                 </el-form-item>
                 <el-form-item>
