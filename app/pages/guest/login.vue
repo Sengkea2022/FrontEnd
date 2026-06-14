@@ -60,7 +60,7 @@ const onGoogleLogin = () => {
     <div class="min-h-screen flex bg-secondary">
 
         <!-- Left Panel -->
-        <div class="hidden lg:flex w-1/2 flex-col justify-between p-12">
+        <div class="hidden lg:flex w-1/2 flex-col justify-between p-12 text-center">
             <div class="text-2xl font-bold tracking-tight">YourApp</div>
             <div>
                 <h1 class="text-4xl font-bold leading-tight mb-4">
