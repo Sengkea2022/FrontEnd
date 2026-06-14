@@ -65,7 +65,7 @@ const submitForm = () => {
     <div class="min-h-screen flex">
 
         <!-- Left Panel -->
-        <div class="hidden lg:flex w-1/2 flex-col justify-between p-12 text-white text-center">
+        <div class="hidden lg:flex w-1/2 flex-col justify-between p-12 text-center">
             <div class="text-2xl font-bold tracking-tight">YourApp</div>
             <div>
                 <h1 class="text-4xl font-bold leading-tight mb-4">
@@ -81,7 +81,7 @@ const submitForm = () => {
         <el-divider direction="vertical" border-style="dashed" style="height: unset;"/>
 
         <!-- Right Panel -->
-        <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
             <div class="w-full max-w-md">
 
                 <!-- Logo (mobile only) -->

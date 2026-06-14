@@ -57,7 +57,7 @@ const onGoogleLogin = () => {
 </script>
 
 <template>
-    <div class="min-h-screen flex bg-secondary">
+    <div class="min-h-screen flex">
 
         <!-- Left Panel -->
         <div class="hidden lg:flex w-1/2 flex-col justify-between p-12 text-center">

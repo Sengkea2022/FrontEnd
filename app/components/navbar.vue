@@ -43,15 +43,16 @@ const logout = async () => {
 </script>
 
 <template>
-  <nav class="sticky top-0 z-40 border-b border-slate-200/80 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
+  <nav
+    class="sticky top-0 z-40 border-b border-slate-200/80 backdrop-blur dark:border-slate-800">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
       <div class="flex items-center gap-6">
         <NuxtLink to="/" class="flex items-center gap-3">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-sm"
-            :style="{ backgroundColor: appConfig.theme.primary }"
-          >
-            <el-icon><House /></el-icon>
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-sm"
+            :style="{ backgroundColor: appConfig.theme.primary }">
+            <el-icon>
+              <House />
+            </el-icon>
           </div>
           <div>
             <p class="text-sm font-semibold tracking-[0.18em] text-slate-400 dark:text-slate-500">
@@ -64,13 +65,10 @@ const logout = async () => {
         </NuxtLink>
 
         <div class="hidden items-center gap-2 md:flex">
-          <NuxtLink
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
+          <NuxtLink v-for="item in navItems" :key="item.to" :to="item.to"
             class="rounded-full px-4 py-2 text-sm font-medium transition"
-            :class="route.path === item.to ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'"
-          >
+            :class="route.path === item.to ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950' 
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'">
             {{ item.label }}
           </NuxtLink>
         </div>
