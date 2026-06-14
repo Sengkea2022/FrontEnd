@@ -3,7 +3,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-
 /* :root {
   --primary: #ff40d9;
   --el-color-primary: var(--primary) !important;
