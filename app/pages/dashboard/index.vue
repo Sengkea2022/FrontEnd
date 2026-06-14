@@ -64,7 +64,7 @@ const stores = [
   <section class="min-h-screen px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
     <div class="mx-auto flex max-w-7xl flex-col gap-6">
 
-      <el-card class="overflow-hidden bg-gradient-to-br from-white via-orange-50 to-slate-50 !rounded-xl">
+      <el-card class="overflow-hidden !bg-secondary !rounded-xl">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
             <p
