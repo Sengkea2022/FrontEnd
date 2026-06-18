@@ -26,5 +26,18 @@
   "status": "Status",
   "en": "🇬🇧 English",
   "zh": "🇨🇳 中文",
-  "km": "🇰🇭 ភាសារខ្មែរ"
+  "km": "🇰🇭 ភាសារខ្មែរ",
+  "welcomeBack": "Welcome back",
+  "signInToContinue": "Sign in to continue managing your workspace.",
+  "copyright": "© 2025 YourApp. All rights reserved",
+  "enterCredentials": "Enter your credentials to access your account",
+  "forgotPassword": "Forgot password?",
+  "signIn": "Sign in",
+  "signUp": "Sign up",
+  "donotHaveAccount": "Don't have an account?",
+  "loginSuccessful": "Login successful!",
+  "loginFailed": "Login failed!",
+  "logout": "Logout",
+  "logoutSuccessful": "Logout successful!",
+  "logoutFailed": "Logout failed!"
 }

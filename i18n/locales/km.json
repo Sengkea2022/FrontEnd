@@ -26,5 +26,18 @@
   "status": "ស្ថានភាព",
   "en": "🇬🇧 English",
   "zh": "🇨🇳 中文",
-  "km": "🇰🇭 ភាសារខ្មែរ"
+  "km": "🇰🇭 ភាសារខ្មែរ",
+  "welcomeBack": "ស្វាគមន៍ត្រឡប់មកវិញ",
+  "signInToContinue": "ចូលដើម្បីបន្តគ្រប់គ្រងកន្លែងធ្វើការរបស់អ្នក។",
+  "copyright": "© 2025 YourApp. រក្សាសិទ្ធិគ្រប់យ៉ាង",
+  "enterCredentials": "បញ្ចូល​ព័ត៌មាន​សម្គាល់",
+  "forgotPassword": "ភ្លេចពាក្យសម្ងាត់",
+  "signIn": "ចូល",
+  "signUp": "ចុះឈ្មោះ",
+  "donotHaveAccount": "មិនទាន់មានគណនី?",
+  "loginSuccessful": "ចូលបានជោគជ័យ",
+  "loginFailed": "ចូលបានបរាជ័យ",
+  "logout": "ចាកចេញ",
+  "logoutSuccessful": "ចាកចេញបានជោគជ័យ",
+  "logoutFailed": "ចាកចេញបានបរាជ័យ"
 }

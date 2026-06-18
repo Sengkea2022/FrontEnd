@@ -1,6 +1,4 @@
 <script setup>
-import { House, Moon, Sunny, SwitchButton } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -9,6 +7,7 @@ const colorMode = useColorMode()
 const appConfig = useAppConfig()
 const authToken = useCookie('auth_token')
 const { locale, setLocale } = useI18n()
+const { t } = useI18n()
 
 const navItems = [
   { label: 'Home', to: '/' },
@@ -33,12 +32,18 @@ const logout = async () => {
       const authToken = useCookie('auth_token')
       authToken.value = null
 
-      ElMessage.success('Logged out successfully!')
+      ElNotification.success({
+        title: t('logoutSuccessful'),
+        message: t('logoutSuccessful')
+      })
       await router.push('/guest/login')
     }
   } catch (e) {
     console.error('Logout error:', e)
-    ElMessage.error(e.data?.message || 'Logout failed!')
+    ElNotification.error({
+      title: t('logoutFailed'),
+      message: e.data?.message || t('logoutFailed')
+    })
   }
 }
 
@@ -75,9 +80,9 @@ const logout = async () => {
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
 
-        <el-select v-model="locale" style="width: 120px" @change="setLocale(locale)">
+        <el-select v-model="locale" style="width: 60px" @change="setLocale(locale)">
           <el-option :label="$t('en')" value="en" />
           <!-- <el-option :label="$t('zh')" value="zh" /> -->
           <el-option :label="$t('km')" value="km" />
@@ -94,7 +99,7 @@ const logout = async () => {
           <el-icon class="mr-1">
             <SwitchButton />
           </el-icon>
-          Logout
+          {{ $t('logout') }}
         </el-button>
       </div>
     </div>

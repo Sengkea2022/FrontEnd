@@ -1,7 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import { ElMessage } from 'element-plus'
-
 definePageMeta({ layout: 'guest' })
 
 const { fetch } = useApi()
@@ -36,14 +34,23 @@ const onSubmit = () => {
                 if (token) {
                     const authToken = useCookie('auth_token')
                     authToken.value = token
-                    ElMessage.success('Login successful!')
+                    ElNotification.success({
+                        title: t('loginSuccessful'),
+                        message: t('welcomeBack')
+                    })
                     await router.push('/dashboard')
                 } else {
-                    ElMessage.error('Login failed: No token received')
+                    ElNotification.error({
+                        title: t('loginFailed'),
+                        message: t('loginFailed')
+                    })
                 }
             } catch (e) {
                 console.error('Login error:', e)
-                ElMessage.error(e.data?.message || 'Login failed!')
+                ElNotification.error({
+                    title: t('loginFailed'),
+                    message: e.data?.message || t('loginFailed')
+                })
             } finally {
                 loading.value = false
             }
@@ -64,13 +71,13 @@ const onGoogleLogin = () => {
             <div class="text-2xl font-bold tracking-tight">YourApp</div>
             <div>
                 <h1 class="text-4xl font-bold leading-tight mb-4">
-                    Welcome back 👋
+                    {{ t('welcomeBack') }} 👋
                 </h1>
                 <p class="text-blue-200 text-lg">
-                    Sign in to continue managing your workspace.
+                    {{ t('signInToContinue') }}
                 </p>
             </div>
-            <p class="text-blue-300 text-sm">© 2025 YourApp. All rights reserved.</p>
+            <p class="text-blue-300 text-sm">{{ t('copyright') }}</p>
         </div>
 
         <el-divider direction="vertical" border-style="dashed" style="height: unset;"/>
@@ -80,12 +87,11 @@ const onGoogleLogin = () => {
             <div class="w-full max-w-md">
 
                 <!-- Logo (mobile only) -->
-                <div class="lg:hidden text-2xl font-bold text-blue-600 mb-8 text-center">YourApp</div>
-
-                <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-1">Sign in</h2>
-                <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">Enter your credentials to access your account</p>
-
-                <!-- Form -->
+                <div class="lg:hidden text-2xl font-bold text-blue-600 mb-8 text-center">{{ t('km') }}</div>
+                
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-1">{{ t('signIn') }}</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">{{ t('enterCredentials') }}</p>
+                
                 <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
                     <el-form-item :label="t('email')" prop="email">
                         <el-input
@@ -113,7 +119,7 @@ const onGoogleLogin = () => {
                     <!-- Forgot password -->
                     <div class="flex justify-end mb-4 -mt-2">
                         <NuxtLink to="/guest/forgot-password" class="text-sm text-blue-500 hover:underline">
-                            Forgot password?
+                            {{ t('forgotPassword') }}
                         </NuxtLink>
                     </div>
 
@@ -153,8 +159,8 @@ const onGoogleLogin = () => {
 
                 <!-- Sign up link -->
                 <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-                    Don't have an account?
-                    <NuxtLink to="/guest/register" class="text-blue-500 font-medium hover:underline">Sign up</NuxtLink>
+                    {{ t('donotHaveAccount') }}
+                    <NuxtLink to="/guest/register" class="text-blue-500 font-medium hover:underline">{{ t('signUp') }}</NuxtLink>
                 </p>
 
             </div>
