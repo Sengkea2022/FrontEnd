@@ -35,7 +35,7 @@ const customers = ref([
           <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
             Customers
           </p>
-          <h1 class="text-4xl font-semibold tracking-tight text-slate-950">
+          <h1 class="text-4xl font-semibold tracking-tight ">
             Customer Directory
           </h1>
           <p class="mt-4 text-base leading-7 text-slate-600">
@@ -45,6 +45,14 @@ const customers = ref([
       </el-card>
 
       <el-card class="!rounded-2xl border-0 shadow-sm">
+        <div class="mb-5">
+          <h2 class="text-xl font-semibold ">
+            Customer Directory
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">
+            List of customers assigned to stores.
+          </p>
+        </div>
         <el-table :data="customers" stripe class="w-full">
           <el-table-column prop="customer_no" label="Customer No" min-width="140" />
           <el-table-column prop="name" label="Name" min-width="180" />

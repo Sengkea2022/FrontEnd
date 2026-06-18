@@ -68,11 +68,10 @@ const stores = [
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
             <p
-              class="mb-3 inline-flex rounded-full border border-orange-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-orange-600"
-            >
+              class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-orange-600">
               Operations Overview
             </p>
-            <h1 class="text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
+            <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">
               Dashboard
             </h1>
             <p class="mt-4 text-base leading-7 text-slate-600 md:text-lg">
@@ -92,12 +91,11 @@ const stores = [
       </el-card>
 
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <el-card class="overflow-hidden !rounded-xl" v-for="item in stats"
-          :key="item.label">
+        <el-card class="overflow-hidden !rounded-xl" v-for="item in stats" :key="item.label">
           <p class="text-sm font-medium uppercase tracking-[0.22em] text-slate-400">
             {{ item.label }}
           </p>
-          <h2 class="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+          <h2 class="mt-4 text-3xl font-semibold tracking-tight ">
             {{ item.value }}
           </h2>
           <p class="mt-3 text-sm font-semibold" :style="{ color: appConfig.theme.primary }">
@@ -109,7 +107,7 @@ const stores = [
       <el-card class="overflow-hidden !rounded-xl">
         <div class="mb-5 flex items-center justify-between gap-4">
           <div>
-            <h2 class="text-xl font-semibold text-slate-950">
+            <h2 class="text-xl font-semibold">
               Store List
             </h2>
             <p class="mt-1 text-sm text-slate-500">
@@ -118,7 +116,7 @@ const stores = [
           </div>
 
           <NuxtLink to="/store">
-            <el-button type="primary" plain round>
+            <el-button plain round>
               Open Store Products
             </el-button>
           </NuxtLink>
@@ -143,7 +141,7 @@ const stores = [
         <el-card class="overflow-hidden !rounded-xl xl:col-span-2">
           <div class="mb-6 flex items-center justify-between gap-4">
             <div>
-              <h2 class="text-xl font-semibold text-slate-950">
+              <h2 class="text-xl font-semibold">
                 Recent Activity
               </h2>
               <p class="mt-1 text-sm text-slate-500">
@@ -156,18 +154,13 @@ const stores = [
           </div>
 
           <div class="space-y-4">
-            <div
-              v-for="item in activities"
-              :key="item.title"
-              class="grid gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 md:grid-cols-[auto_1fr_auto] md:items-start"
-            >
-              <span
-                class="mt-1 inline-flex h-3 w-3 rounded-full"
-                :style="{ backgroundColor: appConfig.theme.primary }"
-              />
+            <div v-for="item in activities" :key="item.title"
+              class="grid gap-4 rounded-xl border border-slate-500 p-4 md:grid-cols-[auto_1fr_auto] md:items-start">
+              <span class="mt-1 inline-flex h-3 w-3 rounded-full"
+                :style="{ backgroundColor: appConfig.theme.primary }" />
 
               <div>
-                <h3 class="text-base font-semibold text-slate-900">
+                <h3 class="text-base font-semibold">
                   {{ item.title }}
                 </h3>
                 <p class="mt-1 text-sm leading-6 text-slate-600">
@@ -182,84 +175,86 @@ const stores = [
           </div>
         </el-card>
 
-        <aside class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-xl font-semibold text-slate-950">
-              Quick Actions
-            </h2>
-            <p class="mt-1 text-sm text-slate-500">
-              Common operations for the current session.
-            </p>
-          </div>
+        <aside>
+          <el-card class="!rounded-xl p-6 shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-semibold">
+                Quick Actions
+              </h2>
+              <p class="mt-1 text-sm text-slate-500">
+                Common operations for the current session.
+              </p>
+            </div>
 
-          <div class="grid gap-3">
-            <el-button type="primary" size="large">
-              New User
-            </el-button>
-            <el-button size="large" plain>
-              View Logs
-            </el-button>
-            <el-button size="large" plain>
-              System Status
-            </el-button>
-          </div>
+            <div class="grid gap-3">
+              <el-button type="primary" size="large">
+                New User
+              </el-button>
+              <el-button size="large" plain class="!ml-0">
+                View Logs
+              </el-button>
+              <el-button size="large" plain class="!ml-0">
+                System Status
+              </el-button>
+            </div>
 
-          <div class="mt-6 rounded-2xl bg-slate-50 p-4">
-            <p class="text-sm uppercase tracking-[0.2em] text-slate-400">
-              Theme Color
-            </p>
-            <p class="mt-2 text-lg font-semibold" :style="{ color: appConfig.theme.primary }">
-              {{ appConfig.theme.primary }}
-            </p>
-          </div>
+            <div class="mt-6 rounded-2xl p-4">
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-400">
+                Theme Color
+              </p>
+              <p class="mt-2 text-lg font-semibold" :style="{ color: appConfig.theme.primary }">
+                {{ appConfig.theme.primary }}
+              </p>
+            </div>
+          </el-card>
         </aside>
 
-        <article class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-xl font-semibold text-slate-950">
-              Priority Tasks
-            </h2>
-            <p class="mt-1 text-sm text-slate-500">
-              Immediate work queue for today.
-            </p>
-          </div>
+        <article>
+          <el-card class="!rounded-xl shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-semibold">
+                Priority Tasks
+              </h2>
+              <p class="mt-1 text-sm text-slate-500">
+                Immediate work queue for today.
+              </p>
+            </div>
 
-          <ul class="space-y-3">
-            <li
-              v-for="task in tasks"
-              :key="task"
-              class="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
-            >
-              <span
-                class="mt-1 inline-flex h-2.5 w-2.5 rounded-full"
-                :style="{ backgroundColor: appConfig.theme.primary }"
-              />
-              <span>{{ task }}</span>
-            </li>
-          </ul>
+            <ul class="space-y-3">
+              <li v-for="task in tasks" :key="task"
+                class="flex items-start gap-3 rounded-xl border border-slate-500 px-4 py-3 text-sm font-medium text-slate-400">
+                <span class="mt-1 inline-flex h-2.5 w-2.5 rounded-full"
+                  :style="{ backgroundColor: appConfig.theme.primary }" />
+                <span>{{ task }}</span>
+              </li>
+            </ul>
+          </el-card>
+
         </article>
 
-        <article class="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-xl font-semibold text-slate-950">
-              System Summary
-            </h2>
-            <p class="mt-1 text-sm text-slate-500">
-              Latest platform status snapshot.
-            </p>
-          </div>
+        <article>
+          <el-card class="!rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-semibold">
+                System Summary
+              </h2>
+              <p class="mt-1 text-sm text-slate-500">
+                Latest platform status snapshot.
+              </p>
+            </div>
 
-          <div class="space-y-3">
-            <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-              Database synchronization is healthy.
+            <div class="space-y-3">
+              <div class="rounded-xl border border-slate-500 p-3 text-sm leading-6 text-slate-400">
+                Database synchronization is healthy.
+              </div>
+              <div class="rounded-xl border border-slate-500 p-3 text-sm leading-6 text-slate-400">
+                No failed jobs detected in the latest queue cycle.
+              </div>
+              <div class="rounded-xl border border-slate-500 p-3 text-sm leading-6 text-slate-400">
+                Last deployment completed without errors.
+              </div>
             </div>
-            <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-              No failed jobs detected in the latest queue cycle.
-            </div>
-            <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-              Last deployment completed without errors.
-            </div>
-          </div>
+          </el-card>
         </article>
       </div>
     </div>

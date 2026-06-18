@@ -167,10 +167,10 @@ const deleteProduct = (id) => {
       <el-card class="!rounded-2xl border-0 shadow-sm">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
-            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
+            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
               Store Products
             </p>
-            <h1 class="text-4xl font-semibold tracking-tight text-slate-950">
+            <h1 class="text-4xl font-semibold tracking-tight ">
               Product List In Store
             </h1>
             <p class="mt-4 text-base leading-7 text-slate-600">
@@ -196,7 +196,7 @@ const deleteProduct = (id) => {
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">
             Total Items
           </p>
-          <p class="mt-3 text-3xl font-semibold text-slate-950">
+          <p class="mt-3 text-3xl font-semibold ">
             {{ tableData.length }}
           </p>
         </el-card>
@@ -214,7 +214,7 @@ const deleteProduct = (id) => {
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">
             Booking Items
           </p>
-          <p class="mt-3 text-3xl font-semibold text-slate-950">
+          <p class="mt-3 text-3xl font-semibold ">
             {{ tableData.filter((item) => item.category === 'Booking').length }}
           </p>
         </el-card>
@@ -222,7 +222,7 @@ const deleteProduct = (id) => {
 
       <el-card class="!rounded-2xl border-0 shadow-sm">
         <div class="mb-5">
-          <h2 class="text-xl font-semibold text-slate-950">
+          <h2 class="text-xl font-semibold ">
             Product Directory
           </h2>
           <p class="mt-1 text-sm text-slate-500">

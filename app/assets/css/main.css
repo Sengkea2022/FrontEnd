@@ -3,37 +3,40 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* :root {
-  --primary: #ff40d9;
-  --el-color-primary: var(--primary) !important;
-  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, white) !important;
-  --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, white) !important;
-  --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, white) !important;
-  --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, white) !important;
-  --el-color-primary-light-9: color-mix(in srgb, var(--primary) 10%, white) !important;
-  --el-color-primary-dark-2: color-mix(in srgb, var(--primary) 80%, black) !important;
-} */
-
 @layer base {
 
   html {
-    background-color: white;
-    color: black;
+    background-color: #f7f7f8;
+    color: #2b2d31;
   }
 
   .dark {
-    background-color: #101828;
-    color: #ebf4f1;
+    background-color: #15171a;
+    color: #e8e9ea;
   }
 
-/* Secondary backgrounds */
-  .bg-secondary {
-    background-color: #f3f4f6; /* gray-100 */
+  .surface-1 {
+    background-color: #ffffff !important;
+    color: #2b2d31;
+    border: 1px solid #e3e4e6;
   }
 
-  .dark .bg-secondary {
-    background-color: #1f2937; /* gray-800 */
+  .dark .surface-1 {
+    background-color: #1d2024 !important;
+    color: #e8e9ea;
+    border: 1px solid #2c2f33;
   }
 
+  .surface-2 {
+    background-color: #f0f1f2 !important;
+    color: #2b2d31;
+    border: 1px solid #e3e4e6;
+  }
+
+  .dark .surface-2 {
+    background-color: #26292e !important;
+    color: #e8e9ea !important;
+    border: 1px solid #34373c;
+  }
 
 }

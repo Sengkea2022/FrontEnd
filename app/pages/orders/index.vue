@@ -48,10 +48,10 @@ const statusType = (status) => {
       <el-card class="!rounded-2xl border-0 shadow-sm">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
-            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
+            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em]">
               Orders
             </p>
-            <h1 class="text-4xl font-semibold tracking-tight text-slate-950">
+            <h1 class="text-4xl font-semibold tracking-tight ">
               Order Management
             </h1>
             <p class="mt-4 text-base leading-7 text-slate-600">
@@ -72,7 +72,7 @@ const statusType = (status) => {
       <div class="grid gap-4 md:grid-cols-3">
         <el-card class="!rounded-2xl border-0 shadow-sm">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Total Orders</p>
-          <p class="mt-3 text-3xl font-semibold text-slate-950">{{ orders.length }}</p>
+          <p class="mt-3 text-3xl font-semibold ">{{ orders.length }}</p>
         </el-card>
         <el-card class="!rounded-2xl border-0 shadow-sm">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Pending</p>
@@ -82,13 +82,21 @@ const statusType = (status) => {
         </el-card>
         <el-card class="!rounded-2xl border-0 shadow-sm">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Completed</p>
-          <p class="mt-3 text-3xl font-semibold text-slate-950">
+          <p class="mt-3 text-3xl font-semibold ">
             {{ orders.filter((item) => item.status === 'completed').length }}
           </p>
         </el-card>
       </div>
 
       <el-card class="!rounded-2xl border-0 shadow-sm">
+        <div class="mb-5">
+          <h2 class="text-xl font-semibold ">
+            Order Directory
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">
+            List of orders assigned to stores.  
+          </p>
+        </div>
         <el-table :data="orders" stripe class="w-full">
           <el-table-column prop="order_no" label="Order No" min-width="140" />
           <el-table-column prop="store" label="Store" min-width="190" />
