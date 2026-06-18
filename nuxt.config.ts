@@ -43,10 +43,19 @@ export default defineNuxtConfig({
 
 
   i18n: {
+    strategy: 'no_prefix',
+    
     locales: [
       { code: 'en', language: 'en-US', file: 'en.json' },
       { code: 'km', language: 'km-KH', file: 'km.json' }
     ],
+
     defaultLocale: 'en',
+
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_locale',
+      redirectOn: 'root'
+    }
   },
 })
