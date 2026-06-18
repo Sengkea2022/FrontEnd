@@ -42,9 +42,6 @@ const logout = async () => {
   }
 }
 
-const onSwitchLang = () => {
-  setLocale(locale.value === 'en' ? 'km' : 'en')
-}
 </script>
 
 <template>
@@ -80,9 +77,11 @@ const onSwitchLang = () => {
 
       <div class="flex items-center gap-3">
 
-        <el-button circle type="text" size="small" @click="onSwitchLang">
-          {{ locale === 'en' ? 'en' : 'km' }}
-        </el-button>
+        <el-select v-model="locale" style="width: 120px" @change="setLocale(locale)">
+          <el-option :label="$t('en')" value="en" />
+          <!-- <el-option :label="$t('zh')" value="zh" /> -->
+          <el-option :label="$t('km')" value="km" />
+        </el-select>
 
         <el-button circle @click="toggleDarkMode">
           <el-icon>
