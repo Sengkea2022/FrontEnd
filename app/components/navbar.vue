@@ -1,107 +1,144 @@
 <script setup>
-
 const router = useRouter()
 const route = useRoute()
 const { fetch } = useApi()
-const colorMode = useColorMode()
 const appConfig = useAppConfig()
 const authToken = useCookie('auth_token')
-const { locale, setLocale } = useI18n()
 const { t } = useI18n()
 
-const navItems = [
-  { label: 'Home', to: '/' },
-  { label: 'Dashboard', to: '/dashboard' },
-  { label: 'Store', to: '/store' },
-  { label: 'Orders', to: '/orders' },
-  { label: 'Customers', to: '/customers' },
-  { label: 'Guest Links', to: '/guest-links' }
-]
-
-const toggleDarkMode = () => {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+// Map routes → i18n title keys
+const routeKeyMap = {
+  '/': 'home',
+  '/dashboard': 'dashboard',
+  '/store': 'store',
+  '/orders': 'orders',
+  '/customers': 'customers',
+  '/guest-links': 'guestLinks',
+  '/guest/login': 'login',
+  '/guest/register': 'register',
+  '/guest/forgot-password': 'forgotPassword',
+  '/profile': 'profile',
+  '/settings': 'settings',
 }
+
+const pageTitle = computed(() => {
+  const key = routeKeyMap[route.path]
+  if (key) return t(key)
+  const segment = route.path.split('/').filter(Boolean)[0] || ''
+  const camel = segment.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+  return t(camel) || segment.charAt(0).toUpperCase() + segment.slice(1)
+})
 
 const logout = async () => {
   try {
-    const res = await fetch('/api/auth/logout', {
-      method: 'POST'
-    })
-
+    const res = await fetch('/api/auth/logout', { method: 'POST' })
     if (res) {
-      const authToken = useCookie('auth_token')
-      authToken.value = null
-
-      ElNotification.success({
-        title: t('logoutSuccessful'),
-        message: t('logoutSuccessful')
-      })
+      useCookie('auth_token').value = null
+      ElNotification.success({ title: t('logoutSuccessful'), message: t('logoutSuccessful') })
       await router.push('/guest/login')
     }
   } catch (e) {
     console.error('Logout error:', e)
-    ElNotification.error({
-      title: t('logoutFailed'),
-      message: e.data?.message || t('logoutFailed')
-    })
+    ElNotification.error({ title: t('logoutFailed'), message: e.data?.message || t('logoutFailed') })
   }
 }
-
 </script>
 
 <template>
-  <nav class="sticky top-0 z-40 border-b border-slate-200/80 backdrop-blur dark:border-slate-800">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-6">
-        <NuxtLink to="/" class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-2xl text-white shadow-sm"
+  <nav class="sticky top-0 z-40 h-[62px] flex items-center shrink-0
+           border-b border-slate-200/70 dark:border-slate-800/70
+           bg-white/90 dark:bg-[#15171a]/90 backdrop-blur-md
+           px-6 gap-4 my-1">
+    <!-- Left: Page Title -->
+    <div class="flex-1 flex items-center min-w-0">
+      <h1 class="text-base font-semibold text-slate-800 dark:text-slate-100 truncate select-none">
+        {{ pageTitle }}
+      </h1>
+    </div>
+
+    <!-- Right: Profile popover -->
+    <div class="flex items-center flex-shrink-0">
+
+      <!-- Authenticated -->
+      <el-popover v-if="authToken" placement="bottom-end" :width="220" trigger="click"
+        popper-class="profile-popover !p-0 !rounded-xl !shadow-xl overflow-hidden" :teleported="true">
+        <!-- Trigger: avatar button -->
+        <template #reference>
+          <button id="navbar-profile-trigger" class="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full
+                   border border-transparent
+                   hover:border-slate-200 dark:hover:border-slate-700
+                   hover:bg-slate-50 dark:hover:bg-slate-800/60
+                   transition-all duration-200 cursor-pointer">
+            <div class="h-8 w-8 rounded-full flex items-center justify-center text-white shadow-sm flex-shrink-0"
+              :style="{ backgroundColor: appConfig.theme.primary }">
+              <el-icon class="text-base">
+                <User />
+              </el-icon>
+            </div>
+            <el-icon class="text-[11px] text-slate-400 dark:text-slate-500">
+              <ArrowDown />
+            </el-icon>
+          </button>
+        </template>
+
+        <!-- ── Popover content ── -->
+
+        <!-- 1. User info header -->
+        <div class="flex items-center gap-3 px-4 py-3.5
+                 bg-slate-50 dark:bg-slate-800/50
+                 border-b border-slate-100 dark:border-slate-700/60">
+          <div class="h-10 w-10 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-sm"
             :style="{ backgroundColor: appConfig.theme.primary }">
-            <el-icon>
-              <House />
+            <el-icon class="text-lg">
+              <User />
             </el-icon>
           </div>
-          <div>
-            <p class="text-sm font-semibold tracking-[0.18em] text-slate-400 dark:text-slate-500">
-              FRONTEND
-            </p>
-            <p class="text-base font-semibold text-slate-900 dark:text-white">
-              Control Panel
-            </p>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">Admin</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">admin@example.com</p>
           </div>
-        </NuxtLink>
-
-        <div class="hidden items-center gap-2 md:flex">
-          <NuxtLink v-for="item in navItems" :key="item.to" :to="item.to"
-            class="rounded-full px-4 py-2 text-sm font-medium transition"
-            :class="route.path === item.to ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-950'
-              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'">
-            {{ item.label }}
-          </NuxtLink>
         </div>
-      </div>
 
-      <div class="flex items-center gap-2">
+        <!-- 2. Actions -->
+        <div class="px-2 py-1.5">
+          <NuxtLink to="/profile" class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm
+                   text-slate-600 dark:text-slate-300
+                   hover:bg-slate-100 dark:hover:bg-slate-800
+                   transition-colors duration-150">
+            <el-icon class="text-[15px] text-slate-400">
+              <Avatar />
+            </el-icon>
+            <span>{{ $t('profile') }}</span>
+          </NuxtLink>
 
-        <el-select v-model="locale" style="width: 60px" @change="setLocale(locale)">
-          <el-option :label="$t('en')" value="en" />
-          <!-- <el-option :label="$t('zh')" value="zh" /> -->
-          <el-option :label="$t('km')" value="km" />
-        </el-select>
+          <button class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm
+                   text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                   transition-colors duration-150 cursor-pointer" @click="logout">
+            <el-icon class="text-[15px]">
+              <SwitchButton />
+            </el-icon>
+            <span>{{ $t('logout') }}</span>
+          </button>
+        </div>
 
-        <el-button circle @click="toggleDarkMode">
-          <el-icon>
-            <Moon v-if="colorMode.preference === 'dark'" />
-            <Sunny v-else />
-          </el-icon>
-        </el-button>
+      </el-popover>
 
-        <el-button v-if="authToken" type="danger" plain round @click="logout">
-          <el-icon class="mr-1">
-            <SwitchButton />
-          </el-icon>
-          {{ $t('logout') }}
-        </el-button>
-      </div>
+      <!-- Not logged in -->
+      <NuxtLink v-else to="/guest/login">
+        <el-button type="primary" round size="small">{{ $t('signIn') }}</el-button>
+      </NuxtLink>
+
     </div>
   </nav>
 </template>
+
+<style>
+.profile-popover {
+  border: 1px solid var(--el-border-color-light) !important;
+}
+
+.dark .profile-popover {
+  border-color: rgb(51 65 85 / 0.6) !important;
+  background-color: #1d2024 !important;
+}
+</style>

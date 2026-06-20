@@ -39,5 +39,11 @@
   "loginFailed": "ចូលបានបរាជ័យ",
   "logout": "ចាកចេញ",
   "logoutSuccessful": "ចាកចេញបានជោគជ័យ",
-  "logoutFailed": "ចាកចេញបានបរាជ័យ"
+  "logoutFailed": "ចាកចេញបានបរាជ័យ",
+  "settings": "ការកំណត់",
+  "profile": "ប្រវត្តិរូប",
+  "home": "ទំព័រដើម",
+  "language": "ភាសា",
+  "darkMode": "របៀបងងឹត",
+  "appearance": "រូបរាង"
 }

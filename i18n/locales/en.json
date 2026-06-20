@@ -39,5 +39,11 @@
   "loginFailed": "Login failed!",
   "logout": "Logout",
   "logoutSuccessful": "Logout successful!",
-  "logoutFailed": "Logout failed!"
+  "logoutFailed": "Logout failed!",
+  "settings": "Settings",
+  "profile": "Profile",
+  "home": "Home",
+  "language": "Language",
+  "darkMode": "Dark Mode",
+  "appearance": "Appearance"
 }
