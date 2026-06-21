@@ -43,7 +43,9 @@
   "settings": "ការកំណត់",
   "profile": "ប្រវត្តិរូប",
   "home": "ទំព័រដើម",
-  "language": "ភាសា",
-  "darkMode": "របៀបងងឹត",
-  "appearance": "រូបរាង"
+  "language": "ភាសារ",
+  "darkMode": "ស្ថានភាពងងឹត",
+  "lightMode": "ស្ថានភាពភ្លឺ",
+  "appearance": "រូបរាង",
+  "themeMode": "ស្ថានភាពរូបរាង"
 }

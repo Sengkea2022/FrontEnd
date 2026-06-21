@@ -13,8 +13,6 @@ import {
     Setting,
     Fold,
     Expand,
-    Moon,
-    Sunny
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -32,22 +30,8 @@ onMounted(() => {
 
 const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value
-    localStorage.setItem('side-menu-collapsed', isCollapsed.value.toString())
+    cookie.setItem('side-menu-collapsed', isCollapsed.value.toString())
 }
-
-// ── Dark mode bound to el-switch ─────────────────────────────
-const isDark = computed({
-    get: () => colorMode.preference === 'dark',
-    set: (val) => { colorMode.preference = val ? 'dark' : 'light' }
-})
-
-// ── Language options ─────────────────────────────────────────
-const languages = [
-    { code: 'en', flag: '🇬🇧', label: 'English' },
-    { code: 'km', flag: '🇰🇭', label: 'ភាសាខ្មែរ' },
-]
-
-const currentFlag = computed(() => languages.find(l => l.code === locale.value)?.flag ?? '')
 
 // ── Navigation items ─────────────────────────────────────────
 const navItems = [
@@ -208,35 +192,11 @@ const settingsBtnClass = computed(() => [
                     <!-- Controls -->
                     <div class="px-4 py-3.5 space-y-4">
 
-                        <!-- Language -->
-                        <div class="flex items-center justify-between gap-3">
-                            <span
-                                class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap flex-shrink-0">
-                                {{ t('language') }}
-                            </span>
-                            <el-select v-model="locale" size="small" style="width: 136px" @change="setLocale">
-                                <template #prefix>
-                                    <span class="text-sm leading-none">{{ currentFlag }}</span>
-                                </template>
-                                <el-option v-for="lang in languages" :key="lang.code" :value="lang.code"
-                                    :label="lang.label">
-                                    <span class="flex items-center gap-2">
-                                        <span>{{ lang.flag }}</span>
-                                        <span class="text-sm">{{ lang.label }}</span>
-                                    </span>
-                                </el-option>
-                            </el-select>
-                        </div>
+                        <!-- language mode -->
+                        <LanguageSelector />
 
                         <!-- Dark Mode -->
-                        <div class="flex items-center justify-between gap-3">
-                            <span
-                                class="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap flex-shrink-0">
-                                {{ t('darkMode') }}
-                            </span>
-                            <el-switch v-model="isDark" :active-action-icon="Moon" :active-icon="Sunny" :inactive-action-icon="Sunny" :inactive-icon="Moon" style="--el-switch-on-color: #8696ad; --el-switch-off-color: #8696ad" inline-prompt />
-                        </div>
-
+                        <ThemeSwitcher/>
                     </div>
                 </el-popover>
             </div>

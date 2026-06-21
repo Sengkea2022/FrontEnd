@@ -45,5 +45,7 @@
   "home": "Home",
   "language": "Language",
   "darkMode": "Dark Mode",
-  "appearance": "Appearance"
+  "lightMode": "Light Mode",
+  "appearance": "Appearance",
+  "themeMode": "Theme Mode"
 }

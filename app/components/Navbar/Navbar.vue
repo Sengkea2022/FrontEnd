@@ -123,10 +123,15 @@ const logout = async () => {
 
       </el-popover>
 
-      <!-- Not logged in -->
-      <NuxtLink v-else to="/guest/login">
-        <el-button type="primary" round size="small">{{ $t('signIn') }}</el-button>
-      </NuxtLink>
+      <div v-else class="flex space-x-2">
+        <!-- Languages switcher -->
+        <LanguageSelector v-if="!authToken" v-bind="{
+          isLabel: false,
+          width: '100px'
+        }" />
+        <!-- Theme switcher -->
+        <ThemeSwitcher v-if="!authToken" v-bind="{isLabel: false}" />
+      </div>
 
     </div>
   </nav>

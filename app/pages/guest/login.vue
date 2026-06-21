@@ -87,7 +87,9 @@ const onGoogleLogin = () => {
             <div class="w-full max-w-md">
 
                 <!-- Logo (mobile only) -->
-                <div class="lg:hidden text-2xl font-bold text-blue-600 mb-8 text-center">{{ t('km') }}</div>
+                <div class="lg:hidden text-2xl font-bold text-blue-600 mb-8 text-center">
+                    {{ t('appName') }}
+                </div>
                 
                 <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-1">{{ t('signIn') }}</h2>
                 <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">{{ t('enterCredentials') }}</p>
