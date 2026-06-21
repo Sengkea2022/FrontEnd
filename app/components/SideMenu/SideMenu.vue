@@ -1,5 +1,4 @@
 <script setup>
-import { ref, onMounted } from 'vue'
 import { useRoute, useAppConfig } from '#app'
 import { useI18n } from 'vue-i18n'
 import { useColorMode } from '#imports'
@@ -15,25 +14,18 @@ import {
     Expand,
 } from '@element-plus/icons-vue'
 
+// ── Composables ──────────────────────────────────────────────
 const route = useRoute()
 const appConfig = useAppConfig()
 const colorMode = useColorMode()
 const { t, locale, setLocale } = useI18n()
 
-// ── Collapse state ───────────────────────────────────────────
-const isCollapsed = ref(false)
-
-onMounted(() => {
-    const saved = localStorage.getItem('side-menu-collapsed')
-    if (saved !== null) isCollapsed.value = saved === 'true'
+// ── State ────────────────────────────────────────────────────
+const isCollapsed = useCookie('side-menu-collapsed', {
+    default: () => false
 })
 
-const toggleCollapse = () => {
-    isCollapsed.value = !isCollapsed.value
-    cookie.setItem('side-menu-collapsed', isCollapsed.value.toString())
-}
-
-// ── Navigation items ─────────────────────────────────────────
+// ── Static data ──────────────────────────────────────────────
 const navItems = [
     { labelKey: 'home', to: '/', icon: House },
     { labelKey: 'dashboard', to: '/dashboard', icon: Odometer },
@@ -43,7 +35,20 @@ const navItems = [
     { labelKey: 'guestLinks', to: '/guest-links', icon: Link },
 ]
 
-// ── Route helpers ────────────────────────────────────────────
+// ── Computed ─────────────────────────────────────────────────
+const settingsBtnClass = computed(() => [
+    'group relative flex items-center transition-all duration-300 select-none overflow-hidden w-full cursor-pointer',
+    isCollapsed.value
+        ? 'justify-center h-10 w-10 mx-auto rounded-xl'
+        : 'px-3 py-2.5 rounded-xl gap-3',
+    'text-slate-600 dark:text-slate-400 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white'
+])
+
+// ── Methods ──────────────────────────────────────────────────
+const toggleCollapse = () => {
+    isCollapsed.value = !isCollapsed.value
+}
+
 const isRouteActive = (to) => to === '/' ? route.path === '/' : route.path.startsWith(to)
 
 const getLinkStyle = (to) =>
@@ -60,15 +65,6 @@ const navLinkClass = (to) => [
         ? ''
         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white'
 ]
-
-// Reusable class for the Settings trigger button (never "active")
-const settingsBtnClass = computed(() => [
-    'group relative flex items-center transition-all duration-300 select-none overflow-hidden w-full cursor-pointer',
-    isCollapsed.value
-        ? 'justify-center h-10 w-10 mx-auto rounded-xl'
-        : 'px-3 py-2.5 rounded-xl gap-3',
-    'text-slate-600 dark:text-slate-400 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white'
-])
 </script>
 
 <template>
