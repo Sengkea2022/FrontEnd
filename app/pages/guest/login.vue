@@ -26,14 +26,14 @@ const onSubmit = () => {
         if (valid) {
             loading.value = true
             try {
-                const { token } = await fetch('/api/auth/login', {
+                const { token, user } = await fetch('/api/auth/login', {
                     method: 'POST',
                     body: form.value
                 })
 
                 if (token) {
-                    const authToken = useCookie('auth_token')
-                    authToken.value = token
+                    useCookie('auth_token').value = token
+                    useState('auth_user').value = user
                     ElNotification.success({
                         title: t('loginSuccessful'),
                         message: t('welcomeBack')
@@ -80,7 +80,7 @@ const onGoogleLogin = () => {
             <p class="text-blue-300 text-sm">{{ t('copyright') }}</p>
         </div>
 
-        <el-divider direction="vertical" border-style="dashed" style="height: unset;"/>
+        <el-divider direction="vertical" border-style="dashed" style="height: unset;" />
 
         <!-- Right Panel -->
         <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
@@ -90,32 +90,19 @@ const onGoogleLogin = () => {
                 <div class="lg:hidden text-2xl font-bold text-blue-600 mb-8 text-center">
                     {{ t('appName') }}
                 </div>
-                
+
                 <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-1">{{ t('signIn') }}</h2>
                 <p class="text-gray-500 dark:text-gray-400 mb-8 text-sm">{{ t('enterCredentials') }}</p>
-                
+
                 <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
                     <el-form-item :label="t('email')" prop="email">
-                        <el-input
-                            v-model="form.email"
-                            placeholder="you@example.com"
-                            :disabled="loading"
-                            prefix-icon="Message"
-                            size="large"
-                        />
+                        <el-input v-model="form.email" placeholder="you@example.com" :disabled="loading"
+                            prefix-icon="Message" size="large" />
                     </el-form-item>
 
                     <el-form-item :label="t('password')" prop="password">
-                        <el-input
-                            v-model="form.password"
-                            type="password"
-                            placeholder="••••••••"
-                            :disabled="loading"
-                            prefix-icon="Lock"
-                            show-password
-                            size="large"
-                            @keyup.enter="onSubmit"
-                        />
+                        <el-input v-model="form.password" type="password" placeholder="••••••••" :disabled="loading"
+                            prefix-icon="Lock" show-password size="large" @keyup.enter="onSubmit" />
                     </el-form-item>
 
                     <!-- Forgot password -->
@@ -126,13 +113,7 @@ const onGoogleLogin = () => {
                     </div>
 
                     <!-- Sign in button -->
-                    <el-button
-                        type="primary"
-                        @click="onSubmit"
-                        class="w-full"
-                        :loading="loading"
-                        size="large"
-                    >
+                    <el-button type="primary" @click="onSubmit" class="w-full" :loading="loading" size="large">
                         Sign in
                     </el-button>
                 </el-form>
@@ -145,16 +126,18 @@ const onGoogleLogin = () => {
                 </div>
 
                 <!-- Google Login -->
-                <button
-                    @click="onGoogleLogin"
-                    class="w-full flex items-center justify-center gap-3 border border-gray-200 dark:border-gray-700 rounded-lg py-2.5 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition text-sm font-medium text-gray-700 dark:text-gray-200"
-                >
+                <button @click="onGoogleLogin"
+                    class="w-full flex items-center justify-center gap-3 border border-gray-200 dark:border-gray-700 rounded-lg py-2.5 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition text-sm font-medium text-gray-700 dark:text-gray-200">
                     <svg width="20" height="20" viewBox="0 0 48 48">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                        <path fill="none" d="M0 0h48v48H0z"/>
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                        <path fill="#4285F4"
+                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                        <path fill="#FBBC05"
+                            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                        <path fill="#34A853"
+                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                        <path fill="none" d="M0 0h48v48H0z" />
                     </svg>
                     Continue with Google
                 </button>
@@ -162,7 +145,8 @@ const onGoogleLogin = () => {
                 <!-- Sign up link -->
                 <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
                     {{ t('donotHaveAccount') }}
-                    <NuxtLink to="/guest/register" class="text-blue-500 font-medium hover:underline">{{ t('signUp') }}</NuxtLink>
+                    <NuxtLink to="/guest/register" class="text-blue-500 font-medium hover:underline">{{ t('signUp') }}
+                    </NuxtLink>
                 </p>
 
             </div>

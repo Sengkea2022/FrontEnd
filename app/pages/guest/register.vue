@@ -9,17 +9,17 @@ const router = useRouter()
 const { t } = useI18n()
 
 const form = ref({
-    username: '',
+    name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    password_confirmation: ''
 })
 
 const rules = {
-    username: [{ required: true, message: 'Please enter username', trigger: 'blur' }],
+    name: [{ required: true, message: 'Please enter username', trigger: 'blur' }],
     email: [{ required: true, message: 'Please enter email', trigger: 'blur' }],
     password: [{ required: true, message: 'Please enter password', trigger: 'blur' }],
-    confirmPassword: [
+    password_confirmation: [
         { required: true, message: 'Please confirm password', trigger: 'blur' },
         {
             validator: (rule, value, callback) => {
@@ -93,9 +93,9 @@ const submitForm = () => {
                 <!-- Form -->
                 <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
 
-                    <el-form-item label="Username" prop="username">
+                    <el-form-item label="Username" prop="name">
                         <el-input
-                            v-model="form.username"
+                            v-model="form.name"
                             placeholder="johndoe"
                             :disabled="loading"
                             prefix-icon="User"
@@ -107,6 +107,7 @@ const submitForm = () => {
                     <el-form-item label="Email" prop="email">
                         <el-input
                             v-model="form.email"
+                            type="email"
                             placeholder="you@example.com"
                             :disabled="loading"
                             prefix-icon="Message"
@@ -130,7 +131,7 @@ const submitForm = () => {
 
                     <el-form-item label="Confirm Password" prop="confirmPassword">
                         <el-input
-                            v-model="form.confirmPassword"
+                            v-model="form.password_confirmation"
                             type="password"
                             placeholder="••••••••"
                             :disabled="loading"

@@ -5,7 +5,7 @@
     <!-- Main content area: navbar → page content → footer -->
     <div class="flex-1 min-w-0 flex flex-col h-screen overflow-y-auto">
       <Navbar />
-      <main class="flex-1 min-h-0">
+      <main>
         <slot />
       </main>
       <AppFooter />

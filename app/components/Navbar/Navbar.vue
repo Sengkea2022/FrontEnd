@@ -4,6 +4,7 @@ const route = useRoute()
 const { fetch } = useApi()
 const appConfig = useAppConfig()
 const authToken = useCookie('auth_token')
+const authUser = useState('auth_user')
 const { t } = useI18n()
 
 // Map routes → i18n title keys
@@ -34,6 +35,7 @@ const logout = async () => {
     const res = await fetch('/api/auth/logout', { method: 'POST' })
     if (res) {
       useCookie('auth_token').value = null
+      useState('auth_user').value = null
       ElNotification.success({ title: t('logoutSuccessful'), message: t('logoutSuccessful') })
       await router.push('/guest/login')
     }
@@ -45,10 +47,10 @@ const logout = async () => {
 </script>
 
 <template>
-  <nav class="sticky top-0 z-40 h-[62px] flex items-center shrink-0
+  <nav class="sticky top-0 z-40 h-[65px] flex items-center shrink-0
            border-b border-slate-200/70 dark:border-slate-800/70
-           bg-white/90 dark:bg-[#15171a]/90 backdrop-blur-md
-           px-6 gap-4 my-1">
+           bg-transparent backdrop-blur-md
+           px-6 gap-4 ">
     <!-- Left: Page Title -->
     <div class="flex-1 flex items-center min-w-0">
       <h1 class="text-base font-semibold text-slate-800 dark:text-slate-100 truncate select-none">
@@ -94,8 +96,8 @@ const logout = async () => {
             </el-icon>
           </div>
           <div class="min-w-0">
-            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">Admin</p>
-            <p class="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">admin@example.com</p>
+            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">{{ authUser.name }}</p>
+            <p class="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">{{ authUser.email }}</p>
           </div>
         </div>
 
