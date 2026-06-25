@@ -2,38 +2,33 @@ import { defineStore } from 'pinia'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ShopStatus = 'Active' | 'Inactive' | 'Maintenance'
-export type ShopType = 'Retail' | 'Booking' | 'Service'
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled'
 
-export interface Shop {
+export interface Order {
   id: number
-  name: string
-  city: string
-  type: ShopType
-  manager: string
-  status: ShopStatus
-  address?: string
-  phone?: string
-  email?: string
+  order_no: string
+  store: string
+  customer: string
+  currency: string
+  status: OrderStatus
+  note: string
+  created_at: string
 }
 
-export interface ShopForm {
-  name: string
-  city: string
-  type: ShopType | ''
-  manager: string
-  status: ShopStatus
-  address: string
-  phone: string
-  email: string
+export interface OrderForm {
+  store: string
+  customer: string
+  currency: string
+  status: OrderStatus
+  note: string
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useShopStore = defineStore('shop', {
+export const useOrderStore = defineStore('orders', {
   // ── State ──────────────────────────────────────────────────────────────────
   state: () => ({
-    shops: [] as Shop[],
+    orders: [] as Order[],
     loading: false,
     submitting: false,
     error: null as string | null,
@@ -41,25 +36,25 @@ export const useShopStore = defineStore('shop', {
 
   // ── Getters ────────────────────────────────────────────────────────────────
   getters: {
-    totalShops: (state) => state.shops.length,
+    totalOrders: (state) => state.orders.length,
 
-    activeShops: (state) =>
-      state.shops.filter((s) => s.status === 'Active'),
+    pendingOrders: (state) =>
+      state.orders.filter((o) => o.status === 'pending'),
 
-    shopNames: (state) =>
-      state.shops.map((s) => ({ label: s.name, value: s.name })),
+    completedOrders: (state) =>
+      state.orders.filter((o) => o.status === 'completed'),
 
-    getShopById: (state) => (id: number) =>
-      state.shops.find((s) => s.id === id),
+    getOrderById: (state) => (id: number) =>
+      state.orders.find((o) => o.id === id),
   },
 
   // ── Actions ────────────────────────────────────────────────────────────────
   actions: {
     /**
-     * GET /api/v1/shops
-     * Fetch all shops from the backend.
+     * GET /api/v1/orders
+     * Fetch all orders from the backend.
      */
-    async fetchShops() {
+    async fetchOrders() {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -67,21 +62,21 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const data = await $fetch<Shop[]>(`${baseURL}/shops`)
-        this.shops = data
+        const data = await $fetch<Order[]>(`${baseURL}/orders`)
+        this.orders = data
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to fetch shops.'
-        console.error('[ShopStore] fetchShops:', err)
+        this.error = err?.data?.message ?? 'Failed to fetch orders.'
+        console.error('[OrderStore] fetchOrders:', err)
       } finally {
         this.loading = false
       }
     },
 
     /**
-     * POST /api/v1/shops
-     * Create a new shop.
+     * POST /api/v1/orders
+     * Create a new order.
      */
-    async createShop(form: ShopForm): Promise<boolean> {
+    async createOrder(form: OrderForm): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -89,15 +84,15 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const created = await $fetch<Shop>(`${baseURL}/shops`, {
+        const created = await $fetch<Order>(`${baseURL}/orders`, {
           method: 'POST',
           body: form,
         })
-        this.shops.unshift(created)
+        this.orders.unshift(created)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to create shop.'
-        console.error('[ShopStore] createShop:', err)
+        this.error = err?.data?.message ?? 'Failed to create order.'
+        console.error('[OrderStore] createOrder:', err)
         return false
       } finally {
         this.submitting = false
@@ -105,10 +100,10 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * PUT /api/v1/shops/:id
-     * Update an existing shop.
+     * PUT /api/v1/orders/:id
+     * Update an existing order.
      */
-    async updateShop(id: number, form: ShopForm): Promise<boolean> {
+    async updateOrder(id: number, form: OrderForm): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -116,16 +111,16 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const updated = await $fetch<Shop>(`${baseURL}/shops/${id}`, {
+        const updated = await $fetch<Order>(`${baseURL}/orders/${id}`, {
           method: 'PUT',
           body: form,
         })
-        const index = this.shops.findIndex((s) => s.id === id)
-        if (index !== -1) this.shops[index] = updated
+        const index = this.orders.findIndex((o) => o.id === id)
+        if (index !== -1) this.orders[index] = updated
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to update shop.'
-        console.error('[ShopStore] updateShop:', err)
+        this.error = err?.data?.message ?? 'Failed to update order.'
+        console.error('[OrderStore] updateOrder:', err)
         return false
       } finally {
         this.submitting = false
@@ -133,22 +128,22 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * DELETE /api/v1/shops/:id
-     * Delete a shop.
+     * DELETE /api/v1/orders/:id
+     * Delete an order.
      */
-    async deleteShop(id: number): Promise<boolean> {
+    async deleteOrder(id: number): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
       this.error = null
 
       try {
-        await $fetch(`${baseURL}/shops/${id}`, { method: 'DELETE' })
-        this.shops = this.shops.filter((s) => s.id !== id)
+        await $fetch(`${baseURL}/orders/${id}`, { method: 'DELETE' })
+        this.orders = this.orders.filter((o) => o.id !== id)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to delete shop.'
-        console.error('[ShopStore] deleteShop:', err)
+        this.error = err?.data?.message ?? 'Failed to delete order.'
+        console.error('[OrderStore] deleteOrder:', err)
         return false
       }
     },

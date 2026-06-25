@@ -2,38 +2,38 @@ import { defineStore } from 'pinia'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ShopStatus = 'Active' | 'Inactive' | 'Maintenance'
-export type ShopType = 'Retail' | 'Booking' | 'Service'
+export type ProductStatus = 'Published' | 'Draft' | 'Hidden'
+export type ProductCategory = 'Product' | 'Service' | 'Booking'
 
-export interface Shop {
+export interface Product {
   id: number
   name: string
-  city: string
-  type: ShopType
-  manager: string
-  status: ShopStatus
-  address?: string
-  phone?: string
-  email?: string
+  sku: string
+  category: ProductCategory
+  price: string
+  stock: string
+  store: string
+  status: ProductStatus
+  description?: string
 }
 
-export interface ShopForm {
+export interface ProductForm {
   name: string
-  city: string
-  type: ShopType | ''
-  manager: string
-  status: ShopStatus
-  address: string
-  phone: string
-  email: string
+  sku: string
+  category: ProductCategory | ''
+  price: string
+  stock: string
+  store: string
+  status: ProductStatus
+  description: string
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useShopStore = defineStore('shop', {
+export const useProductStore = defineStore('products', {
   // ── State ──────────────────────────────────────────────────────────────────
   state: () => ({
-    shops: [] as Shop[],
+    products: [] as Product[],
     loading: false,
     submitting: false,
     error: null as string | null,
@@ -41,25 +41,25 @@ export const useShopStore = defineStore('shop', {
 
   // ── Getters ────────────────────────────────────────────────────────────────
   getters: {
-    totalShops: (state) => state.shops.length,
+    totalProducts: (state) => state.products.length,
 
-    activeShops: (state) =>
-      state.shops.filter((s) => s.status === 'Active'),
+    publishedProducts: (state) =>
+      state.products.filter((p) => p.status === 'Published'),
 
-    shopNames: (state) =>
-      state.shops.map((s) => ({ label: s.name, value: s.name })),
+    bookingItems: (state) =>
+      state.products.filter((p) => p.category === 'Booking'),
 
-    getShopById: (state) => (id: number) =>
-      state.shops.find((s) => s.id === id),
+    getProductById: (state) => (id: number) =>
+      state.products.find((p) => p.id === id),
   },
 
   // ── Actions ────────────────────────────────────────────────────────────────
   actions: {
     /**
-     * GET /api/v1/shops
-     * Fetch all shops from the backend.
+     * GET /api/v1/products
+     * Fetch all products from the backend.
      */
-    async fetchShops() {
+    async fetchProducts() {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -67,21 +67,21 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const data = await $fetch<Shop[]>(`${baseURL}/shops`)
-        this.shops = data
+        const data = await $fetch<Product[]>(`${baseURL}/products`)
+        this.products = data
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to fetch shops.'
-        console.error('[ShopStore] fetchShops:', err)
+        this.error = err?.data?.message ?? 'Failed to fetch products.'
+        console.error('[ProductStore] fetchProducts:', err)
       } finally {
         this.loading = false
       }
     },
 
     /**
-     * POST /api/v1/shops
-     * Create a new shop.
+     * POST /api/v1/products
+     * Create a new product.
      */
-    async createShop(form: ShopForm): Promise<boolean> {
+    async createProduct(form: ProductForm): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -89,15 +89,15 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const created = await $fetch<Shop>(`${baseURL}/shops`, {
+        const created = await $fetch<Product>(`${baseURL}/products`, {
           method: 'POST',
           body: form,
         })
-        this.shops.unshift(created)
+        this.products.unshift(created)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to create shop.'
-        console.error('[ShopStore] createShop:', err)
+        this.error = err?.data?.message ?? 'Failed to create product.'
+        console.error('[ProductStore] createProduct:', err)
         return false
       } finally {
         this.submitting = false
@@ -105,10 +105,10 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * PUT /api/v1/shops/:id
-     * Update an existing shop.
+     * PUT /api/v1/products/:id
+     * Update an existing product.
      */
-    async updateShop(id: number, form: ShopForm): Promise<boolean> {
+    async updateProduct(id: number, form: ProductForm): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -116,16 +116,16 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const updated = await $fetch<Shop>(`${baseURL}/shops/${id}`, {
+        const updated = await $fetch<Product>(`${baseURL}/products/${id}`, {
           method: 'PUT',
           body: form,
         })
-        const index = this.shops.findIndex((s) => s.id === id)
-        if (index !== -1) this.shops[index] = updated
+        const index = this.products.findIndex((p) => p.id === id)
+        if (index !== -1) this.products[index] = updated
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to update shop.'
-        console.error('[ShopStore] updateShop:', err)
+        this.error = err?.data?.message ?? 'Failed to update product.'
+        console.error('[ProductStore] updateProduct:', err)
         return false
       } finally {
         this.submitting = false
@@ -133,22 +133,22 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * DELETE /api/v1/shops/:id
-     * Delete a shop.
+     * DELETE /api/v1/products/:id
+     * Delete a product.
      */
-    async deleteShop(id: number): Promise<boolean> {
+    async deleteProduct(id: number): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
       this.error = null
 
       try {
-        await $fetch(`${baseURL}/shops/${id}`, { method: 'DELETE' })
-        this.shops = this.shops.filter((s) => s.id !== id)
+        await $fetch(`${baseURL}/products/${id}`, { method: 'DELETE' })
+        this.products = this.products.filter((p) => p.id !== id)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to delete shop.'
-        console.error('[ShopStore] deleteShop:', err)
+        this.error = err?.data?.message ?? 'Failed to delete product.'
+        console.error('[ProductStore] deleteProduct:', err)
         return false
       }
     },

@@ -2,38 +2,28 @@ import { defineStore } from 'pinia'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ShopStatus = 'Active' | 'Inactive' | 'Maintenance'
-export type ShopType = 'Retail' | 'Booking' | 'Service'
-
-export interface Shop {
+export interface Customer {
   id: number
+  customer_no: string
   name: string
-  city: string
-  type: ShopType
-  manager: string
-  status: ShopStatus
-  address?: string
-  phone?: string
-  email?: string
+  phone: string
+  email: string | null
+  note: string
 }
 
-export interface ShopForm {
+export interface CustomerForm {
   name: string
-  city: string
-  type: ShopType | ''
-  manager: string
-  status: ShopStatus
-  address: string
   phone: string
   email: string
+  note: string
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useShopStore = defineStore('shop', {
+export const useCustomerStore = defineStore('customers', {
   // ── State ──────────────────────────────────────────────────────────────────
   state: () => ({
-    shops: [] as Shop[],
+    customers: [] as Customer[],
     loading: false,
     submitting: false,
     error: null as string | null,
@@ -41,25 +31,19 @@ export const useShopStore = defineStore('shop', {
 
   // ── Getters ────────────────────────────────────────────────────────────────
   getters: {
-    totalShops: (state) => state.shops.length,
+    totalCustomers: (state) => state.customers.length,
 
-    activeShops: (state) =>
-      state.shops.filter((s) => s.status === 'Active'),
-
-    shopNames: (state) =>
-      state.shops.map((s) => ({ label: s.name, value: s.name })),
-
-    getShopById: (state) => (id: number) =>
-      state.shops.find((s) => s.id === id),
+    getCustomerById: (state) => (id: number) =>
+      state.customers.find((c) => c.id === id),
   },
 
   // ── Actions ────────────────────────────────────────────────────────────────
   actions: {
     /**
-     * GET /api/v1/shops
-     * Fetch all shops from the backend.
+     * GET /api/v1/customers
+     * Fetch all customers from the backend.
      */
-    async fetchShops() {
+    async fetchCustomers() {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -67,21 +51,21 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const data = await $fetch<Shop[]>(`${baseURL}/shops`)
-        this.shops = data
+        const data = await $fetch<Customer[]>(`${baseURL}/customers`)
+        this.customers = data
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to fetch shops.'
-        console.error('[ShopStore] fetchShops:', err)
+        this.error = err?.data?.message ?? 'Failed to fetch customers.'
+        console.error('[CustomerStore] fetchCustomers:', err)
       } finally {
         this.loading = false
       }
     },
 
     /**
-     * POST /api/v1/shops
-     * Create a new shop.
+     * POST /api/v1/customers
+     * Create a new customer.
      */
-    async createShop(form: ShopForm): Promise<boolean> {
+    async createCustomer(form: CustomerForm): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -89,15 +73,15 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const created = await $fetch<Shop>(`${baseURL}/shops`, {
+        const created = await $fetch<Customer>(`${baseURL}/customers`, {
           method: 'POST',
           body: form,
         })
-        this.shops.unshift(created)
+        this.customers.unshift(created)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to create shop.'
-        console.error('[ShopStore] createShop:', err)
+        this.error = err?.data?.message ?? 'Failed to create customer.'
+        console.error('[CustomerStore] createCustomer:', err)
         return false
       } finally {
         this.submitting = false
@@ -105,10 +89,10 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * PUT /api/v1/shops/:id
-     * Update an existing shop.
+     * PUT /api/v1/customers/:id
+     * Update an existing customer.
      */
-    async updateShop(id: number, form: ShopForm): Promise<boolean> {
+    async updateCustomer(id: number, form: CustomerForm): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
@@ -116,16 +100,16 @@ export const useShopStore = defineStore('shop', {
       this.error = null
 
       try {
-        const updated = await $fetch<Shop>(`${baseURL}/shops/${id}`, {
+        const updated = await $fetch<Customer>(`${baseURL}/customers/${id}`, {
           method: 'PUT',
           body: form,
         })
-        const index = this.shops.findIndex((s) => s.id === id)
-        if (index !== -1) this.shops[index] = updated
+        const index = this.customers.findIndex((c) => c.id === id)
+        if (index !== -1) this.customers[index] = updated
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to update shop.'
-        console.error('[ShopStore] updateShop:', err)
+        this.error = err?.data?.message ?? 'Failed to update customer.'
+        console.error('[CustomerStore] updateCustomer:', err)
         return false
       } finally {
         this.submitting = false
@@ -133,22 +117,22 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * DELETE /api/v1/shops/:id
-     * Delete a shop.
+     * DELETE /api/v1/customers/:id
+     * Delete a customer.
      */
-    async deleteShop(id: number): Promise<boolean> {
+    async deleteCustomer(id: number): Promise<boolean> {
       const config = useRuntimeConfig()
       const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
 
       this.error = null
 
       try {
-        await $fetch(`${baseURL}/shops/${id}`, { method: 'DELETE' })
-        this.shops = this.shops.filter((s) => s.id !== id)
+        await $fetch(`${baseURL}/customers/${id}`, { method: 'DELETE' })
+        this.customers = this.customers.filter((c) => c.id !== id)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to delete shop.'
-        console.error('[ShopStore] deleteShop:', err)
+        this.error = err?.data?.message ?? 'Failed to delete customer.'
+        console.error('[CustomerStore] deleteCustomer:', err)
         return false
       }
     },
