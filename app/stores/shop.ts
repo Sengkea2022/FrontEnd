@@ -3,74 +3,91 @@ import { defineStore } from 'pinia'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ShopStatus = 'Active' | 'Inactive' | 'Maintenance'
-export type ShopType = 'Retail' | 'Booking' | 'Service'
+export type ShopType   = 'Retail' | 'Booking' | 'Service'
 
 export interface Shop {
-  id: number
-  name: string
-  city: string
-  type: ShopType
-  manager: string
-  status: ShopStatus
+  uuid:     string
+  name:     string
+  city:     string
+  type:     ShopType
+  manager:  string
+  status:   ShopStatus
   address?: string
-  phone?: string
-  email?: string
+  phone?:   string
+  email?:   string
 }
 
 export interface ShopForm {
-  name: string
-  city: string
-  type: ShopType | ''
+  name:    string
+  city:    string
+  type:    ShopType | ''
   manager: string
-  status: ShopStatus
+  status:  ShopStatus
   address: string
-  phone: string
-  email: string
+  phone:   string
+  email:   string
+}
+
+export interface ShopParams {
+  filter?:   string
+  search?:   string
+  paginate?: {
+    page?:     number   // default 1 on frontend
+    pageSize?: number   // no default — Laravel handles it
+  }
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useShopStore = defineStore('shop', {
+
   // ── State ──────────────────────────────────────────────────────────────────
   state: () => ({
-    shops: [] as Shop[],
-    loading: false,
+    shops:      [] as Shop[],
+    loading:    false,
     submitting: false,
-    error: null as string | null,
+    error:      null as string | null,
   }),
 
   // ── Getters ────────────────────────────────────────────────────────────────
   getters: {
-    totalShops: (state) => state.shops.length,
+    totalShops:  (state) => state.shops.length,
+    activeShops: (state) => state.shops.filter((s) => s.status === 'Active'),
 
-    activeShops: (state) =>
-      state.shops.filter((s) => s.status === 'Active'),
+    /** Ready-made options for <el-select> dropdowns */
+    shopOptions: (state) => state.shops.map((s) => ({ label: s.name, value: s.name })),
 
-    shopNames: (state) =>
-      state.shops.map((s) => ({ label: s.name, value: s.name })),
-
-    getShopById: (state) => (id: number) =>
-      state.shops.find((s) => s.id === id),
+    getShopByUuid: (state) => (uuid: string) =>
+      state.shops.find((s) => s.uuid === uuid),
   },
 
   // ── Actions ────────────────────────────────────────────────────────────────
   actions: {
     /**
-     * GET /api/v1/shops
-     * Fetch all shops from the backend.
+     * GET /api/stores
+     *
+     * Usage:
+     *   fetchShops()                                        → all, page 1
+     *   fetchShops({ search: 'Central' })                   → search
+     *   fetchShops({ filter: 'Active' })                    → filter by status
+     *   fetchShops({ paginate: { page: 2, pageSize: 10 } }) → paginated
      */
-    async fetchShops() {
-      const config = useRuntimeConfig()
-      const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
-
+    async fetchShops({ filter, search, paginate }: ShopParams = {}) {
+      const { fetch } = useApi()
       this.loading = true
-      this.error = null
-
+      this.error   = null
       try {
-        const data = await $fetch<Shop[]>(`${baseURL}/shops`)
+        const data = await fetch<Shop[]>('/api/stores', {
+          query: {
+            filter,
+            search,
+            page:     paginate?.page ?? 1,
+            pageSize: paginate?.pageSize,
+          },
+        })
         this.shops = data
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to fetch shops.'
+        this.error = err?.data?.message ?? 'Failed to fetch stores.'
         console.error('[ShopStore] fetchShops:', err)
       } finally {
         this.loading = false
@@ -78,25 +95,21 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * POST /api/v1/shops
-     * Create a new shop.
+     * POST /api/stores
      */
     async createShop(form: ShopForm): Promise<boolean> {
-      const config = useRuntimeConfig()
-      const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
-
+      const { fetch } = useApi()
       this.submitting = true
-      this.error = null
-
+      this.error      = null
       try {
-        const created = await $fetch<Shop>(`${baseURL}/shops`, {
+        const created = await fetch<Shop>('/api/stores', {
           method: 'POST',
-          body: form,
+          body:   form,
         })
         this.shops.unshift(created)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to create shop.'
+        this.error = err?.data?.message ?? 'Failed to create store.'
         console.error('[ShopStore] createShop:', err)
         return false
       } finally {
@@ -105,26 +118,22 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * PUT /api/v1/shops/:id
-     * Update an existing shop.
+     * PUT /api/stores/:uuid
      */
-    async updateShop(id: number, form: ShopForm): Promise<boolean> {
-      const config = useRuntimeConfig()
-      const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
-
+    async updateShop(uuid: string, form: ShopForm): Promise<boolean> {
+      const { fetch } = useApi()
       this.submitting = true
-      this.error = null
-
+      this.error      = null
       try {
-        const updated = await $fetch<Shop>(`${baseURL}/shops/${id}`, {
+        const updated = await fetch<Shop>(`/api/stores/${uuid}`, {
           method: 'PUT',
-          body: form,
+          body:   form,
         })
-        const index = this.shops.findIndex((s) => s.id === id)
+        const index = this.shops.findIndex((s) => s.uuid === uuid)
         if (index !== -1) this.shops[index] = updated
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to update shop.'
+        this.error = err?.data?.message ?? 'Failed to update store.'
         console.error('[ShopStore] updateShop:', err)
         return false
       } finally {
@@ -133,27 +142,23 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * DELETE /api/v1/shops/:id
-     * Delete a shop.
+     * DELETE /api/stores/:uuid
      */
-    async deleteShop(id: number): Promise<boolean> {
-      const config = useRuntimeConfig()
-      const baseURL = `${config.public.apiBase}/api/v${config.public.apiVersion}`
-
+    async deleteShop(uuid: string): Promise<boolean> {
+      const { fetch } = useApi()
       this.error = null
-
       try {
-        await $fetch(`${baseURL}/shops/${id}`, { method: 'DELETE' })
-        this.shops = this.shops.filter((s) => s.id !== id)
+        await fetch(`/api/stores/${uuid}`, { method: 'DELETE' })
+        this.shops = this.shops.filter((s) => s.uuid !== uuid)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to delete shop.'
+        this.error = err?.data?.message ?? 'Failed to delete store.'
         console.error('[ShopStore] deleteShop:', err)
         return false
       }
     },
 
-    /** Clear any stored error message. */
+    /** Clear any stored error message */
     clearError() {
       this.error = null
     },

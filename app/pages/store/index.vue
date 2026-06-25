@@ -1,287 +1,146 @@
-<script setup>
+<script setup lang="ts">
+import { useShopStore } from '~/stores/shop'
+import type { ShopForm, Shop } from '~/stores/shop'
+import StoreTable      from './components/StoreTable.vue'
+import StoreFormDialog from './components/StoreFormDialog.vue'
+
+definePageMeta({ middleware: 'auth' })
+
 const appConfig = useAppConfig()
+const shopStore = useShopStore()
+const router    = useRouter()
 
-const tableData = ref([
-  {
-    id: 1,
-    name: 'Premium Room Booking',
-    sku: 'PRD-001',
-    category: 'Booking',
-    price: '45.00',
-    stock: 'Available',
-    store: 'Central Market Store',
-    status: 'Published'
-  },
-  {
-    id: 2,
-    name: 'Airport Transfer Service',
-    sku: 'PRD-002',
-    category: 'Service',
-    price: '25.00',
-    stock: 'Available',
-    store: 'Airport Service Point',
-    status: 'Published'
-  },
-  {
-    id: 3,
-    name: 'Retail Gift Package',
-    sku: 'PRD-003',
-    category: 'Product',
-    price: '18.50',
-    stock: '12 Units',
-    store: 'Central Market Store',
-    status: 'Draft'
-  }
-])
+// ── Load shops when page opens ────────────────────────────────────────────────
+onMounted(() => shopStore.fetchShops())
 
-const emptyForm = () => ({
-  name: '',
-  sku: '',
-  category: '',
-  price: '',
-  stock: '',
-  store: '',
-  status: 'Published',
-  description: ''
+// ── Empty form template ───────────────────────────────────────────────────────
+const emptyForm = (): ShopForm => ({
+  name: '', city: '', type: '' as ShopForm['type'], manager: '',
+  status: 'Active', address: '', phone: '', email: '',
 })
 
-const formModel = ref(emptyForm())
+// ── Dialog state ──────────────────────────────────────────────────────────────
+const formModel     = ref<ShopForm>(emptyForm())
 const dialogVisible = ref(false)
-const editingId = ref(null)
+const editingUuid   = ref<string | null>(null)
+       // null = create mode, uuid string = edit mode
 
-const formFields = [
-  {
-    key: 'name',
-    label: 'Product Name',
-    type: 'text',
-    placeholder: 'Enter product or service name'
-  },
-  {
-    key: 'sku',
-    label: 'SKU',
-    type: 'text',
-    placeholder: 'Enter SKU code'
-  },
-  {
-    key: 'category',
-    label: 'Category',
-    type: 'select',
-    placeholder: 'Select category',
-    options: [
-      { label: 'Product', value: 'Product' },
-      { label: 'Service', value: 'Service' },
-      { label: 'Booking', value: 'Booking' }
-    ]
-  },
-  {
-    key: 'status',
-    label: 'Status',
-    type: 'select',
-    placeholder: 'Select status',
-    options: [
-      { label: 'Published', value: 'Published' },
-      { label: 'Draft', value: 'Draft' },
-      { label: 'Hidden', value: 'Hidden' }
-    ]
-  },
-  {
-    key: 'price',
-    label: 'Price',
-    type: 'number',
-    placeholder: 'Enter price'
-  },
-  {
-    key: 'stock',
-    label: 'Stock / Availability',
-    type: 'text',
-    placeholder: 'Enter stock or availability'
-  },
-  {
-    key: 'store',
-    label: 'Store',
-    type: 'select',
-    placeholder: 'Select store',
-    options: [
-      { label: 'Central Market Store', value: 'Central Market Store' },
-      { label: 'Riverside Booking Hub', value: 'Riverside Booking Hub' },
-      { label: 'Airport Service Point', value: 'Airport Service Point' }
-    ]
-  },
-  {
-    key: 'description',
-    label: 'Description',
-    type: 'textarea',
-    placeholder: 'Enter description',
-    span: 'md:col-span-2'
-  }
-]
-
+// Open dialog for creating a new store
 const openCreateDialog = () => {
-  editingId.value = null
-  formModel.value = emptyForm()
+  editingUuid.value   = null
+  formModel.value     = emptyForm()
   dialogVisible.value = true
 }
 
-const openEditDialog = (row) => {
-  editingId.value = row.id
-  formModel.value = {
-    name: row.name,
-    sku: row.sku,
-    category: row.category,
-    price: row.price,
-    stock: row.stock,
-    store: row.store,
-    status: row.status,
-    description: row.description || ''
+// Open dialog pre-filled with an existing store's data
+const openEditDialog = (row: Shop) => {
+  editingUuid.value = row.uuid
+  formModel.value   = {
+    name:    row.name,
+    city:    row.city,
+    type:    row.type,
+    manager: row.manager,
+    status:  row.status,
+    address: row.address ?? '',
+    phone:   row.phone   ?? '',
+    email:   row.email   ?? '',
   }
   dialogVisible.value = true
 }
 
-const submitProduct = () => {
-  if (editingId.value) {
-    tableData.value = tableData.value.map((row) =>
-      row.id === editingId.value
-        ? { id: row.id, ...formModel.value }
-        : row
-    )
-  } else {
-    tableData.value.unshift({
-      id: Date.now(),
-      ...formModel.value
-    })
+// Submit: calls createShop or updateShop depending on editingUuid
+const submitShop = async () => {
+  const ok = editingUuid.value
+    ? await shopStore.updateShop(editingUuid.value, formModel.value)
+    : await shopStore.createShop(formModel.value)
+
+  if (ok) {
+    dialogVisible.value = false
+    editingUuid.value   = null
+    formModel.value     = emptyForm()
   }
-
-  dialogVisible.value = false
-  editingId.value = null
-  formModel.value = emptyForm()
-}
-
-const deleteProduct = (id) => {
-  tableData.value = tableData.value.filter((row) => row.id !== id)
 }
 </script>
 
 <template>
   <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto flex max-w-7xl flex-col gap-6">
+
+      <!-- ── Header ──────────────────────────────────────────────────────────── -->
       <el-card class="!rounded-2xl border-0 shadow-sm">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
-            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
-              Store Products
+            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
+              Stores
             </p>
-            <h1 class="text-4xl font-semibold tracking-tight ">
-              Product List In Store
-            </h1>
+            <h1 class="text-4xl font-semibold tracking-tight">Store Directory</h1>
             <p class="mt-4 text-base leading-7 text-slate-600">
-              Manage product, service, and booking items that belong to store operations.
+              Manage all store branches and booking locations. Click a row or use the
+              <strong>Products</strong> button to view items for each store.
             </p>
           </div>
 
           <div class="flex flex-wrap gap-3">
             <el-button type="primary" size="large" round @click="openCreateDialog">
-              Add Product
+              Add Store
             </el-button>
             <NuxtLink to="/dashboard">
-              <el-button size="large" plain round>
-                Back to Dashboard
-              </el-button>
+              <el-button size="large" plain round>Back to Dashboard</el-button>
             </NuxtLink>
           </div>
         </div>
       </el-card>
 
+      <!-- ── API error banner ────────────────────────────────────────────────── -->
+      <el-alert
+        v-if="shopStore.error"
+        :title="shopStore.error"
+        type="error"
+        show-icon
+        closable
+        @close="shopStore.clearError()"
+      />
+
+      <!-- ── Stat cards ──────────────────────────────────────────────────────── -->
       <div class="grid gap-4 md:grid-cols-3">
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">
-            Total Items
-          </p>
-          <p class="mt-3 text-3xl font-semibold ">
-            {{ tableData.length }}
-          </p>
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Total Stores</p>
+          <p class="mt-3 text-3xl font-semibold">{{ shopStore.totalShops }}</p>
         </el-card>
 
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">
-            Published
-          </p>
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Active</p>
           <p class="mt-3 text-3xl font-semibold" :style="{ color: appConfig.theme.primary }">
-            {{ tableData.filter((item) => item.status === 'Published').length }}
+            {{ shopStore.activeShops.length }}
           </p>
         </el-card>
 
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">
-            Booking Items
-          </p>
-          <p class="mt-3 text-3xl font-semibold ">
-            {{ tableData.filter((item) => item.category === 'Booking').length }}
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Maintenance</p>
+          <p class="mt-3 text-3xl font-semibold">
+            {{ shopStore.shops.filter((s) => s.status === 'Maintenance').length }}
           </p>
         </el-card>
       </div>
 
-      <el-card class="!rounded-2xl border-0 shadow-sm">
-        <div class="mb-5">
-          <h2 class="text-xl font-semibold ">
-            Product Directory
-          </h2>
-          <p class="mt-1 text-sm text-slate-500">
-            List of products and services assigned to stores.
-          </p>
-        </div>
-
-        <el-table :data="tableData" stripe class="w-full">
-          <el-table-column prop="name" label="Product Name" min-width="220" />
-          <el-table-column prop="sku" label="SKU" min-width="120" />
-          <el-table-column prop="category" label="Category" min-width="140" />
-          <el-table-column prop="price" label="Price" min-width="120" />
-          <el-table-column prop="stock" label="Stock" min-width="140" />
-          <el-table-column prop="store" label="Store" min-width="200" />
-          <el-table-column label="Status" min-width="140">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 'Published' ? 'success' : row.status === 'Draft' ? 'warning' : 'info'" round>
-                {{ row.status }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="Actions" min-width="180" fixed="right">
-            <template #default="{ row }">
-              <div class="flex flex-wrap gap-2">
-                <el-button size="small" type="primary" plain @click="openEditDialog(row)">
-                  Edit
-                </el-button>
-                <el-button size="small" type="danger" plain @click="deleteProduct(row.id)">
-                  Delete
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-card>
+      <!-- ── StoreTable component ───────────────────────────────────────────── -->
+      <StoreTable
+        :shops="shopStore.shops"
+        :loading="shopStore.loading"
+        @row-click="(row) => router.push(`/store/${row.uuid}`)"
+        @view-products="(row) => router.push(`/store/${row.uuid}`)"
+        @edit="openEditDialog"
+        @delete="shopStore.deleteShop"
+      />
     </div>
 
-    <el-dialog
+    <!-- ── StoreFormDialog component ─────────────────────────────────────────── -->
+    <StoreFormDialog
       v-model="dialogVisible"
-      :title="editingId ? 'Edit Product' : 'Create Product'"
-      width="760px"
-      class="!rounded-2xl"
-    >
-      <ProductDynamicForm
-        v-model="formModel"
-        :fields="formFields"
-        @submit="submitProduct"
-      />
-
-      <template #footer>
-        <div class="flex justify-end gap-3">
-          <el-button round @click="dialogVisible = false">
-            Cancel
-          </el-button>
-          <el-button type="primary" round @click="submitProduct">
-            {{ editingId ? 'Update Product' : 'Save Product' }}
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
+      v-model:form="formModel"
+      :editing-uuid="editingUuid"
+      :loading="shopStore.submitting"
+      @submit="submitShop"
+    />
   </section>
 </template>
