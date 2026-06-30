@@ -15,7 +15,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   if (authToken.value && !authUser.value) {
         const { fetch } = useApi()
-        const { user }: any = await fetch('/api/auth/me')
+        const { user }: any = await fetch('/api/user')
         authUser.value = user
     }
 })

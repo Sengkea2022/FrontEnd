@@ -96,7 +96,10 @@ const logout = async () => {
             </el-icon>
           </div>
           <div class="min-w-0">
-            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">{{ authUser.name }}</p>
+            <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">
+              {{ authUser.name }}
+              <el-tag class="text-[11px] text-slate-400 dark:text-slate-500">{{ authUser.paid_status }}</el-tag>
+            </p>
             <p class="text-xs text-slate-400 dark:text-slate-500 truncate mt-0.5">{{ authUser.email }}</p>
           </div>
         </div>

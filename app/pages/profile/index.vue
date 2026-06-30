@@ -1,5 +1,7 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
+import EditProfileDialog from './components/EditProfileDialog.vue'
+import AccountSettingsDialog from './components/AccountSettingsDialog.vue'
 import {
   Calendar,
   EditPen,
@@ -14,17 +16,47 @@ import {
 } from '@element-plus/icons-vue'
 
 const appConfig = useAppConfig()
+const { fetch } = useApi()
 
+// Get global auth user state (initially loaded by the check-auth global middleware)
+const authUser = useState('auth_user')
+
+// Initialize reactive local profile state
 const profile = reactive({
-  name: 'Admin User',
+  name: '',
   role: 'Operations Manager',
-  email: 'admin@example.com',
-  phone: '+855 12 345 678',
+  email: '',
+  phone: '',
   location: 'Phnom Penh, Cambodia',
   department: 'Platform Operations',
   joinedAt: 'Joined March 2024',
   bio: 'Oversees store operations, customer workflows, and service performance across the platform.'
 })
+
+// Sync helper to update local copy from global authUser object
+const syncProfile = (user) => {
+  if (!user) return
+  profile.name = user.name || ''
+  profile.email = user.email || ''
+  profile.phone = user.phone || ''
+  profile.location = user.location || 'Phnom Penh, Cambodia'
+  profile.department = user.department || 'Platform Operations'
+  profile.role = user.role || 'Operations Manager'
+  profile.bio = user.bio || 'Oversees store operations, customer workflows, and service performance across the platform.'
+  if (user.created_at) {
+    const date = new Date(user.created_at)
+    const options = { year: 'numeric', month: 'long' }
+    profile.joinedAt = `Joined ${date.toLocaleDateString('en-US', options)}`
+  }
+}
+
+// Perform initial sync
+syncProfile(authUser.value)
+
+// Keep local copy in sync if global authUser changes asynchronously
+watch(authUser, (newUser) => {
+  syncProfile(newUser)
+}, { deep: true })
 
 const editProfileVisible = ref(false)
 const accountSettingsVisible = ref(false)
@@ -44,6 +76,36 @@ const detailGroups = computed(() => [
   { label: 'Location', value: profile.location },
   { label: 'Department', value: profile.department }
 ])
+
+const saveProfile = async (updatedProfile) => {
+  try {
+    // Call backend API to save the profile changes (using PUT /api/user)
+    const res = await fetch('/api/user', {
+      method: 'PUT',
+      body: updatedProfile
+    })
+    
+    // Update local and global state on success
+    const updatedUser = res?.user || res
+    if (updatedUser) {
+      authUser.value = {
+        ...authUser.value,
+        ...updatedUser
+      }
+      ElNotification.success({
+        title: 'Profile Updated',
+        message: 'Your profile changes have been saved successfully.'
+      })
+    }
+    editProfileVisible.value = false
+  } catch (error) {
+    console.error('Failed to save profile changes:', error)
+    ElNotification.error({
+      title: 'Update Failed',
+      message: error.data?.message || 'Could not save profile changes.'
+    })
+  }
+}
 
 const securityItems = [
   { title: 'Password', description: 'Last updated 12 days ago', action: 'Change password' },
@@ -68,11 +130,6 @@ const activities = [
     time: '3 days ago'
   }
 ]
-
-const saveProfile = (updatedProfile) => {
-  Object.assign(profile, updatedProfile)
-  editProfileVisible.value = false
-}
 
 const openAccountSettings = (tab = 'preferences') => {
   accountSettingsTab.value = tab
@@ -330,13 +387,13 @@ const openAccountSettings = (tab = 'preferences') => {
       </div>
     </div>
 
-    <ProfileEditProfileDialog
+    <EditProfileDialog
       v-model="editProfileVisible"
       :profile="profile"
       @save="saveProfile"
     />
 
-    <ProfileAccountSettingsDialog
+    <AccountSettingsDialog
       v-model="accountSettingsVisible"
       :initial-tab="accountSettingsTab"
     />

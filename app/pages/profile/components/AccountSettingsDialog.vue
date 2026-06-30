@@ -7,8 +7,8 @@ import {
   Notification,
   Setting
 } from '@element-plus/icons-vue'
-import LanguageSelector from '../LanguageSelector.vue'
-import ThemeSwitcher from '../ThemeSwitcher.vue'
+import LanguageSelector from '~/components/LanguageSelector.vue'
+import ThemeSwitcher from '~/components/ThemeSwitcher.vue'
 
 const props = defineProps({
   modelValue: {

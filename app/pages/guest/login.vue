@@ -5,6 +5,9 @@ definePageMeta({ layout: 'guest' })
 const { fetch } = useApi()
 const router = useRouter()
 const { t } = useI18n()
+const authUser = useState('auth_user')
+
+
 
 const form = ref({
     email: '',
