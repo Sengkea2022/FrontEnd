@@ -1,13 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 definePageMeta({ layout: 'guest' })
 
 const { fetch } = useApi()
 const router = useRouter()
+const route = useRoute()
 const { t } = useI18n()
 const authUser = useState('auth_user')
-
-
 
 const form = ref({
     email: '',
@@ -21,6 +20,7 @@ const rules = {
 
 const formRef = ref(null)
 const loading = ref(false)
+
 
 const onSubmit = () => {
     if (!formRef.value) return
@@ -61,9 +61,60 @@ const onSubmit = () => {
     })
 }
 
-const onGoogleLogin = () => {
-    window.location.href = '/api/auth/google'
+const onGoogleLogin = async () => {
+    loading.value = true
+    try {
+        const data = await fetch('/api/auth/google/redirect')
+        if (data && data.url) {
+            window.location.href = data.url
+        } else {
+            ElNotification.error({
+                title: t('loginFailed'),
+                message: t('loginFailed')
+            })
+        }
+    } catch (e) {
+        console.error('Google redirect error:', e)
+        ElNotification.error({
+            title: t('loginFailed'),
+            message: e.data?.message || t('loginFailed')
+        })
+    } finally {
+        loading.value = false
+    }
 }
+
+onMounted(async () => {
+    const token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token
+    const userStr = Array.isArray(route.query.user) ? route.query.user[0] : route.query.user
+    const error = Array.isArray(route.query.error) ? route.query.error[0] : route.query.error
+
+    if (error) {
+        ElNotification.error({
+            title: t('loginFailed'),
+            message: decodeURIComponent(error)
+        })
+        router.replace({ query: {} })
+    } else if (token && userStr) {
+        try {
+            const user = JSON.parse(decodeURIComponent(userStr))
+            useCookie('auth_token').value = token
+            useState('auth_user').value = user
+            
+            ElNotification.success({
+                title: t('loginSuccessful'),
+                message: t('welcomeBack')
+            })
+            await router.push('/dashboard')
+        } catch (e) {
+            console.error('Error parsing user data:', e)
+            ElNotification.error({
+                title: t('loginFailed'),
+                message: t('loginFailed')
+            })
+        }
+    }
+})
 </script>
 
 <template>
