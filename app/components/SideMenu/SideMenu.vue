@@ -3,7 +3,7 @@ import { useRoute, useAppConfig } from '#app'
 import { useI18n } from 'vue-i18n'
 import { useColorMode } from '#imports'
 import {
-    House,
+    // House,
     Odometer,
     Shop,
     Tickets,
@@ -27,7 +27,7 @@ const isCollapsed = useCookie('side-menu-collapsed', {
 
 // ── Static data ──────────────────────────────────────────────
 const navItems = [
-    { labelKey: 'home', to: '/', icon: House },
+    // { labelKey: 'home', to: '/', icon: House },
     { labelKey: 'dashboard', to: '/dashboard', icon: Odometer },
     { labelKey: 'store', to: '/store', icon: Shop },
     { labelKey: 'orders', to: '/orders', icon: Tickets },

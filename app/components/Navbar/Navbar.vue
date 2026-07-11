@@ -4,7 +4,7 @@ const route = useRoute()
 const { fetch } = useApi()
 const appConfig = useAppConfig()
 const authToken = useCookie('auth_token')
-const authUser = useState('auth_user')
+const authUser = useCookie('auth_user')
 const { t } = useI18n()
 
 // Map routes → i18n title keys
@@ -35,7 +35,7 @@ const logout = async () => {
     const res = await fetch('/api/auth/logout', { method: 'POST' })
     if (res) {
       useCookie('auth_token').value = null
-      useState('auth_user').value = null
+      authUser.value = null
       ElNotification.success({ title: t('logoutSuccessful'), message: t('logoutSuccessful') })
       await router.push('/guest/login')
     }

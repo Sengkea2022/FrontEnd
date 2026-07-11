@@ -19,7 +19,7 @@ const appConfig = useAppConfig()
 const { fetch } = useApi()
 
 // Get global auth user state (initially loaded by the check-auth global middleware)
-const authUser = useState('auth_user')
+const authUser = useCookie('auth_user')
 
 // Initialize reactive local profile state
 const profile = reactive({

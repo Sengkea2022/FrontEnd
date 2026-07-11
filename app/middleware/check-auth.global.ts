@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
   const authToken = useCookie('auth_token')
-  const authUser = useState('auth_user')
+  const authUser = useCookie('auth_user')
 
   const guestRoutes = ['/guest/login', '/guest/register', '/guest/forgot-password']
   const isGuestRoute = guestRoutes.includes(to.path)
@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   }
 
   if (authToken.value && isGuestRoute) {
-    return navigateTo('/')
+    return navigateTo('/dashboard')
   }
 
   if (authToken.value && !authUser.value) {

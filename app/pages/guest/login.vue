@@ -6,7 +6,7 @@ const { fetch } = useApi()
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
-const authUser = useState('auth_user')
+const authUser = useCookie('auth_user')
 
 const form = ref({
     email: '',
@@ -36,7 +36,7 @@ const onSubmit = () => {
 
                 if (token) {
                     useCookie('auth_token').value = token
-                    useState('auth_user').value = user
+                    authUser.value = user
                     ElNotification.success({
                         title: t('loginSuccessful'),
                         message: t('welcomeBack')
@@ -99,7 +99,7 @@ onMounted(async () => {
         try {
             const user = JSON.parse(decodeURIComponent(userStr))
             useCookie('auth_token').value = token
-            useState('auth_user').value = user
+            authUser.value = user
             
             ElNotification.success({
                 title: t('loginSuccessful'),
@@ -151,12 +151,12 @@ onMounted(async () => {
                 <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
                     <el-form-item :label="t('email')" prop="email">
                         <el-input v-model="form.email" placeholder="you@example.com" :disabled="loading"
-                            prefix-icon="Message" size="large" />
+                            prefix-icon="Message" size="large" clearable />
                     </el-form-item>
 
                     <el-form-item :label="t('password')" prop="password">
                         <el-input v-model="form.password" type="password" placeholder="••••••••" :disabled="loading"
-                            prefix-icon="Lock" show-password size="large" @keyup.enter="onSubmit" />
+                            prefix-icon="Lock" show-password size="large" @keyup.enter="onSubmit" clearable />
                     </el-form-item>
 
                     <!-- Forgot password -->
