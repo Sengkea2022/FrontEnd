@@ -2,7 +2,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const authToken = useCookie('auth_token')
   const authUser = useCookie('auth_user')
 
-  const guestRoutes = ['/guest/login', '/guest/register', '/guest/forgot-password']
+  const guestRoutes = ['/guest/login', '/guest/register', '/guest/forgot-password', '/guest/verify-otp']
   const isGuestRoute = guestRoutes.includes(to.path)
 
   if (!authToken.value && !isGuestRoute) {

@@ -62,19 +62,23 @@ const onSubmit = () => {
 }
 
 const onGoogleLogin = async () => {
+    console.log('onGoogleLogin clicked!')
     loading.value = true
     try {
         const data = await fetch('/api/auth/google/redirect')
+        console.log('Google redirect API response:', data)
         if (data && data.url) {
+            console.log('Redirecting window to:', data.url)
             window.location.href = data.url
         } else {
+            console.warn('No redirect URL in response data')
             ElNotification.error({
                 title: t('loginFailed'),
                 message: t('loginFailed')
             })
         }
     } catch (e) {
-        console.error('Google redirect error:', e)
+        console.error('Google redirect error caught:', e)
         ElNotification.error({
             title: t('loginFailed'),
             message: e.data?.message || t('loginFailed')
