@@ -29,14 +29,20 @@ const onSubmit = () => {
         if (valid) {
             loading.value = true
             try {
-                const { token, user } = await fetch('/api/auth/login', {
+                const res = await fetch('/api/auth/login', {
                     method: 'POST',
                     body: form.value
                 })
 
-                if (token) {
-                    useCookie('auth_token').value = token
-                    authUser.value = user
+                if (res && res.requires_otp) {
+                    ElNotification.success({
+                        title: 'Verification Code Sent',
+                        message: 'Please check your Gmail for your OTP code.'
+                    })
+                    await router.push(`/guest/verify-otp?email=${encodeURIComponent(res.email)}`)
+                } else if (res && res.token) {
+                    useCookie('auth_token').value = res.token
+                    authUser.value = res.user
                     ElNotification.success({
                         title: t('loginSuccessful'),
                         message: t('welcomeBack')

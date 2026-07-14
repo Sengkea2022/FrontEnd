@@ -44,12 +44,17 @@ const submitForm = () => {
         if (valid) {
             loading.value = true
             try {
-                await fetch('/api/auth/register', {
+                const res = await fetch('/api/auth/register', {
                     method: 'POST',
                     body: form.value
                 })
-                ElMessage.success('Account created! Please sign in.')
-                await router.push('/guest/login')
+                if (res && res.requires_otp) {
+                    ElMessage.success('Account created! Verification code sent.')
+                    await router.push(`/guest/verify-otp?email=${encodeURIComponent(form.value.email)}`)
+                } else {
+                    ElMessage.success('Account created! Please sign in.')
+                    await router.push('/guest/login')
+                }
             } catch (e) {
                 console.error('Register error:', e)
                 ElMessage.error(e.data?.message || 'Registration failed!')
