@@ -41,7 +41,7 @@ const syncProfile = (user) => {
   profile.phone = user.phone || ''
   profile.location = user.location || 'Phnom Penh, Cambodia'
   profile.department = user.department || 'Platform Operations'
-  profile.role = user.role || 'Operations Manager'
+  profile.role = user.role?.name || user.role || 'Operations Manager'
   profile.bio = user.bio || 'Oversees store operations, customer workflows, and service performance across the platform.'
   if (user.created_at) {
     const date = new Date(user.created_at)
@@ -80,7 +80,7 @@ const detailGroups = computed(() => [
 const saveProfile = async (updatedProfile) => {
   try {
     // Call backend API to save the profile changes (using PUT /api/user)
-    const res = await fetch('/api/user', {
+    const res = await fetch('/api/user/update', {
       method: 'PUT',
       body: updatedProfile
     })
@@ -143,13 +143,17 @@ const openAccountSettings = (tab = 'preferences') => {
       <el-card class="overflow-hidden !rounded-2xl border-0 shadow-sm">
         <div class="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_320px]">
           <div class="flex flex-col gap-6 lg:flex-row lg:items-center">
-            <div
-              class="flex h-24 w-24 items-center justify-center rounded-3xl text-white shadow-sm"
-              :style="{ backgroundColor: appConfig.theme.primary }"
-            >
-              <el-icon size="38">
-                <User />
-              </el-icon>
+            <div class="flex h-24 w-24 items-center justify-center rounded-3xl overflow-hidden shadow-sm">
+              <img v-if="authUser && authUser.avatar" :src="authUser.avatar" alt="Avatar" class="h-full w-full object-cover" />
+              <div
+                v-else
+                class="h-full w-full flex items-center justify-center text-white"
+                :style="{ backgroundColor: appConfig.theme.primary }"
+              >
+                <el-icon size="38">
+                  <User />
+                </el-icon>
+              </div>
             </div>
 
             <div class="flex-1">

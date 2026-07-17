@@ -6,26 +6,32 @@ export type ShopStatus = 'Active' | 'Inactive' | 'Maintenance'
 export type ShopType   = 'Retail' | 'Booking' | 'Service'
 
 export interface Shop {
-  uuid:     string
-  name:     string
-  city:     string
-  type:     ShopType
-  manager:  string
-  status:   ShopStatus
-  address?: string
-  phone?:   string
-  email?:   string
+  uuid:        string
+  name:        string
+  country?:    string
+  state?:      string
+  city?:       string
+  commune?:    string
+  village?:    string
+  type:        ShopType
+  manager_id?: number | null
+  status:      ShopStatus
+  address?:    string
+  staff_ids?:  number[]
 }
 
 export interface ShopForm {
-  name:    string
-  city:    string
-  type:    ShopType | ''
-  manager: string
-  status:  ShopStatus
-  address: string
-  phone:   string
-  email:   string
+  name:       string
+  country:    string
+  state:      string
+  city:       string
+  commune:    string
+  village:    string
+  type:       ShopType | ''
+  manager_id: number | null
+  status:     ShopStatus
+  address:    string
+  staff_ids:  number[]
 }
 
 export interface ShopParams {

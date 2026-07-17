@@ -9,14 +9,17 @@ definePageMeta({ middleware: 'auth' })
 const appConfig = useAppConfig()
 const shopStore = useShopStore()
 const router    = useRouter()
+const authUser  = useCookie<any>('auth_user')
+const isStaff   = computed(() => authUser.value?.role?.slug === 'staff')
 
 // ── Load shops when page opens ────────────────────────────────────────────────
 onMounted(() => shopStore.fetchShops())
 
 // ── Empty form template ───────────────────────────────────────────────────────
 const emptyForm = (): ShopForm => ({
-  name: '', city: '', type: '' as ShopForm['type'], manager: '',
-  status: 'Active', address: '', phone: '', email: '',
+  name: '', country: '', state: '', city: '', commune: '', village: '',
+  type: '' as ShopForm['type'], manager_id: null,
+  status: 'Active', address: '', staff_ids: [],
 })
 
 // ── Dialog state ──────────────────────────────────────────────────────────────
@@ -36,14 +39,13 @@ const openCreateDialog = () => {
 const openEditDialog = (row: Shop) => {
   editingUuid.value = row.uuid
   formModel.value   = {
-    name:    row.name,
-    city:    row.city,
-    type:    row.type,
-    manager: row.manager,
-    status:  row.status,
-    address: row.address ?? '',
-    phone:   row.phone   ?? '',
-    email:   row.email   ?? '',
+    name:       row.name,
+    city:       row.city,
+    type:       row.type,
+    manager_id: row.manager_id ?? null,
+    status:     row.status,
+    address:    row.address ?? '',
+    staff_ids:  row.staff_ids ?? [],
   }
   dialogVisible.value = true
 }
@@ -81,7 +83,7 @@ const submitShop = async () => {
           </div>
 
           <div class="flex flex-wrap gap-3">
-            <el-button type="primary" size="large" round @click="openCreateDialog">
+            <el-button v-if="!isStaff" type="primary" size="large" round @click="openCreateDialog">
               Add Store
             </el-button>
             <NuxtLink to="/dashboard">

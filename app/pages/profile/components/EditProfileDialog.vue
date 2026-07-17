@@ -23,7 +23,6 @@ const emit = defineEmits(['update:modelValue', 'save'])
 
 const form = reactive({
   name: '',
-  role: '',
   email: '',
   phone: '',
   location: '',
@@ -34,7 +33,6 @@ const form = reactive({
 const syncForm = () => {
   Object.assign(form, {
     name: props.profile.name ?? '',
-    role: props.profile.role ?? '',
     email: props.profile.email ?? '',
     phone: props.profile.phone ?? '',
     location: props.profile.location ?? '',
@@ -119,12 +117,9 @@ const submit = () => {
           </el-input>
         </el-form-item>
 
-        <el-form-item label="Role">
-          <el-input v-model="form.role" placeholder="Enter job title" />
-        </el-form-item>
 
         <el-form-item label="Email Address">
-          <el-input v-model="form.email" placeholder="Enter email address">
+          <el-input v-model="form.email" disabled placeholder="Enter email address">
             <template #prefix>
               <el-icon><Message /></el-icon>
             </template>

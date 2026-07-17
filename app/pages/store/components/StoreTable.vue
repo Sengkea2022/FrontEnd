@@ -30,6 +30,8 @@ const statusTag = (status: string) =>
 
 const typeTag = (type: string) =>
   type === 'Booking' ? 'primary' : type === 'Service' ? 'warning' : 'success'
+const authUser = useCookie<any>('auth_user')
+const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
 </script>
 
 <template>
@@ -60,16 +62,17 @@ const typeTag = (type: string) =>
         <el-tag :type="statusTag(row.status)" round>{{ row.status }}</el-tag>
       </template>
 
+
       <!-- Actions column (AppTable renders this as a fixed-right column) -->
       <template #actions="{ row }">
         <div class="flex flex-wrap gap-2">
           <el-button size="small" type="primary" round @click="emit('view-products', row)">
             Products
           </el-button>
-          <el-button size="small" type="warning" plain round @click="emit('edit', row)">
+          <el-button v-if="!isStaff" size="small" type="warning" plain round @click="emit('edit', row)">
             Edit
           </el-button>
-          <el-button size="small" type="danger" plain round @click="emit('delete', row.uuid)">
+          <el-button v-if="!isStaff" size="small" type="danger" plain round @click="emit('delete', row.uuid)">
             Delete
           </el-button>
         </div>

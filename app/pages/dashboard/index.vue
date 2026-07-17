@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 const appConfig = useAppConfig()
+const authUser = useCookie<any>('auth_user')
+const isStaffOrManager = computed(() => ['staff', 'manager'].includes(authUser.value?.role?.slug))
+const isAdminOrSuperAdmin = computed(() => ['admin', 'superadmin'].includes(authUser.value?.role?.slug))
 
 const stats = [
   { label: 'Active Users', value: '1,284', change: '+8.2%' },
@@ -187,9 +192,18 @@ const stores = [
             </div>
 
             <div class="grid gap-3">
-              <el-button type="primary" size="large">
-                New User
-              </el-button>
+              <NuxtLink v-if="isAdminOrSuperAdmin" to="/dashboard/store-requests" class="w-full">
+                <el-button type="primary" size="large" class="w-full">
+                  Store Join Requests
+                </el-button>
+              </NuxtLink>
+
+              <NuxtLink v-if="isStaffOrManager" to="/dashboard/join-store" class="w-full">
+                <el-button type="primary" size="large" class="w-full">
+                  Request to Join Store
+                </el-button>
+              </NuxtLink>
+
               <el-button size="large" plain class="!ml-0">
                 View Logs
               </el-button>

@@ -30,7 +30,7 @@ const customers = ref([
 <template>
   <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
     <div class="mx-auto flex max-w-7xl flex-col gap-6">
-      <el-card class="!rounded-2xl border-0 shadow-sm">
+      <el-card class="rounded-2xl! border-0 shadow-sm">
         <div class="max-w-3xl">
           <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
             Customers
@@ -44,7 +44,7 @@ const customers = ref([
         </div>
       </el-card>
 
-      <el-card class="!rounded-2xl border-0 shadow-sm">
+      <el-card class="rounded-2xl! border-0 shadow-sm">
         <div class="mb-5">
           <h2 class="text-xl font-semibold ">
             Customer Directory
