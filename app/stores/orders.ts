@@ -6,7 +6,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'completed' |
 
 export interface Order {
   id: number
-  order_no: string
+  code: string
   store: string
   customer: string
   currency: string

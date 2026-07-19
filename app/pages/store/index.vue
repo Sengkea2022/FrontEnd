@@ -17,7 +17,7 @@ onMounted(() => shopStore.fetchShops())
 
 // ── Empty form template ───────────────────────────────────────────────────────
 const emptyForm = (): ShopForm => ({
-  name: '', country: '', state: '', city: '', commune: '', village: '',
+  name: '', user_code: '', country: '', state: '', city: '', commune: '', village: '',
   type: '' as ShopForm['type'], manager_id: null,
   status: 'Active', address: '', staff_ids: [],
 })
@@ -129,8 +129,8 @@ const submitShop = async () => {
       <StoreTable
         :shops="shopStore.shops"
         :loading="shopStore.loading"
-        @row-click="(row) => router.push(`/store/${row.uuid}`)"
-        @view-products="(row) => router.push(`/store/${row.uuid}`)"
+        @row-click="(row) => router.push(`/store/${row.uuid}/products`)"
+        @view-products="(row) => router.push(`/store/${row.uuid}/products`)"
         @edit="openEditDialog"
         @delete="shopStore.deleteShop"
       />

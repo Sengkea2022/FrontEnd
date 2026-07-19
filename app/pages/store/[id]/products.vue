@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useShopStore } from '~/stores/shop'
+import { useProductStore } from '~/stores/product'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -7,6 +8,10 @@ const appConfig = useAppConfig()
 const route     = useRoute()
 const router    = useRouter()
 const shopStore = useShopStore()
+const productStore = useProductStore()
+const authUser  = useCookie<any>('auth_user')
+
+const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
 
 // ── UUID from the URL (e.g. /store/550e8400-...) ──────────────────────────────
 const shopUuid = route.params.id
@@ -18,66 +23,76 @@ onMounted(async () => {
   if (shopStore.shops.length === 0) {
     await shopStore.fetchShops()
   }
+  await productStore.fetchCategories()
+  await productStore.fetchProducts(currentShop.value?.code)
 })
 
 const currentShop = computed(
   () => shopStore.getShopByUuid(shopUuid) ?? { uuid: shopUuid, name: 'Store', city: '—', type: '—' }
 )
 
-// ── Product table data (local until products API is wired) ────────────────────
-const allProducts = ref([
-  { id: 1, name: 'Premium Room Booking',     sku: 'PRD-001', category: 'Booking', price: '45.00', stock: 'Available', status: 'Published' },
-  { id: 2, name: 'Airport Transfer Service', sku: 'PRD-002', category: 'Service', price: '25.00', stock: 'Available', status: 'Published' },
-  { id: 3, name: 'Retail Gift Package',      sku: 'PRD-003', category: 'Product', price: '18.50', stock: '12 Units',  status: 'Draft'     },
-])
+// ── Product table data (from API) ──────────────────────────────────────────
+const allProducts = computed(() => productStore.products)
 
 // ── CRUD dialog ───────────────────────────────────────────────────────────────
 const emptyForm = () => ({
-  name: '', sku: '', category: '', price: '', stock: '', status: 'Published', description: '',
+  name: '', sku: '', category: '', price: '', stock: '', status: 'Published', description: '', store_code: currentShop.value?.code
 })
 
 const formModel     = ref(emptyForm())
 const dialogVisible = ref(false)
-const editingId     = ref(null)
+const editingUuid   = ref<string | null>(null)
 const submitting    = ref(false)
+const loadingCategory = ref(false)
 
-const categoryOptions = ['Product', 'Service', 'Booking']
 const statusOptions   = ['Published', 'Draft', 'Hidden']
 
+const searchCategory = async (query: string) => {
+  loadingCategory.value = true
+  await productStore.fetchCategories(query)
+  loadingCategory.value = false
+}
+
 const openCreateDialog = () => {
-  editingId.value     = null
+  editingUuid.value   = null
   formModel.value     = emptyForm()
   dialogVisible.value = true
 }
 
 const openEditDialog = (row) => {
-  editingId.value = row.id
+  editingUuid.value = row.uuid
   formModel.value = {
     name:        row.name,
     sku:         row.sku,
-    category:    row.category,
+    category:    row.category_code,
     price:       row.price,
     stock:       row.stock,
     status:      row.status,
     description: row.description ?? '',
+    store_code:  currentShop.value?.code
   }
   dialogVisible.value = true
 }
 
-const submitProduct = () => {
-  if (editingId.value) {
-    const idx = allProducts.value.findIndex((p) => p.id === editingId.value)
-    if (idx !== -1) allProducts.value[idx] = { ...allProducts.value[idx], ...formModel.value }
+const submitProduct = async () => {
+  submitting.value = true
+  let success = false
+  if (editingUuid.value) {
+    success = await productStore.updateProduct(editingUuid.value, formModel.value)
   } else {
-    allProducts.value.unshift({ id: Date.now(), ...formModel.value })
+    success = await productStore.createProduct(formModel.value)
   }
-  dialogVisible.value = false
-  editingId.value     = null
-  formModel.value     = emptyForm()
+  
+  if (success) {
+    dialogVisible.value = false
+    editingUuid.value   = null
+    formModel.value     = emptyForm()
+  }
+  submitting.value = false
 }
 
-const deleteProduct = (id) => {
-  allProducts.value = allProducts.value.filter((p) => p.id !== id)
+const deleteProduct = async (uuid) => {
+  await productStore.deleteProduct(uuid, currentShop.value?.code)
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -112,6 +127,9 @@ const statusTag = (s) =>
             <el-button type="primary" size="large" round @click="openCreateDialog">
               Add Product
             </el-button>
+            <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'" :to="`/store/${shopUuid}/roles`">
+              <el-button size="large" plain round>Roles & Permissions</el-button>
+            </NuxtLink>
             <el-button size="large" plain round @click="router.push('/store')">
               ← Back to Stores
             </el-button>
@@ -142,7 +160,7 @@ const statusTag = (s) =>
       </div>
 
       <!-- ── Product table ───────────────────────────────────────────────────── -->
-      <el-card class="!rounded-2xl border-0 shadow-sm">
+      <el-card class="!rounded-2xl border-0 shadow-sm" v-loading="productStore.loading">
         <div class="mb-5">
           <h2 class="text-xl font-semibold">Product Directory</h2>
           <p class="mt-1 text-sm text-slate-500">
@@ -167,7 +185,7 @@ const statusTag = (s) =>
             <template #default="{ row }">
               <div class="flex gap-2">
                 <el-button size="small" type="primary" plain round @click="openEditDialog(row)">Edit</el-button>
-                <el-button size="small" type="danger"  plain round @click="deleteProduct(row.id)">Delete</el-button>
+                <el-button size="small" type="danger"  plain round :disabled="isStaff" @click="deleteProduct(row.uuid)">Delete</el-button>
               </div>
             </template>
           </el-table-column>
@@ -178,35 +196,60 @@ const statusTag = (s) =>
     <!-- ── Create / Edit Product Dialog ──────────────────────────────────────── -->
     <el-dialog
       v-model="dialogVisible"
-      :title="editingId ? 'Edit Product' : 'Add Product'"
-      width="680px"
+      :title="editingUuid ? 'Edit Product' : 'Add Product'"
+      width="600px"
       class="!rounded-2xl"
     >
-      <div class="grid gap-4 md:grid-cols-2">
+      <el-form label-position="top" class="grid gap-4 md:grid-cols-2" @submit.prevent="submitProduct">
         <div class="md:col-span-2">
           <p class="mb-1 text-sm font-medium text-slate-600">Product Name</p>
           <el-input v-model="formModel.name" placeholder="Enter product or service name" />
         </div>
-        <div>
-          <p class="mb-1 text-sm font-medium text-slate-600">SKU</p>
-          <el-input v-model="formModel.sku" placeholder="e.g. PRD-001" />
-        </div>
+        
+        <el-form-item label="Product Code (SKU)">
+          <el-input v-model="formModel.sku" placeholder="Auto-generated (e.g. PR-0001)" size="large" readonly />
+        </el-form-item>
+
+        <el-form-item label="Category">
+          <el-select
+            v-model="formModel.category"
+            placeholder="Search category"
+            size="large"
+            class="w-full"
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="searchCategory"
+            :loading="loadingCategory"
+          >
+            <!-- Show the current category name if it exists but isn't in options -->
+            <el-option
+              v-if="formModel.category && !productStore.categories.some(c => c.code === formModel.category)"
+              :key="formModel.category"
+              :label="productStore.products.find(p => p.category_code === formModel.category)?.category || formModel.category"
+              :value="formModel.category"
+            />
+            <el-option
+              v-for="cat in productStore.categories"
+              :key="cat.code"
+              :label="cat.name"
+              :value="cat.code"
+            />
+          </el-select>
+        </el-form-item>
+
         <div>
           <p class="mb-1 text-sm font-medium text-slate-600">Price</p>
           <el-input v-model="formModel.price" type="number" placeholder="0.00" />
         </div>
-        <div>
-          <p class="mb-1 text-sm font-medium text-slate-600">Category</p>
-          <el-select v-model="formModel.category" placeholder="Select category" class="w-full">
-            <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c" />
-          </el-select>
-        </div>
+
         <div>
           <p class="mb-1 text-sm font-medium text-slate-600">Status</p>
           <el-select v-model="formModel.status" placeholder="Select status" class="w-full">
             <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
           </el-select>
         </div>
+        
         <div class="md:col-span-2">
           <p class="mb-1 text-sm font-medium text-slate-600">Stock / Availability</p>
           <el-input v-model="formModel.stock" placeholder="Available / 12 Units / etc." />
@@ -215,13 +258,13 @@ const statusTag = (s) =>
           <p class="mb-1 text-sm font-medium text-slate-600">Description</p>
           <el-input v-model="formModel.description" type="textarea" :rows="3" placeholder="Enter description" />
         </div>
-      </div>
+      </el-form>
 
       <template #footer>
         <div class="flex justify-end gap-3">
-          <el-button round @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" round :loading="submitting" @click="submitProduct">
-            {{ editingId ? 'Update Product' : 'Save Product' }}
+          <el-button size="large" @click="dialogVisible = false">Cancel</el-button>
+          <el-button type="primary" size="large" :loading="submitting" @click="submitProduct">
+            {{ editingUuid ? 'Update' : 'Create' }}
           </el-button>
         </div>
       </template>

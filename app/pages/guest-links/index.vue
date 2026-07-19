@@ -4,7 +4,7 @@ const appConfig = useAppConfig()
 const guestLinks = ref([
   {
     id: 1,
-    link_no: 'GL-001',
+    code: 'GL-001',
     label: 'Room Booking Link',
     store: 'Riverside Booking Hub',
     token: 'guest-booking-001',
@@ -13,7 +13,7 @@ const guestLinks = ref([
   },
   {
     id: 2,
-    link_no: 'GL-002',
+    code: 'GL-002',
     label: 'Airport Service Checkout',
     store: 'Airport Service Point',
     token: 'airport-service-002',
@@ -22,7 +22,7 @@ const guestLinks = ref([
   },
   {
     id: 3,
-    link_no: 'GL-003',
+    code: 'GL-003',
     label: 'Promo Order Page',
     store: 'Central Market Store',
     token: 'promo-order-003',
@@ -78,7 +78,7 @@ const guestLinks = ref([
           </p>
         </div>
         <el-table :data="guestLinks" stripe class="w-full">
-          <el-table-column prop="link_no" label="Link No" min-width="130" />
+          <el-table-column prop="code" label="Code" min-width="130" />
           <el-table-column prop="label" label="Label" min-width="220" />
           <el-table-column prop="store" label="Store" min-width="200" />
           <el-table-column prop="token" label="Token" min-width="220" />

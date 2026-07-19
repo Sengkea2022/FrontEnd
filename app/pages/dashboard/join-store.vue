@@ -30,7 +30,7 @@ const submitRequest = async () => {
     await fetch('/api/store-requests', {
       method: 'POST',
       body: {
-        store_uuid: selectedStoreId.value
+        store_code: selectedStoreId.value
       }
     })
 
@@ -105,12 +105,12 @@ const submitRequest = async () => {
              Let's check if the backend Store table has `id`.
              Yes, all Eloquent tables have `id`.
              But the API returns `uuid`.
-             Wait! Can we pass `uuid` or can we change the backend to validate `store_uuid` instead of `store_id`?
-             Yes! Validating `store_uuid` is MUCH cleaner and safer because it doesn't expose auto-increment database IDs!
-             Let's modify the backend `StoreJoinRequestController` to expect `store_uuid` instead of `store_id`!
+             Wait! Can we pass `uuid` or can we change the backend to validate `store_code` instead of `store_id`?
+             Yes! Validating `store_code` is MUCH cleaner and safer because it doesn't expose auto-increment database IDs!
+             Let's modify the backend `StoreJoinRequestController` to expect `store_code` instead of `store_id`!
              Let's check StoreJoinRequestController.php validation.
              Yes, we can do:
-             $store = Store::where('uuid', $validated['store_uuid'])->firstOrFail();
+             $store = Store::where('code', $validated['store_code'])->firstOrFail();
              And save:
              'store_id' => $store->id
              This is extremely elegant and consistent!

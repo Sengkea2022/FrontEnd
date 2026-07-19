@@ -135,6 +135,88 @@ const openAccountSettings = (tab = 'preferences') => {
   accountSettingsTab.value = tab
   accountSettingsVisible.value = true
 }
+
+const invitations = ref([])
+
+const fetchInvitations = async () => {
+  try {
+    const res = await fetch('/api/stores/store-requests')
+    // Filter type == invite and status == pending
+    invitations.value = (res.data || []).filter(item => item.type === 'invite' && item.status === 'pending')
+  } catch (error) {
+    console.error('Failed to fetch invitations:', error)
+  }
+}
+
+const acceptInvite = async (id) => {
+  try {
+    await fetch(`/api/stores/store-requests/${id}`, {
+      method: 'PUT',
+      body: { status: 'approved' }
+    })
+    ElNotification.success({
+      title: 'Invite Accepted',
+      message: 'You have successfully joined the store. Please log in again or refresh to update your context.'
+    })
+    fetchInvitations()
+    // Refresh auth user info
+    const userRes = await fetch('/api/user')
+    if (userRes?.user) {
+      authUser.value = userRes.user
+    }
+  } catch (error) {
+    ElNotification.error({
+      title: 'Action Failed',
+      message: error.data?.message || 'Could not accept the invite.'
+    })
+  }
+}
+
+const rejectInvite = async (id) => {
+  try {
+    await fetch(`/api/stores/store-requests/${id}`, {
+      method: 'PUT',
+      body: { status: 'rejected' }
+    })
+    ElNotification.success({
+      title: 'Invite Rejected',
+      message: 'You rejected the invitation.'
+    })
+    fetchInvitations()
+  } catch (error) {
+    ElNotification.error({
+      title: 'Action Failed',
+      message: error.data?.message || 'Could not reject the invite.'
+    })
+  }
+}
+
+const leaveStore = async () => {
+  if (!confirm('Are you sure you want to leave this store? You will lose all access and permissions.')) return
+  try {
+    await fetch(`/api/user/${authUser.value.uuid}/remove-store`, {
+      method: 'POST'
+    })
+    ElNotification.success({
+      title: 'Left Store',
+      message: 'You have left the store.'
+    })
+    // Refresh auth user info
+    const userRes = await fetch('/api/user')
+    if (userRes?.user) {
+      authUser.value = userRes.user
+    }
+  } catch (error) {
+    ElNotification.error({
+      title: 'Action Failed',
+      message: error.data?.message || 'Could not leave the store.'
+    })
+  }
+}
+
+onMounted(() => {
+  fetchInvitations()
+})
 </script>
 
 <template>
@@ -298,6 +380,53 @@ const openAccountSettings = (tab = 'preferences') => {
         </div>
 
         <div class="space-y-4">
+          <!-- Store Membership -->
+          <el-card v-if="authUser?.store_code" class="!rounded-2xl border-0 shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-semibold">
+                Store Membership
+              </h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                You are currently clocked into a store.
+              </p>
+            </div>
+            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 flex flex-col gap-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold">Current Store</div>
+                  <div class="text-xs text-slate-500 mt-1">Code: {{ authUser.store_code }}</div>
+                </div>
+                <el-button type="danger" plain round size="small" @click="leaveStore">
+                  Leave Store
+                </el-button>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- Store Invitations -->
+          <el-card v-if="invitations.length > 0" class="!rounded-2xl border-0 shadow-sm">
+            <div class="mb-5">
+              <h2 class="text-xl font-semibold">
+                Store Invitations
+              </h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                You have been invited to join the following stores.
+              </p>
+            </div>
+            <div class="space-y-3">
+              <div v-for="invite in invitations" :key="invite.id" class="rounded-2xl border border-slate-200/80 p-4 dark:border-slate-700/70 flex items-center justify-between">
+                <div>
+                  <div class="font-semibold text-sm">{{ invite.store?.name }}</div>
+                  <div class="text-xs text-slate-500 mt-1">Proposed Role: {{ invite.role?.name || 'Staff' }}</div>
+                </div>
+                <div class="flex gap-2">
+                  <el-button type="success" size="small" round @click="acceptInvite(invite.id)">Accept</el-button>
+                  <el-button type="danger" plain size="small" round @click="rejectInvite(invite.id)">Reject</el-button>
+                </div>
+              </div>
+            </div>
+          </el-card>
+
           <el-card class="!rounded-2xl border-0 shadow-sm">
             <div class="mb-5">
               <h2 class="text-xl font-semibold">

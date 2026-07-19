@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 
 export interface Customer {
   id: number
-  customer_no: string
+  code: string
   name: string
   phone: string
   email: string | null

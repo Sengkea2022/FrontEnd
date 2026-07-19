@@ -2,7 +2,7 @@
 const customers = ref([
   {
     id: 1,
-    customer_no: 'CUS-001',
+    code: 'CUS-001',
     name: 'Chan Dara',
     phone: '012 000 111',
     email: 'dara@example.com',
@@ -10,7 +10,7 @@ const customers = ref([
   },
   {
     id: 2,
-    customer_no: 'CUS-002',
+    code: 'CUS-002',
     name: 'Sokly Nhem',
     phone: '093 222 888',
     email: 'sokly@example.com',
@@ -18,7 +18,7 @@ const customers = ref([
   },
   {
     id: 3,
-    customer_no: 'CUS-003',
+    code: 'CUS-003',
     name: 'Vireak Touch',
     phone: '015 909 330',
     email: null,
@@ -54,7 +54,7 @@ const customers = ref([
           </p>
         </div>
         <el-table :data="customers" stripe class="w-full">
-          <el-table-column prop="customer_no" label="Customer No" min-width="140" />
+          <el-table-column prop="code" label="Customer Code" min-width="140" />
           <el-table-column prop="name" label="Name" min-width="180" />
           <el-table-column prop="phone" label="Phone" min-width="150" />
           <el-table-column prop="email" label="Email" min-width="220" />

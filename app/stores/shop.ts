@@ -22,6 +22,7 @@ export interface Shop {
 
 export interface ShopForm {
   name:       string
+  user_code?: string
   country:    string
   state:      string
   city:       string
@@ -83,7 +84,7 @@ export const useShopStore = defineStore('shop', {
       this.loading = true
       this.error   = null
       try {
-        const data = await fetch<Shop[]>('/api/stores', {
+        const response = await fetch<any>('/api/stores', {
           query: {
             filter,
             search,
@@ -91,7 +92,7 @@ export const useShopStore = defineStore('shop', {
             pageSize: paginate?.pageSize,
           },
         })
-        this.shops = data
+        this.shops = response.data ?? response
       } catch (err: any) {
         this.error = err?.data?.message ?? 'Failed to fetch stores.'
         console.error('[ShopStore] fetchShops:', err)
@@ -108,10 +109,11 @@ export const useShopStore = defineStore('shop', {
       this.submitting = true
       this.error      = null
       try {
-        const created = await fetch<Shop>('/api/stores', {
+        const response = await fetch<any>('/api/stores', {
           method: 'POST',
           body:   form,
         })
+        const created = response.data ?? response
         this.shops.unshift(created)
         return true
       } catch (err: any) {
@@ -131,10 +133,11 @@ export const useShopStore = defineStore('shop', {
       this.submitting = true
       this.error      = null
       try {
-        const updated = await fetch<Shop>(`/api/stores/${uuid}`, {
+        const response = await fetch<any>(`/api/stores/${uuid}`, {
           method: 'PUT',
           body:   form,
         })
+        const updated = response.data ?? response
         const index = this.shops.findIndex((s) => s.uuid === uuid)
         if (index !== -1) this.shops[index] = updated
         return true

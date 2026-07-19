@@ -4,7 +4,7 @@ const appConfig = useAppConfig()
 const orders = ref([
   {
     id: 1,
-    order_no: 'ORD-001',
+    code: 'ORD-001',
     store: 'Central Market Store',
     customer: 'Chan Dara',
     currency: 'USD',
@@ -14,7 +14,7 @@ const orders = ref([
   },
   {
     id: 2,
-    order_no: 'ORD-002',
+    code: 'ORD-002',
     store: 'Riverside Booking Hub',
     customer: 'Sokly Nhem',
     currency: 'USD',
@@ -24,7 +24,7 @@ const orders = ref([
   },
   {
     id: 3,
-    order_no: 'ORD-003',
+    code: 'ORD-003',
     store: 'Airport Service Point',
     customer: 'Vireak Touch',
     currency: 'KHR',
@@ -98,7 +98,7 @@ const statusType = (status) => {
           </p>
         </div>
         <el-table :data="orders" stripe class="w-full">
-          <el-table-column prop="order_no" label="Order No" min-width="140" />
+          <el-table-column prop="code" label="Order Code" min-width="140" />
           <el-table-column prop="store" label="Store" min-width="190" />
           <el-table-column prop="customer" label="Customer" min-width="160" />
           <el-table-column prop="currency" label="Currency" min-width="100" />

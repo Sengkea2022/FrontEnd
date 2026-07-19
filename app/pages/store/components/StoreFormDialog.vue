@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick, computed } from 'vue'
 import { Country, State, City } from 'country-state-city'
 import type { ShopForm } from '~/stores/shop'
 
@@ -20,6 +20,8 @@ const { fetch } = useApi()
 
 // ── Form state — must be declared BEFORE any computed that references it ───
 const localForm = ref<ShopForm>({ ...props.form })
+const authUser = useCookie<any>('auth_user')
+const isSuperAdmin = computed(() => authUser.value?.role?.slug === 'superadmin')
 
 // ── Location cascading options ─────────────────────────────────────────────
 const allCountries = Country.getAllCountries().map(c => ({
@@ -46,9 +48,83 @@ const cityOptions = computed(() =>
     : []
 )
 
+// ── Cambodia Location Autocomplete ──────────────────────────────────────────
+let isAutoFilling = false
+
+const loadingVillage = ref(false)
+const villageOptions = ref<any[]>([])
+
+const loadingCommune = ref(false)
+const communeOptions = ref<any[]>([])
+
+const searchCommune = async (query: string) => {
+  if (query.length < 2) {
+    communeOptions.value = []
+    return
+  }
+  loadingCommune.value = true
+  try {
+    const res = await fetch<any>(`/api/kh-location/search?q=${encodeURIComponent(query)}&type=commune`)
+    communeOptions.value = res.data ?? []
+  } catch (e) {
+    console.error('Failed to search commune:', e)
+  } finally {
+    loadingCommune.value = false
+  }
+}
+
+const onCommuneSelected = async (val: string) => {
+  if (!val) return
+  const selected = communeOptions.value.find((c) => c.commune === val)
+  if (selected) {
+    isAutoFilling = true
+    localForm.value.country = 'KH'
+    localForm.value.state   = String(Number(selected.province_code))
+    localForm.value.city    = selected.district
+    localForm.value.commune = selected.commune
+    localForm.value.village = ''
+    
+    await nextTick()
+    isAutoFilling = false
+  }
+}
+
+const searchVillage = async (query: string) => {
+  if (query.length < 2) {
+    villageOptions.value = []
+    return
+  }
+  loadingVillage.value = true
+  try {
+    const res = await fetch<any>(`/api/kh-location/search?q=${encodeURIComponent(query)}&type=village`)
+    villageOptions.value = res.data ?? []
+  } catch (e) {
+    console.error('Failed to search village:', e)
+  } finally {
+    loadingVillage.value = false
+  }
+}
+
+const onVillageSelected = async (val: string) => {
+  if (!val) return
+  const selected = villageOptions.value.find((v) => v.village === val)
+  if (selected) {
+    isAutoFilling = true
+    localForm.value.country = 'KH'
+    localForm.value.state   = String(Number(selected.province_code))
+    localForm.value.city    = selected.district
+    localForm.value.commune = selected.commune
+    localForm.value.village = selected.village
+    
+    // Wait for watchers to trigger and be bypassed
+    await nextTick()
+    isAutoFilling = false
+  }
+}
+
 // Cascade resets — only clear children when parent changes to a DIFFERENT value
-// so filling village first then picking country won't wipe what was typed
 watch(() => localForm.value.country, (newVal, oldVal) => {
+  if (isAutoFilling) return
   if (newVal !== oldVal) {
     localForm.value.state   = ''
     localForm.value.city    = ''
@@ -58,6 +134,7 @@ watch(() => localForm.value.country, (newVal, oldVal) => {
 })
 
 watch(() => localForm.value.state, (newVal, oldVal) => {
+  if (isAutoFilling) return
   if (newVal !== oldVal && oldVal !== '') {
     localForm.value.city    = ''
     localForm.value.commune = ''
@@ -66,6 +143,7 @@ watch(() => localForm.value.state, (newVal, oldVal) => {
 })
 
 watch(() => localForm.value.city, (newVal, oldVal) => {
+  if (isAutoFilling) return
   if (newVal !== oldVal && oldVal !== '') {
     localForm.value.commune = ''
     localForm.value.village = ''
@@ -73,6 +151,7 @@ watch(() => localForm.value.city, (newVal, oldVal) => {
 })
 
 watch(() => localForm.value.commune, (newVal, oldVal) => {
+  if (isAutoFilling) return
   if (newVal !== oldVal && oldVal !== '') {
     localForm.value.village = ''
   }
@@ -103,18 +182,25 @@ watch(
 // ── Personnel ──────────────────────────────────────────────────────────────
 interface Personnel {
   id: number
+  code: string
   name: string
   email: string
-  store_no: string | null
+  store_code: string | null
 }
 const managersList = ref<Personnel[]>([])
 const staffList    = ref<Personnel[]>([])
+const ownersList   = ref<Personnel[]>([])
 
 const fetchPersonnel = async () => {
   try {
     const res = await fetch<{ managers: Personnel[]; staff: Personnel[] }>('/api/user/assignable-personnel')
     managersList.value = res.managers || []
     staffList.value    = res.staff    || []
+    
+    if (isSuperAdmin.value) {
+      const ownersRes = await fetch<{ owners: Personnel[] }>('/api/user/store-owners')
+      ownersList.value = ownersRes.owners || []
+    }
   } catch (e) {
     console.error('Failed to fetch personnel lists:', e)
   }
@@ -149,8 +235,27 @@ const submit = () => {
     <el-form label-position="top" class="grid gap-4 md:grid-cols-2">
 
       <!-- Store Name -->
-      <el-form-item label="Store Name" class="md:col-span-2">
+      <el-form-item label="Store Name" :class="isSuperAdmin && !editingUuid ? '' : 'md:col-span-2'">
         <el-input v-model="localForm.name" placeholder="Enter store name" size="large" />
+      </el-form-item>
+
+      <!-- Store Owner (Only for SuperAdmin when creating) -->
+      <el-form-item v-if="isSuperAdmin && !editingUuid" label="Assign Store Owner">
+        <el-select
+          v-model="localForm.user_code"
+          placeholder="Select a store owner"
+          size="large"
+          class="w-full"
+          filterable
+          clearable
+        >
+          <el-option
+            v-for="owner in ownersList"
+            :key="owner.code"
+            :label="`${owner.name} (${owner.email})`"
+            :value="owner.code"
+          />
+        </el-select>
       </el-form-item>
 
       <!-- Country -->
@@ -216,19 +321,31 @@ const submit = () => {
       <el-form-item label="Commune / Sangkat">
         <el-select
           v-model="localForm.commune"
-          placeholder="Type commune / sangkat name"
+          placeholder="Type commune / sangkat name to search"
           size="large"
           class="w-full"
           filterable
+          remote
+          reserve-keyword
+          :remote-method="searchCommune"
+          :loading="loadingCommune"
+          @change="onCommuneSelected"
           allow-create
           clearable
         >
-          <!-- allow-create lets users type any commune name freely -->
+          <!-- Show the current typed value if it doesn't match an option -->
           <el-option
-            v-if="localForm.commune"
+            v-if="localForm.commune && !communeOptions.some(c => c.commune === localForm.commune)"
             :key="localForm.commune"
             :label="localForm.commune"
             :value="localForm.commune"
+          />
+          <!-- Options from API search -->
+          <el-option
+            v-for="item in communeOptions"
+            :key="item.commune"
+            :label="`${item.commune}, ${item.district}, ${item.province}`"
+            :value="item.commune"
           />
         </el-select>
       </el-form-item>
@@ -237,18 +354,31 @@ const submit = () => {
       <el-form-item label="Village / Phum">
         <el-select
           v-model="localForm.village"
-          placeholder="Type village / phum name"
+          placeholder="Type village / phum name to search"
           size="large"
           class="w-full"
           filterable
+          remote
+          reserve-keyword
+          :remote-method="searchVillage"
+          :loading="loadingVillage"
+          @change="onVillageSelected"
           allow-create
           clearable
         >
+          <!-- Show the current typed value if it doesn't match an option (allow-create support) -->
           <el-option
-            v-if="localForm.village"
+            v-if="localForm.village && !villageOptions.some(v => v.village === localForm.village)"
             :key="localForm.village"
             :label="localForm.village"
             :value="localForm.village"
+          />
+          <!-- Options from API search -->
+          <el-option
+            v-for="item in villageOptions"
+            :key="item.village"
+            :label="`${item.village}, ${item.commune}, ${item.district}, ${item.province}`"
+            :value="item.village"
           />
         </el-select>
       </el-form-item>
