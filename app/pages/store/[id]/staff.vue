@@ -183,7 +183,7 @@
     </el-tabs>
 
     <!-- Invite Staff Dialog -->
-    <el-dialog v-model="inviteDialogVisible" title="Invite Staff Member" width="450px" class="!rounded-2xl">
+    <el-dialog v-model="inviteDialogVisible" title="Invite Staff Member" width="450px" class="rounded-2xl!">
       <el-form label-position="top">
         <el-form-item label="User Email Address">
           <el-input v-model="inviteEmail" placeholder="user@example.com" size="large" />
@@ -225,7 +225,7 @@
     </el-dialog>
 
     <!-- Edit Staff Dialog -->
-    <el-dialog v-model="editStaffDialogVisible" title="Edit Staff Member" width="450px" class="!rounded-2xl">
+    <el-dialog v-model="editStaffDialogVisible" title="Edit Staff Member" width="450px" class="rounded-2xl!">
       <div v-if="editingStaff" class="mb-4">
         <div class="font-bold text-slate-800 dark:text-slate-100">{{ editingStaff.name }}</div>
         <div class="text-xs text-slate-500">{{ editingStaff.email }}</div>
@@ -272,7 +272,7 @@
     </el-dialog>
 
     <!-- Approve Request Dialog -->
-    <el-dialog v-model="approveDialogVisible" title="Approve Join Request" width="450px" class="!rounded-2xl">
+    <el-dialog v-model="approveDialogVisible" title="Approve Join Request" width="450px" class="rounded-2xl!">
       <div class="mb-4 text-slate-600 dark:text-slate-300">
         You are approving <span class="font-bold">{{ selectedRequest?.user?.name }}</span> to join the store. Please assign them a role and department.
       </div>
@@ -318,7 +318,7 @@
 import { ref, onMounted, computed } from 'vue'
 
 definePageMeta({
-  layout: 'dashboard'
+  middleware: 'auth'
 })
 
 const route = useRoute()
