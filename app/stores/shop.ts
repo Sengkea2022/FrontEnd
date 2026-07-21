@@ -7,7 +7,10 @@ export type ShopType   = 'Retail' | 'Booking' | 'Service'
 
 export interface Shop {
   uuid:        string
+  code?:       string
+  user_code?:  string
   name:        string
+  owner?:      { name?: string; email?: string; code?: string }
   country?:    string
   state?:      string
   city?:       string

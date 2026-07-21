@@ -12,6 +12,23 @@ const productStore = useProductStore()
 const authUser  = useCookie<any>('auth_user')
 
 const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
+const canManageStaff = computed(() => {
+  if (authUser.value?.role?.slug === 'superadmin' || authUser.value?.role?.slug === 'store-owner') return true;
+  return authUser.value?.role?.permissions?.some((p: any) => p.slug === 'edit-users' || p.slug === 'view-users');
+})
+
+const hasStoreAccess = computed(() => {
+  if (!authUser.value) return false
+  if (['superadmin', 'admin', 'store-owner'].includes(authUser.value.role?.slug)) return true
+  if (currentShop.value && currentShop.value.user_code === authUser.value.code) return true
+  if (authUser.value.store_code && authUser.value.store_code !== 'N/A') {
+    if (!currentShop.value || !currentShop.value.code) return true
+    if (authUser.value.store_code === currentShop.value.code || authUser.value.store_code === shopUuid || authUser.value?.store?.uuid === shopUuid) {
+      return true
+    }
+  }
+  return false
+})
 
 // ── UUID from the URL (e.g. /store/550e8400-...) ──────────────────────────────
 const shopUuid = route.params.id
@@ -102,7 +119,17 @@ const statusTag = (s) =>
 
 <template>
   <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <div v-if="!hasStoreAccess" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
+      <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this store. You must be an assigned staff member or store owner to view this store's products.</p>
+      <div class="flex justify-center gap-3">
+        <el-button type="primary" round @click="router.push('/dashboard/join-store')">Join a Store</el-button>
+        <el-button plain round @click="router.push('/store')">Back to Stores</el-button>
+      </div>
+    </div>
+
+    <div v-else class="mx-auto flex max-w-7xl flex-col gap-6">
 
       <!-- ── Header ──────────────────────────────────────────────────────────── -->
       <el-card class="!rounded-2xl border-0 shadow-sm">
@@ -127,6 +154,9 @@ const statusTag = (s) =>
             <el-button type="primary" size="large" round @click="openCreateDialog">
               Add Product
             </el-button>
+            <NuxtLink v-if="canManageStaff" :to="`/store/${shopUuid}/staff`">
+              <el-button size="large" plain round>Staff Management</el-button>
+            </NuxtLink>
             <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'" :to="`/store/${shopUuid}/roles`">
               <el-button size="large" plain round>Roles & Permissions</el-button>
             </NuxtLink>

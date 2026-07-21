@@ -1,5 +1,12 @@
 <script setup>
 const appConfig = useAppConfig()
+const authUser = useCookie('auth_user')
+
+const isStoreOwner = computed(() => ['admin', 'superadmin', 'store-owner'].includes(authUser.value?.role?.slug))
+const hasAssignedStore = computed(() => {
+  if (isStoreOwner.value) return true
+  return !!(authUser.value?.store_code && authUser.value.store_code !== 'N/A')
+})
 
 const orders = ref([
   {
@@ -44,7 +51,21 @@ const statusType = (status) => {
 
 <template>
   <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <div v-if="!hasAssignedStore" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
+      <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You must be assigned to a store branch to view and manage customer orders.</p>
+      <div class="flex justify-center gap-3">
+        <NuxtLink to="/dashboard/join-store">
+          <el-button type="primary" round>Request to Join Store</el-button>
+        </NuxtLink>
+        <NuxtLink to="/dashboard">
+          <el-button plain round>Back to Dashboard</el-button>
+        </NuxtLink>
+      </div>
+    </div>
+
+    <div v-else class="mx-auto flex max-w-7xl flex-col gap-6">
       <el-card class="!rounded-2xl border-0 shadow-sm">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">

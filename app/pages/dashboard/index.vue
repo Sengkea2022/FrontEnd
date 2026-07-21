@@ -4,7 +4,12 @@ import { computed } from 'vue'
 const appConfig = useAppConfig()
 const authUser = useCookie<any>('auth_user')
 const isStaffOrManager = computed(() => ['staff', 'manager'].includes(authUser.value?.role?.slug))
-const isAdminOrSuperAdmin = computed(() => ['admin', 'superadmin'].includes(authUser.value?.role?.slug))
+const isAdminOrSuperAdmin = computed(() => ['admin', 'superadmin', 'store-owner'].includes(authUser.value?.role?.slug))
+
+const hasAssignedStore = computed(() => {
+  if (isAdminOrSuperAdmin.value) return true
+  return !!(authUser.value?.store_code && authUser.value.store_code !== 'N/A')
+})
 
 const stats = [
   { label: 'Active Users', value: '1,284', change: '+8.2%' },
@@ -67,7 +72,16 @@ const stores = [
 
 <template>
   <section class="min-h-screen px-4 py-6 text-slate-900 sm:px-6 lg:px-8">
-    <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <div v-if="!hasAssignedStore" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
+      <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">🏪</div>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">No Store Assigned Yet</h2>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">Your account is currently not assigned to any store branch. Submit a request to join a store so a store owner can approve your access.</p>
+      <NuxtLink to="/dashboard/join-store">
+        <el-button type="primary" size="large" round class="shadow-lg shadow-primary-500/20">Request to Join Store</el-button>
+      </NuxtLink>
+    </div>
+
+    <div v-else class="mx-auto flex max-w-7xl flex-col gap-6">
 
       <el-card class="overflow-hidden !bg-secondary !rounded-xl">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

@@ -5,6 +5,7 @@ import { useColorMode } from '#imports'
 import {
     Odometer,
     Shop,
+    Goods,
     Tickets,
     User,
     Link,
@@ -14,6 +15,7 @@ import {
     ArrowDown,
     Avatar,
     SwitchButton,
+    Bell,
 } from '@element-plus/icons-vue'
 
 // ── Composables ──────────────────────────────────────────────
@@ -31,15 +33,36 @@ const isCollapsed = useCookie('side-menu-collapsed', {
     default: () => false
 })
 
-// ── Static data ──────────────────────────────────────────────
-const navItems = [
-    // { labelKey: 'home', to: '/', icon: House },
-    { labelKey: 'dashboard', to: '/dashboard', icon: Odometer },
-    { labelKey: 'store', to: '/store', icon: Shop },
-    { labelKey: 'orders', to: '/orders', icon: Tickets },
-    { labelKey: 'customers', to: '/customers', icon: User },
-    { labelKey: 'guestLinks', to: '/guest-links', icon: Link },
-]
+// ── Computed nav items based on role & store assignment ────────
+const navItems = computed(() => {
+    const roleSlug = authUser.value?.role?.slug
+    const isSuperOrOwner = ['superadmin', 'admin', 'store-owner'].includes(roleSlug)
+    const hasStore = !!(authUser.value?.store_code && authUser.value.store_code !== 'N/A' && authUser.value.store_code !== '')
+
+    if (!isSuperOrOwner) {
+        if (!hasStore) {
+            return [
+                { labelKey: 'store', customLabel: 'Join Store', to: '/join-store', icon: Shop }
+            ]
+        }
+        const storeTarget = authUser.value?.store?.uuid || authUser.value?.store_code
+        const storePath = storeTarget ? `/store/${storeTarget}/products` : '/store'
+        return [
+            { labelKey: 'products', customLabel: 'Products', to: storePath, icon: Goods },
+            { labelKey: 'orders', customLabel: 'Orders', to: '/orders', icon: Tickets },
+            { labelKey: 'customers', customLabel: 'Customers', to: '/customers', icon: User },
+            { labelKey: 'guestLinks', customLabel: 'Guest Links', to: '/guest-links', icon: Link },
+        ]
+    }
+
+    return [
+        { labelKey: 'dashboard', to: '/dashboard', icon: Odometer },
+        { labelKey: 'store', to: '/store', icon: Shop },
+        { labelKey: 'orders', to: '/orders', icon: Tickets },
+        { labelKey: 'customers', to: '/customers', icon: User },
+        { labelKey: 'guestLinks', to: '/guest-links', icon: Link },
+    ]
+})
 
 // ── Computed ─────────────────────────────────────────────────
 const settingsBtnClass = computed(() => [
@@ -71,6 +94,24 @@ const navLinkClass = (to) => [
         ? ''
         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-white'
 ]
+
+const pendingInviteCount = ref(0)
+
+const fetchPendingInvites = async () => {
+    if (!authToken.value) return
+    try {
+        const res = await fetch('/api/stores/store-requests')
+        if (res && res.data) {
+            pendingInviteCount.value = res.data.filter((r) => r.type === 'invite' && r.status === 'pending').length
+        }
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+onMounted(() => {
+    fetchPendingInvites()
+})
 
 const logout = async () => {
     try {
@@ -159,7 +200,7 @@ const logout = async () => {
                         <!-- Label -->
                         <transition name="fade">
                             <span v-if="!isCollapsed" class="whitespace-nowrap text-sm font-medium">
-                                {{ t(item.labelKey) }}
+                                {{ item.customLabel || t(item.labelKey) }}
                             </span>
                         </transition>
                     </NuxtLink>
@@ -240,7 +281,22 @@ const logout = async () => {
                     </div>
 
                     <!-- 2. Actions -->
-                    <div class="px-2 py-1.5">
+                    <div class="px-2 py-1.5 space-y-1">
+                        <NuxtLink
+                            to="/profile"
+                            class="flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150"
+                        >
+                            <div class="flex items-center gap-2.5">
+                                <el-icon class="text-[15px] text-amber-500">
+                                    <Bell />
+                                </el-icon>
+                                <span>Notifications & Invites</span>
+                            </div>
+                            <span v-if="pendingInviteCount > 0" class="px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                                {{ pendingInviteCount }}
+                            </span>
+                        </NuxtLink>
+
                         <NuxtLink
                             to="/profile"
                             class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150"

@@ -4,16 +4,42 @@ import type { ShopForm, Shop } from '~/stores/shop'
 import StoreTable      from './components/StoreTable.vue'
 import StoreFormDialog from './components/StoreFormDialog.vue'
 
+import { Bell } from '@element-plus/icons-vue'
+
 definePageMeta({ middleware: 'auth' })
 
 const appConfig = useAppConfig()
 const shopStore = useShopStore()
 const router    = useRouter()
+const { fetch } = useApi()
 const authUser  = useCookie<any>('auth_user')
 const isStaff   = computed(() => authUser.value?.role?.slug === 'staff')
 
+const pendingRequestsCount = ref(0)
+const fetchPendingRequestsCount = async () => {
+  if (isStaff.value) return
+  try {
+    const res = await fetch<{ data: any[] }>('/api/stores/store-requests')
+    if (res?.data) {
+      pendingRequestsCount.value = res.data.length
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 // ── Load shops when page opens ────────────────────────────────────────────────
-onMounted(() => shopStore.fetchShops())
+onMounted(async () => {
+  await shopStore.fetchShops()
+  if (isStaff.value) {
+    const userStore = shopStore.shops.find(s => s.code === authUser.value?.store_code) || shopStore.shops[0]
+    const storeTarget = authUser.value?.store?.uuid || userStore?.uuid || authUser.value?.store_code
+    if (storeTarget) {
+      return navigateTo(`/store/${storeTarget}/products`)
+    }
+  }
+  fetchPendingRequestsCount()
+})
 
 // ── Empty form template ───────────────────────────────────────────────────────
 const emptyForm = (): ShopForm => ({
@@ -102,6 +128,15 @@ const submitShop = async () => {
         closable
         @close="shopStore.clearError()"
       />
+
+      <div v-if="!shopStore.loading && shopStore.shops.length === 0" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-6">
+        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🛒</div>
+        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">No Assigned Store Found</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">You are not currently assigned to any store branch. Request to join a store to view its products and management controls.</p>
+        <NuxtLink to="/dashboard/join-store">
+          <el-button type="primary" round>Request to Join a Store</el-button>
+        </NuxtLink>
+      </div>
 
       <!-- ── Stat cards ──────────────────────────────────────────────────────── -->
       <div class="grid gap-4 md:grid-cols-3">

@@ -11,13 +11,13 @@ const loading = ref(false)
 const fetchRequests = async () => {
   loading.value = true
   try {
-    const res = await fetch<{ requests: any[] }>('/api/store-requests')
-    requests.value = res.requests || []
+    const res = await fetch<any>('/api/stores/store-requests')
+    requests.value = res?.data || res?.requests || (Array.isArray(res) ? res : [])
   } catch (e: any) {
     console.error('Failed to fetch store requests:', e)
     ElNotification.error({
       title: 'Failed to Load',
-      message: e.data?.message || 'Could not load join requests.'
+      message: e?.data?.message || e?.message || 'Could not load join requests.'
     })
   } finally {
     loading.value = false
@@ -28,25 +28,66 @@ onMounted(() => {
   fetchRequests()
 })
 
-const processRequest = async (id: number, status: 'approved' | 'rejected') => {
+const approveDialogVisible = ref(false)
+const submittingApproval = ref(false)
+const selectedRequest = ref<any>(null)
+const approveDepartment = ref('Sales')
+
+const openApproveModal = (row: any) => {
+  selectedRequest.value = row
+  approveDepartment.value = row.user?.department || 'Sales'
+  approveDialogVisible.value = true
+}
+
+const confirmApproveRequest = async () => {
+  if (!selectedRequest.value) return
+  submittingApproval.value = true
   try {
-    await fetch(`/api/store-requests/${id}`, {
+    await fetch(`/api/stores/store-requests/${selectedRequest.value.id}`, {
       method: 'PUT',
-      body: { status }
+      body: {
+        status: 'approved',
+        department: approveDepartment.value || 'General'
+      }
     })
 
     ElNotification.success({
-      title: `Request ${status === 'approved' ? 'Approved' : 'Rejected'}`,
-      message: `The user join request has been ${status}.`
+      title: 'Request Approved',
+      message: `${selectedRequest.value.user?.name || 'User'} has been approved into department '${approveDepartment.value || 'General'}'.`
     })
 
-    // Re-fetch pending requests list
+    approveDialogVisible.value = false
+    selectedRequest.value = null
     fetchRequests()
   } catch (e: any) {
-    console.error(`Failed to ${status} request:`, e)
+    console.error('Failed to approve request:', e)
+    ElNotification.error({
+      title: 'Approval Failed',
+      message: e.data?.message || 'Could not approve join request.'
+    })
+  } finally {
+    submittingApproval.value = false
+  }
+}
+
+const rejectRequest = async (id: number) => {
+  try {
+    await fetch(`/api/stores/store-requests/${id}`, {
+      method: 'PUT',
+      body: { status: 'rejected' }
+    })
+
+    ElNotification.success({
+      title: 'Request Rejected',
+      message: 'The join request has been rejected.'
+    })
+
+    fetchRequests()
+  } catch (e: any) {
+    console.error('Failed to reject request:', e)
     ElNotification.error({
       title: 'Action Failed',
-      message: e.data?.message || `Could not complete request processing.`
+      message: e.data?.message || 'Could not reject request.'
     })
   }
 }
@@ -120,7 +161,7 @@ const processRequest = async (id: number, status: 'approved' | 'rejected') => {
                   size="small"
                   type="success"
                   round
-                  @click="processRequest(row.id, 'approved')"
+                  @click="openApproveModal(row)"
                 >
                   <template #icon>
                     <el-icon><Check /></el-icon>
@@ -132,7 +173,7 @@ const processRequest = async (id: number, status: 'approved' | 'rejected') => {
                   type="danger"
                   plain
                   round
-                  @click="processRequest(row.id, 'rejected')"
+                  @click="rejectRequest(row.id)"
                 >
                   <template #icon>
                     <el-icon><Close /></el-icon>
@@ -150,5 +191,49 @@ const processRequest = async (id: number, status: 'approved' | 'rejected') => {
       </el-card>
 
     </div>
+
+    <!-- Approve Applicant Modal -->
+    <el-dialog
+      v-model="approveDialogVisible"
+      title="Approve Staff Join Request"
+      width="460px"
+      class="!rounded-2xl"
+    >
+      <div v-if="selectedRequest" class="space-y-4">
+        <div class="p-3.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div class="font-bold text-slate-800 dark:text-slate-200">{{ selectedRequest.user?.name }}</div>
+          <div class="text-xs text-slate-500">{{ selectedRequest.user?.email }}</div>
+          <div class="text-xs text-orange-600 dark:text-orange-400 mt-1 font-semibold">Requested Branch: {{ selectedRequest.store?.name }} ({{ selectedRequest.store?.code }})</div>
+        </div>
+
+        <div class="space-y-2 text-left">
+          <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Assign Department / Group</label>
+          <el-select
+            v-model="approveDepartment"
+            placeholder="Select or enter department..."
+            filterable
+            allow-create
+            size="large"
+            class="w-full"
+          >
+            <el-option label="Sales" value="Sales" />
+            <el-option label="Cashier" value="Cashier" />
+            <el-option label="Inventory" value="Inventory" />
+            <el-option label="Customer Service" value="Customer Service" />
+            <el-option label="General" value="General" />
+          </el-select>
+          <p class="text-xs text-slate-400">Select the department group for this staff member upon approval.</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <el-button round @click="approveDialogVisible = false">Cancel</el-button>
+          <el-button type="success" round :loading="submittingApproval" @click="confirmApproveRequest">
+            Confirm & Approve
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </section>
 </template>

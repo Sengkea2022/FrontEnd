@@ -80,7 +80,7 @@ const metrics = [
           </div>
         </div>
 
-        <div class="space-y-5 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:backdrop-blur">
+        <div class="space-y-5 rounded-4xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/70 dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:backdrop-blur">
           <div class="flex items-center justify-between gap-4">
             <div>
               <p class="text-sm uppercase tracking-[0.2em] text-slate-400 dark:text-slate-400">
@@ -122,7 +122,7 @@ const metrics = [
       </div>
 
       <div class="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
+        <div class="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-slate-900/70">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400 dark:text-slate-400">
             Main Capabilities
           </p>
@@ -141,7 +141,7 @@ const metrics = [
           </ul>
         </div>
 
-        <div class="rounded-[2rem] border border-orange-400/20 bg-gradient-to-br from-orange-100 to-white p-6 dark:from-orange-500/10 dark:to-white/5">
+        <div class="rounded-4xl border border-orange-400/20 bg-linear-to-br from-orange-100 to-white p-6 dark:from-orange-500/10 dark:to-white/5">
           <p class="text-sm uppercase tracking-[0.22em] text-orange-700 dark:text-orange-200">
             Customer Flow
           </p>
