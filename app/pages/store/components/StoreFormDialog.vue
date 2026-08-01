@@ -23,6 +23,17 @@ const localForm = ref<ShopForm>({ ...props.form })
 const authUser = useCookie<any>('auth_user')
 const isSuperAdmin = computed(() => authUser.value?.role?.slug === 'superadmin')
 
+const themePresets = [
+  { name: 'Default OrangeRed', value: 'orangered' },
+  { name: 'Sunset Orange',     value: '#F97316' },
+  { name: 'Ocean Blue',        value: '#2563EB' },
+  { name: 'Emerald Green',     value: '#10B981' },
+  { name: 'Royal Purple',      value: '#8B5CF6' },
+  { name: 'Hot Pink',          value: '#EC4899' },
+  { name: 'Amber Gold',        value: '#F59E0B' },
+  { name: 'Teal',              value: '#06B6D4' },
+]
+
 // ── Location cascading options ─────────────────────────────────────────────
 const allCountries = Country.getAllCountries().map(c => ({
   label: c.name,
@@ -429,6 +440,27 @@ const submit = () => {
           :autosize="{ minRows: 2, maxRows: 3 }"
         />
         <p class="mt-1 text-xs text-slate-400">Auto-filled from location — you can edit to add street / building details.</p>
+      </el-form-item>
+
+      <!-- Store Brand Theme Color -->
+      <el-form-item label="Store Brand Theme Color" class="md:col-span-2">
+        <div class="flex flex-wrap items-center gap-3 w-full p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
+          <button
+            v-for="color in themePresets"
+            :key="color.value"
+            type="button"
+            class="h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-xs"
+            :style="{ backgroundColor: color.value, borderColor: (localForm.theme_color || 'orangered') === color.value ? '#ffffff' : 'transparent' }"
+            @click="localForm.theme_color = color.value"
+          >
+            <span v-if="(localForm.theme_color || 'orangered') === color.value" class="text-white text-xs font-bold">✓</span>
+          </button>
+          
+          <div class="flex items-center gap-2 ml-auto">
+            <span class="text-xs font-semibold text-slate-500">Custom:</span>
+            <el-color-picker v-model="localForm.theme_color" size="default" />
+          </div>
+        </div>
       </el-form-item>
 
       <!-- Assign Staff -->

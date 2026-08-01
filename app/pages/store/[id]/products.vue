@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { useShopStore } from '~/stores/shop'
 import { useProductStore } from '~/stores/product'
-import { Open, CopyDocument, Search, Refresh } from '@element-plus/icons-vue'
+import { Open, CopyDocument, Search, Refresh, User, Key, ArrowLeft } from '@element-plus/icons-vue'
 
 definePageMeta({ middleware: 'auth' })
 
 const appConfig = useAppConfig()
-const route     = useRoute()
-const router    = useRouter()
+const route = useRoute()
+const router = useRouter()
 const shopStore = useShopStore()
 const productStore = useProductStore()
-const authUser  = useCookie<any>('auth_user')
+const authUser = useCookie<any>('auth_user')
 
 const copyCustomerMenuUrl = () => {
   if (!process.client) return
@@ -98,13 +98,13 @@ const emptyForm = () => ({
   name: '', sku: '', category: '', price: '', stock: '', status: 'Published', description: '', store_code: currentShop.value?.code
 })
 
-const formModel     = ref(emptyForm())
+const formModel = ref(emptyForm())
 const dialogVisible = ref(false)
-const editingUuid   = ref<string | null>(null)
-const submitting    = ref(false)
+const editingUuid = ref<string | null>(null)
+const submitting = ref(false)
 const loadingCategory = ref(false)
 
-const statusOptions   = ['Published', 'Draft', 'Hidden']
+const statusOptions = ['Published', 'Draft', 'Hidden']
 
 const searchCategory = async (query: string) => {
   loadingCategory.value = true
@@ -113,22 +113,22 @@ const searchCategory = async (query: string) => {
 }
 
 const openCreateDialog = () => {
-  editingUuid.value   = null
-  formModel.value     = emptyForm()
+  editingUuid.value = null
+  formModel.value = emptyForm()
   dialogVisible.value = true
 }
 
 const openEditDialog = (row) => {
   editingUuid.value = row.uuid
   formModel.value = {
-    name:        row.name,
-    sku:         row.sku,
-    category:    row.category_code,
-    price:       row.price,
-    stock:       row.stock,
-    status:      row.status,
+    name: row.name,
+    sku: row.sku,
+    category: row.category_code,
+    price: row.price,
+    stock: row.stock,
+    status: row.status,
     description: row.description ?? '',
-    store_code:  currentShop.value?.code
+    store_code: currentShop.value?.code
   }
   dialogVisible.value = true
 }
@@ -141,11 +141,11 @@ const submitProduct = async () => {
   } else {
     success = await productStore.createProduct(formModel.value)
   }
-  
+
   if (success) {
     dialogVisible.value = false
-    editingUuid.value   = null
-    formModel.value     = emptyForm()
+    editingUuid.value = null
+    formModel.value = emptyForm()
   }
   submitting.value = false
 }
@@ -160,11 +160,15 @@ const statusTag = (s) =>
 </script>
 
 <template>
-  <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-    <div v-if="!hasStoreAccess" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
-      <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
+  <section class="px-4 py-6 sm:px-6 lg:px-8">
+    <div v-if="!hasStoreAccess"
+      class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
+      <div
+        class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+        !</div>
       <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this store. You must be an assigned staff member or store owner to view this store's products.</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this store. You must be an
+        assigned staff member or store owner to view this store's products.</p>
       <div class="flex justify-center gap-3">
         <el-button type="primary" round @click="router.push('/join-store')">Join a Store</el-button>
         <el-button plain round @click="router.push('/store')">Back to Stores</el-button>
@@ -173,46 +177,53 @@ const statusTag = (s) =>
 
     <div v-else class="mx-auto flex max-w-7xl flex-col gap-6">
 
-      <!-- ── Header ──────────────────────────────────────────────────────────── -->
-      <el-card class="!rounded-2xl border-0 shadow-sm">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div class="max-w-3xl">
-            <el-breadcrumb separator="/" class="mb-4 text-sm">
-              <el-breadcrumb-item :to="{ path: '/store' }">Stores</el-breadcrumb-item>
-              <el-breadcrumb-item>{{ currentShop.name }}</el-breadcrumb-item>
-              <el-breadcrumb-item>Products</el-breadcrumb-item>
-            </el-breadcrumb>
-
-            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
-              Store Products
-            </p>
-            <h1 class="text-4xl font-semibold tracking-tight">{{ currentShop.name }}</h1>
-            <p class="mt-4 text-base leading-7 text-slate-600">
+      <!-- ── Header Banner ────────────────────────────────────────────────── -->
+      <el-card class="!rounded-2xl border-0 shadow-sm relative overflow-hidden">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <!-- Left: Store Title & Metadata -->
+          <div class="space-y-2.5 max-w-xl">
+            <div class="flex items-center gap-2.5">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/50">
+                Store Branch
+              </span>
+              <span v-if="currentShop.code" class="text-xs font-mono font-semibold text-slate-400">
+                {{ currentShop.code }}
+              </span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {{ currentShop.name }}
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
               Products, services, and booking items assigned to this store.
             </p>
           </div>
 
-          <div class="flex flex-wrap gap-3">
-            <el-button type="primary" size="large" round @click="openCreateDialog">
-              Add Product
-            </el-button>
-            <el-button type="warning" size="large" plain round @click="copyCustomerMenuUrl">
-              <el-icon class="mr-1"><CopyDocument /></el-icon> Copy Menu Link
-            </el-button>
+          <!-- Right: Grouped Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <!-- Customer Menu Group -->
             <NuxtLink :to="`/guest/menu?store_uuid=${shopUuid}`" target="_blank">
-              <el-button type="warning" size="large" round>
-                <el-icon class="mr-1"><Open /></el-icon> View Customer Menu
+              <el-button type="primary" size="default" round class="shadow-sm font-semibold">
+                <el-icon class="mr-1.5"><Open /></el-icon> View Customer Menu
               </el-button>
             </NuxtLink>
-            <NuxtLink v-if="canManageStaff" :to="`/store/${shopUuid}/staff`">
-              <el-button size="large" plain round>Staff Management</el-button>
-            </NuxtLink>
-            <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'" :to="`/store/${shopUuid}/roles`">
-              <el-button size="large" plain round>Roles & Permissions</el-button>
-            </NuxtLink>
-            <el-button size="large" plain round @click="router.push('/store')">
-              ← Back to Stores
+
+            <el-button type="warning" plain size="default" round @click="copyCustomerMenuUrl">
+              <el-icon class="mr-1.5"><CopyDocument /></el-icon> Copy Menu Link
             </el-button>
+
+            <!-- Store Admin Group -->
+            <NuxtLink v-if="canManageStaff" :to="`/store/${shopUuid}/staff`">
+              <el-button size="default" plain round class="font-medium">
+                <el-icon class="mr-1.5"><User /></el-icon> Staff
+              </el-button>
+            </NuxtLink>
+
+            <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'"
+              :to="`/store/${shopUuid}/roles`">
+              <el-button size="default" plain round class="font-medium">
+                <el-icon class="mr-1.5"><Key /></el-icon> Roles & Permissions
+              </el-button>
+            </NuxtLink>
           </div>
         </div>
       </el-card>
@@ -221,26 +232,26 @@ const statusTag = (s) =>
       <div class="grid gap-4 md:grid-cols-3">
         <el-card class="!rounded-2xl border-0 shadow-sm">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Total Items</p>
-          <p class="mt-3 text-3xl font-semibold">{{ allProducts.length }}</p>
+          <p class="mt-3 text-3xl font-semibold">{{ productStore.totalProducts }}</p>
         </el-card>
 
         <el-card class="!rounded-2xl border-0 shadow-sm">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Published</p>
           <p class="mt-3 text-3xl font-semibold" :style="{ color: appConfig.theme.primary }">
-            {{ allProducts.filter((p) => p.status === 'Published').length }}
+            {{ productStore.totalProducts }}
           </p>
         </el-card>
 
         <el-card class="!rounded-2xl border-0 shadow-sm">
           <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Booking Items</p>
           <p class="mt-3 text-3xl font-semibold">
-            {{ allProducts.filter((p) => p.category === 'Booking').length }}
+            0
           </p>
         </el-card>
       </div>
 
       <!-- ── Product table ───────────────────────────────────────────────────── -->
-      <el-card class="!rounded-2xl border-0 shadow-sm" v-loading="productStore.loading">
+      <el-card class="rounded-2xl! border-0 shadow-sm" v-loading="productStore.loading">
         <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-xl font-semibold">Product Directory</h2>
@@ -254,13 +265,19 @@ const statusTag = (s) =>
               v-model="searchQuery"
               placeholder="Search product name..."
               clearable
-              class="w-64"
+              round
+              class="w-64 [&_.el-input\_\_wrapper]:!rounded-full"
               :prefix-icon="Search"
               @input="handleSearch"
               @clear="handleSearch"
             />
             <el-button round size="default" @click="handlePageChange(currentPage)">
-              <el-icon class="mr-1"><Refresh /></el-icon> Refresh
+              <el-icon class="mr-1">
+                <Refresh />
+              </el-icon> Refresh
+            </el-button>
+            <el-button type="primary" size="default" round @click="openCreateDialog">
+              + Add Product
             </el-button>
           </div>
         </div>
@@ -268,13 +285,13 @@ const statusTag = (s) =>
         <el-empty v-if="allProducts.length === 0" description="No products found." />
 
         <div v-else>
-          <el-table :data="allProducts" stripe class="w-full">
-            <el-table-column prop="name"     label="Product Name" min-width="220" />
-            <el-table-column prop="sku"      label="SKU"          min-width="120" />
-            <el-table-column prop="category" label="Category"     min-width="130" />
-            <el-table-column prop="price"    label="Price"        min-width="100" />
-            <el-table-column prop="stock"    label="Stock"        min-width="130" />
-            <el-table-column label="Status"                       min-width="130">
+          <el-table :data="allProducts" stripe class="w-full" max-height="200">
+            <el-table-column prop="name" label="Product Name" min-width="220" />
+            <el-table-column prop="sku" label="SKU" min-width="120" />
+            <el-table-column prop="category" label="Category" min-width="130" />
+            <el-table-column prop="price" label="Price" min-width="100" />
+            <el-table-column prop="stock" label="Stock" min-width="130" />
+            <el-table-column label="Status" min-width="130">
               <template #default="{ row }">
                 <el-tag :type="statusTag(row.status)" round>{{ row.status }}</el-tag>
               </template>
@@ -283,76 +300,52 @@ const statusTag = (s) =>
               <template #default="{ row }">
                 <div class="flex gap-2">
                   <el-button size="small" type="primary" plain round @click="openEditDialog(row)">Edit</el-button>
-                  <el-button size="small" type="danger"  plain round :disabled="isStaff" @click="deleteProduct(row.uuid)">Delete</el-button>
+                  <el-button size="small" type="danger" plain round :disabled="isStaff"
+                    @click="deleteProduct(row.uuid)">Delete</el-button>
                 </div>
               </template>
             </el-table-column>
           </el-table>
 
           <!-- ── Pagination ───────────────────────────────────────────────── -->
-          <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div
+            class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
             <div class="text-xs text-slate-500">
               Showing <span class="font-medium text-slate-700 dark:text-slate-300">{{ paginationFrom }}</span> to
               <span class="font-medium text-slate-700 dark:text-slate-300">{{ paginationTo }}</span> of
               <span class="font-medium text-slate-700 dark:text-slate-300">{{ productStore.totalProducts }}</span> items
             </div>
-            <el-pagination
-              v-model:current-page="currentPage"
-              v-model:page-size="pageSize"
-              :page-sizes="[10, 20, 50, 100]"
-              :total="productStore.totalProducts"
-              layout="sizes, prev, pager, next, jumper"
-              background
-              @size-change="handleSizeChange"
-              @current-change="handlePageChange"
-            />
+            <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize"
+              :page-sizes="[5, 10, 20, 50, 100]" :total="productStore.totalProducts"
+              layout="sizes, prev, pager, next, jumper" @size-change="handleSizeChange"
+              @current-change="handlePageChange" />
           </div>
         </div>
       </el-card>
     </div>
 
     <!-- ── Create / Edit Product Dialog ──────────────────────────────────────── -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="editingUuid ? 'Edit Product' : 'Add Product'"
-      width="600px"
-      class="!rounded-2xl"
-    >
+    <el-dialog v-model="dialogVisible" :title="editingUuid ? 'Edit Product' : 'Add Product'" width="600px"
+      class="!rounded-2xl">
       <el-form label-position="top" class="grid gap-4 md:grid-cols-2" @submit.prevent="submitProduct">
         <div class="md:col-span-2">
           <p class="mb-1 text-sm font-medium text-slate-600">Product Name</p>
           <el-input v-model="formModel.name" placeholder="Enter product or service name" />
         </div>
-        
+
         <el-form-item label="Product Code (SKU)">
           <el-input v-model="formModel.sku" placeholder="Auto-generated (e.g. PR-0001)" size="large" readonly />
         </el-form-item>
 
         <el-form-item label="Category">
-          <el-select
-            v-model="formModel.category"
-            placeholder="Search category"
-            size="large"
-            class="w-full"
-            filterable
-            remote
-            reserve-keyword
-            :remote-method="searchCategory"
-            :loading="loadingCategory"
-          >
+          <el-select v-model="formModel.category" placeholder="Search category" size="large" class="w-full" filterable
+            remote reserve-keyword :remote-method="searchCategory" :loading="loadingCategory">
             <!-- Show the current category name if it exists but isn't in options -->
-            <el-option
-              v-if="formModel.category && !productStore.categories.some(c => c.code === formModel.category)"
+            <el-option v-if="formModel.category && !productStore.categories.some(c => c.code === formModel.category)"
               :key="formModel.category"
               :label="productStore.products.find(p => p.category_code === formModel.category)?.category || formModel.category"
-              :value="formModel.category"
-            />
-            <el-option
-              v-for="cat in productStore.categories"
-              :key="cat.code"
-              :label="cat.name"
-              :value="cat.code"
-            />
+              :value="formModel.category" />
+            <el-option v-for="cat in productStore.categories" :key="cat.code" :label="cat.name" :value="cat.code" />
           </el-select>
         </el-form-item>
 
@@ -367,7 +360,7 @@ const statusTag = (s) =>
             <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
           </el-select>
         </div>
-        
+
         <div class="md:col-span-2">
           <p class="mb-1 text-sm font-medium text-slate-600">Stock / Availability</p>
           <el-input v-model="formModel.stock" placeholder="Available / 12 Units / etc." />

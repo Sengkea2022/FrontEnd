@@ -53,7 +53,7 @@ onMounted(async () => {
 const emptyForm = (): ShopForm => ({
   name: '', user_code: '', country: '', state: '', city: '', commune: '', village: '',
   type: '' as ShopForm['type'], manager_id: null,
-  status: 'Active', address: '', staff_ids: [],
+  status: 'Active', address: '', staff_ids: [], theme_color: 'orangered',
 })
 
 // ── Dialog state ──────────────────────────────────────────────────────────────
@@ -73,13 +73,14 @@ const openCreateDialog = () => {
 const openEditDialog = (row: Shop) => {
   editingUuid.value = row.uuid
   formModel.value   = {
-    name:       row.name,
-    city:       row.city,
-    type:       row.type,
-    manager_id: row.manager_id ?? null,
-    status:     row.status,
-    address:    row.address ?? '',
-    staff_ids:  row.staff_ids ?? [],
+    name:        row.name,
+    city:        row.city,
+    type:        row.type,
+    manager_id:  row.manager_id ?? null,
+    status:      row.status,
+    address:     row.address ?? '',
+    staff_ids:   row.staff_ids ?? [],
+    theme_color: row.theme_color || 'orangered',
   }
   dialogVisible.value = true
 }

@@ -184,6 +184,11 @@ const addToCart = (product: any) => {
   ElMessage.success(`Added ${product.product_name || product.name} to order`)
 }
 
+const getCartItemQty = (product: any) => {
+  const item = cart.value.find(i => i.product.id === product.id || i.product.code === product.code)
+  return item ? item.qty : 0
+}
+
 const updateQty = (productId: number, change: number) => {
   const index = cart.value.findIndex(item => item.product.id === productId)
   if (index !== -1) {
@@ -275,7 +280,29 @@ const getDeviceSummary = () => {
   return `${deviceName} [${browser}]`
 }
 
+const cooldownSeconds = ref(0)
+let cooldownTimer: any = null
+
+const startCooldownTimer = (seconds = 10) => {
+  cooldownSeconds.value = seconds
+  if (cooldownTimer) clearInterval(cooldownTimer)
+  cooldownTimer = setInterval(() => {
+    if (cooldownSeconds.value > 1) {
+      cooldownSeconds.value--
+    } else {
+      cooldownSeconds.value = 0
+      clearInterval(cooldownTimer)
+      cooldownTimer = null
+    }
+  }, 1000)
+}
+
 const submitOrder = async () => {
+  if (cooldownSeconds.value > 0) {
+    ElMessage.warning(`Please wait ${cooldownSeconds.value} seconds before placing another order.`)
+    return
+  }
+
   if (cart.value.length === 0) {
     ElMessage.warning('Please select at least one item to order.')
     return
@@ -325,11 +352,15 @@ const submitOrder = async () => {
     const created = response.data ?? response
     createdOrderCode.value = created.code || 'ORD-NEW'
     orderSuccess.value = true
+    startCooldownTimer(10)
     fetchGuestOrders()
     cart.value = []
     mobileCartDrawer.value = false
     ElMessage.success('Order placed successfully!')
   } catch (err: any) {
+    if (err?.status === 429 || err?.data?.message?.includes('wait')) {
+      startCooldownTimer(10)
+    }
     ElMessage.error(err?.data?.message || 'Failed to submit order. Please try again.')
   } finally {
     submittingOrder.value = false
@@ -490,6 +521,7 @@ onMounted(async () => {
             placeholder="Search food & drinks..."
             clearable
             round
+            class="w-full [&_.el-input\_\_wrapper]:!rounded-full"
           >
             <template #prefix>
               <el-icon><Search /></el-icon>
@@ -497,21 +529,25 @@ onMounted(async () => {
           </el-input>
         </div>
 
-        <!-- Right Header Actions (Cart Badge) -->
-        <div v-if="!loading && !error" class="flex items-center gap-2">
-          <el-badge :value="cartTotalCount" :hidden="cartTotalCount === 0" type="warning">
-            <el-button
-              type="primary"
-              round
-              size="default"
-              class="shadow-sm font-bold"
-              @click="handleCartClick"
-            >
-              <el-icon class="mr-1.5"><ShoppingBag /></el-icon>
-              <span class="hidden sm:inline">My Order</span>
-              <span v-if="cartTotalPrice > 0" class="ml-1.5 font-bold">${{ cartTotalPrice.toFixed(2) }}</span>
-            </el-button>
-          </el-badge>
+        <!-- Right Header Actions (Language, Theme Switcher & Mobile Cart Button) -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <LanguageSelector />
+          <ThemeSwitcher :is-label="false" />
+          <div v-if="!loading && !error" class="lg:hidden">
+            <el-badge :value="cartTotalCount" :hidden="cartTotalCount === 0" type="warning">
+              <el-button
+                type="primary"
+                round
+                size="default"
+                class="shadow-sm font-bold"
+                @click="handleCartClick"
+              >
+                <el-icon class="mr-1.5"><ShoppingBag /></el-icon>
+                <span class="hidden sm:inline">My Order</span>
+                <span v-if="cartTotalPrice > 0" class="ml-1.5 font-bold">${{ cartTotalPrice.toFixed(2) }}</span>
+              </el-button>
+            </el-badge>
+          </div>
         </div>
       </header>
 
@@ -519,9 +555,10 @@ onMounted(async () => {
       <div class="sm:hidden bg-white dark:bg-slate-900 px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
         <el-input
           v-model="searchQuery"
-          placeholder="Search products in this store..."
+          placeholder="Search food & drinks..."
           clearable
           round
+          class="w-full [&_.el-input\_\_wrapper]:!rounded-full"
         >
           <template #prefix>
             <el-icon><Search /></el-icon>
@@ -619,7 +656,13 @@ onMounted(async () => {
                   <div
                     v-for="item in group.products"
                     :key="item.id"
-                    class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-4 flex flex-col justify-between hover:shadow-md transition-all duration-200 group overflow-hidden"
+                    class="bg-white dark:bg-slate-900 rounded-xl border p-4 flex flex-col justify-between hover:shadow-md active:scale-[0.99] transition-all duration-200 group overflow-hidden cursor-pointer select-none relative"
+                    :class="[
+                      getCartItemQty(item) > 0
+                        ? 'border-orange-500 dark:border-orange-500 bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
+                        : 'border-slate-100 dark:border-slate-800'
+                    ]"
+                    @click="addToCart(item)"
                   >
                     <div>
                       <!-- Product Thumbnail Image -->
@@ -632,6 +675,15 @@ onMounted(async () => {
                         />
                         <div v-else class="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-600">
                           <el-icon class="text-4xl"><Goods /></el-icon>
+                        </div>
+
+                        <!-- Checkmark / Selection Badge (Top Right of Image) -->
+                        <div
+                          v-if="getCartItemQty(item) > 0"
+                          class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md"
+                        >
+                          <el-icon class="text-xs font-bold"><Check /></el-icon>
+                          <span>{{ getCartItemQty(item) }}</span>
                         </div>
                       </div>
 
@@ -655,9 +707,15 @@ onMounted(async () => {
                           ${{ getProductPrice(item) }}
                         </p>
                       </div>
-                      <el-button type="primary" round size="small" class="!px-3.5" @click="addToCart(item)">
-                        + Add Item
-                      </el-button>
+
+                      <!-- Selected Status Indicator Badge -->
+                      <div
+                        v-if="getCartItemQty(item) > 0"
+                        class="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/60 px-2.5 py-1 rounded-full"
+                      >
+                        <el-icon><Check /></el-icon>
+                        <span>{{ getCartItemQty(item) }} in Order</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -766,11 +824,17 @@ onMounted(async () => {
                   v-if="cart.length > 0"
                   type="primary"
                   size="large"
-                  class="w-full !rounded-lg !py-3 shadow-md shadow-orange-500/20"
+                  class="w-full !rounded-lg !py-3 shadow-md shadow-orange-500/20 font-bold"
+                  :disabled="cooldownSeconds > 0"
                   :loading="submittingOrder"
                   @click="submitOrder"
                 >
-                  Submit Order to {{ storeInfo.name }}
+                  <span v-if="cooldownSeconds > 0">
+                    Please wait {{ cooldownSeconds }}s before next order...
+                  </span>
+                  <span v-else>
+                    Submit Order to {{ storeInfo.name }}
+                  </span>
                 </el-button>
               </div>
             </div>
@@ -947,11 +1011,17 @@ onMounted(async () => {
             v-if="cart.length > 0"
             type="primary"
             size="large"
-            class="w-full !rounded-lg !py-3 shadow-md shadow-orange-500/20"
+            class="w-full !rounded-lg !py-3 shadow-md shadow-orange-500/20 font-bold"
+            :disabled="cooldownSeconds > 0"
             :loading="submittingOrder"
             @click="submitOrder"
           >
-            Submit Order to {{ storeInfo.name }}
+            <span v-if="cooldownSeconds > 0">
+              Please wait {{ cooldownSeconds }}s before next order...
+            </span>
+            <span v-else>
+              Submit Order to {{ storeInfo.name }}
+            </span>
           </el-button>
 
           <!-- Mobile Placed Orders History Section -->

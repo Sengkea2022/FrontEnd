@@ -21,21 +21,23 @@ export interface Shop {
   status:      ShopStatus
   address?:    string
   staff_ids?:  number[]
+  theme_color?: string
 }
 
 export interface ShopForm {
-  name:       string
-  user_code?: string
-  country:    string
-  state:      string
-  city:       string
-  commune:    string
-  village:    string
-  type:       ShopType | ''
-  manager_id: number | null
-  status:     ShopStatus
-  address:    string
-  staff_ids:  number[]
+  name:        string
+  user_code?:  string
+  country:     string
+  state:       string
+  city:        string
+  commune:     string
+  village:     string
+  type:        ShopType | ''
+  manager_id:  number | null
+  status:      ShopStatus
+  address:     string
+  staff_ids:   number[]
+  theme_color?: string
 }
 
 export interface ShopParams {
