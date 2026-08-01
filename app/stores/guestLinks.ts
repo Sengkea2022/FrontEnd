@@ -13,7 +13,9 @@ export interface GuestLink {
   id: number
   uuid: string
   code: string
-  store_code: string
+  shop_code?: string
+  store_code?: string
+  shop?: GuestLinkStoreRelation | string
   store?: GuestLinkStoreRelation | string
   token: string
   label?: string
@@ -25,7 +27,8 @@ export interface GuestLink {
 }
 
 export interface GuestLinkForm {
-  store_code: string
+  shop_code?: string
+  store_code?: string
   token: string
   label?: string
   expires_at?: string | null
@@ -72,7 +75,7 @@ export const useGuestLinkStore = defineStore('guestLinks', {
       this.error = null
 
       try {
-        const url = storeCode ? `/api/guest-links?filter[store_code]=${storeCode}` : '/api/guest-links'
+        const url = storeCode ? `/api/guest-links?filter[shop_code]=${storeCode}&filter[store_code]=${storeCode}` : '/api/guest-links'
         const response = await fetch<any>(url)
         this.guestLinks = response.data ?? (Array.isArray(response) ? response : [])
       } catch (err: any) {

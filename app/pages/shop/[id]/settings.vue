@@ -31,7 +31,7 @@ const themePresets = [
 const fetchStore = async () => {
   loading.value = true
   try {
-    const res = await fetch('/api/stores/' + storeId.value)
+    const res = await fetch('/api/shops/' + storeId.value)
     const data = res?.data || res
     store.value = data
     currentThemeColor.value = data?.theme_color || 'orangered'
@@ -46,14 +46,14 @@ const updateStoreColor = async (newColor?: string) => {
   appConfig.theme.primary = targetColor
 
   try {
-    await fetch(`/api/stores/${store.value.uuid}`, {
+    await fetch(`/api/shops/${store.value.uuid}`, {
       method: 'PUT',
       body: { theme_color: targetColor }
     })
-    ElMessage.success('Updated store brand theme color!')
+    ElMessage.success('Updated shop brand theme color!')
     await shopStore.fetchShops()
   } catch (e) {
-    console.error('Failed to update store theme color:', e)
+    console.error('Failed to update shop theme color:', e)
   }
 }
 
@@ -69,11 +69,11 @@ onMounted(() => fetchStore())
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
             <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
-              {{ store?.name || 'Store' }}
+              {{ store?.name || 'Shop' }}
             </p>
             <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">Settings</h1>
             <p class="mt-4 text-base leading-7 text-slate-600 md:text-lg">
-              Manage staff, roles, and store configuration for <strong>{{ store?.name }}</strong>.
+              Manage staff, roles, and shop configuration for <strong>{{ store?.name }}</strong>.
             </p>
           </div>
         </div>
@@ -83,7 +83,7 @@ onMounted(() => fetchStore())
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 
         <!-- Manage Staff -->
-        <NuxtLink :to="'/store/' + storeId + '/staff'">
+        <NuxtLink :to="'/shop/' + storeId + '/staff'">
           <el-card class="!rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full group">
             <div class="flex items-start gap-4">
               <div class="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
@@ -103,7 +103,7 @@ onMounted(() => fetchStore())
         </NuxtLink>
 
         <!-- Roles & Permissions -->
-        <NuxtLink v-if="isAdminOrSuperAdmin" :to="'/store/' + storeId + '/roles'">
+        <NuxtLink v-if="isAdminOrSuperAdmin" :to="'/shop/' + storeId + '/roles'">
           <el-card class="!rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full group">
             <div class="flex items-start gap-4">
               <div class="h-12 w-12 rounded-xl flex items-center justify-center bg-purple-500 text-white text-xl flex-shrink-0">
@@ -122,7 +122,7 @@ onMounted(() => fetchStore())
         </NuxtLink>
 
         <!-- Guest Links -->
-        <NuxtLink :to="'/store/' + storeId + '/guest-links'">
+        <NuxtLink :to="'/shop/' + storeId + '/guest-links'">
           <el-card class="!rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full group">
             <div class="flex items-start gap-4">
               <div class="h-12 w-12 rounded-xl flex items-center justify-center bg-teal-500 text-white text-xl flex-shrink-0">

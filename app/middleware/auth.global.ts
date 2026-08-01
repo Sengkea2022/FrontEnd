@@ -2,7 +2,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const authToken = useCookie('auth_token')
   const authUser = useCookie<any>('auth_user')
 
-  // Public store menu is accessible by everyone (logged-in or unauthenticated guests)
+  // Public shop menu is accessible by everyone (logged-in or unauthenticated guests)
   if (to.path.startsWith('/guest/menu')) {
     return
   }
@@ -20,34 +20,34 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const roleSlug = authUser.value?.role?.slug
   const isSuperAdmin = ['superadmin', 'admin'].includes(roleSlug)
 
-  // Check if user is assigned to a store (either by store_code OR owns a store)
-  const hasStore = !!(authUser.value?.store_code && authUser.value.store_code !== 'N/A' && authUser.value.store_code !== '') || !!authUser.value?.store
+  // Check if user is assigned to a shop (either by shop_code/store_code OR owns a shop)
+  const hasShop = !!(authUser.value?.shop_code || authUser.value?.store_code) && authUser.value?.shop_code !== 'N/A' || !!authUser.value?.shop || !!authUser.value?.store
 
   // 2. Authenticated user visiting guest auth routes (login, register, etc.)
   if (isGuestRoute) {
-    if (!isSuperAdmin && !hasStore) {
-      return navigateTo('/join-store')
+    if (!isSuperAdmin && !hasShop) {
+      return navigateTo('/join-shop')
     }
-    return navigateTo('/store')
+    return navigateTo('/shop')
   }
 
-  // 3. User with NO store_code and NO store: LOCK strictly to join-store and profile ONLY!
-  if (!isSuperAdmin && !hasStore) {
-    const allowedUnassigned = ['/join-store', '/profile']
+  // 3. User with NO shop_code and NO shop: LOCK strictly to join-shop and profile ONLY!
+  if (!isSuperAdmin && !hasShop) {
+    const allowedUnassigned = ['/join-shop', '/join-store', '/profile']
     const isAllowed = allowedUnassigned.some(path => to.path === path || to.path.startsWith(path + '/'))
     if (!isAllowed) {
-      return navigateTo('/join-store')
+      return navigateTo('/join-shop')
     }
     return
   }
 
-  // 4. Assigned staff / manager (WITH store): allow store operational routes & profile
+  // 4. Assigned staff / manager (WITH shop): allow shop operational routes & profile
   if (!isSuperAdmin && roleSlug === 'staff') {
-    const allowedStaffRoutes = ['/store', '/orders', '/customers', '/profile', '/guest-links']
+    const allowedStaffRoutes = ['/shop', '/store', '/orders', '/customers', '/profile', '/guest-links']
     const isAllowed = allowedStaffRoutes.some(path => to.path === path || to.path.startsWith(path + '/'))
     if (!isAllowed) {
-      const storeTarget = authUser.value?.store?.uuid || authUser.value?.store_code
-      const redirectPath = storeTarget ? `/store/${storeTarget}/products` : '/store'
+      const shopTarget = authUser.value?.shop?.uuid || authUser.value?.store?.uuid || authUser.value?.shop_code || authUser.value?.store_code
+      const redirectPath = shopTarget ? `/shop/${shopTarget}/products` : '/shop'
       return navigateTo(redirectPath)
     }
   }

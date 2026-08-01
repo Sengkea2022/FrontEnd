@@ -36,63 +36,63 @@ const isCollapsed = useCookie('side-menu-collapsed', {
     default: () => false
 })
 
-// ── Store Context Detection ───────────────────────────────────
-// True when URL is /store/[uuid]/something
-const storeContextId = computed(() => {
+// ── Shop Context Detection ───────────────────────────────────
+// True when URL is /shop/[uuid]/something
+const shopContextId = computed(() => {
     const parts = route.path.split('/')
-    // /store/<uuid>/dashboard → parts = ['', 'store', '<uuid>', 'dashboard']
-    if (parts[1] === 'store' && parts[2] && parts[2].length > 10 && parts[3]) {
+    // /shop/<uuid>/dashboard → parts = ['', 'shop', '<uuid>', 'dashboard']
+    if ((parts[1] === 'shop' || parts[1] === 'store') && parts[2] && parts[2].length > 10 && parts[3]) {
         return parts[2]
     }
     return null
 })
 
-const isInStoreContext = computed(() => !!storeContextId.value)
+const isInShopContext = computed(() => !!shopContextId.value)
 
-const currentStoreName = computed(() => {
-    if (!storeContextId.value) return ''
-    const found = shopStore.shops.find(s => s.uuid === storeContextId.value)
-    return found?.name || 'Store'
+const currentShopName = computed(() => {
+    if (!shopContextId.value) return ''
+    const found = shopStore.shops.find(s => s.uuid === shopContextId.value)
+    return found?.name || 'Shop'
 })
 
-// True when user has only 1 store → no back button shown
-const isSingleStoreUser = computed(() => shopStore.shops.length === 1)
+// True when user has only 1 shop → no back button shown
+const isSingleShopUser = computed(() => shopStore.shops.length === 1)
 
 // ── Role helpers ─────────────────────────────────────────────
 const roleSlug = computed(() => authUser.value?.role?.slug)
 const isSuperOrOwner = computed(() => ['superadmin', 'admin', 'store-owner'].includes(roleSlug.value))
-const hasStore = computed(() => !!(authUser.value?.store_code && authUser.value.store_code !== 'N/A' && authUser.value.store_code !== ''))
+const hasShop = computed(() => !!(authUser.value?.shop_code || authUser.value?.store_code) && authUser.value?.shop_code !== 'N/A')
 
 // ── Nav items ────────────────────────────────────────────────
 const navItems = computed(() => {
-    // ── Inside a store context → show store-scoped nav ──────────
-    if (isInStoreContext.value) {
-        const id = storeContextId.value
+    // ── Inside a shop context → show shop-scoped nav ──────────
+    if (isInShopContext.value) {
+        const id = shopContextId.value
         return [
-            { labelKey: 'dashboard', customLabel: 'Dashboard', to: `/store/${id}/dashboard`, icon: Odometer },
-            { labelKey: 'products',  customLabel: 'Products',  to: `/store/${id}/products`,  icon: Goods },
-            { labelKey: 'orders',    customLabel: 'Orders',    to: `/store/${id}/orders`,    icon: Tickets },
-            { labelKey: 'settings',  customLabel: 'Settings',  to: `/store/${id}/settings`,  icon: Setting },
+            { labelKey: 'dashboard', customLabel: 'Dashboard', to: `/shop/${id}/dashboard`, icon: Odometer },
+            { labelKey: 'products',  customLabel: 'Products',  to: `/shop/${id}/products`,  icon: Goods },
+            { labelKey: 'orders',    customLabel: 'Orders',    to: `/shop/${id}/orders`,    icon: Tickets },
+            { labelKey: 'settings',  customLabel: 'Settings',  to: `/shop/${id}/settings`,  icon: Setting },
         ]
     }
 
-    // ── Not in store context ─────────────────────────────────
+    // ── Not in shop context ─────────────────────────────────
     if (!isSuperOrOwner.value) {
-        // Staff without store
-        if (!hasStore.value) {
-            return [{ labelKey: 'store', customLabel: 'Join Store', to: '/join-store', icon: Shop }]
+        // Staff without shop
+        if (!hasShop.value) {
+            return [{ labelKey: 'shop', customLabel: 'Join Shop', to: '/join-shop', icon: Shop }]
         }
-        // Staff with store → auto redirect handled by store/index.vue
-        const storeTarget = authUser.value?.store?.uuid || authUser.value?.store_code
-        const storePath = storeTarget ? `/store/${storeTarget}/dashboard` : '/store'
+        // Staff with shop → auto redirect handled by shop/index.vue
+        const shopTarget = authUser.value?.shop?.uuid || authUser.value?.shop_code || authUser.value?.store_code
+        const shopPath = shopTarget ? `/shop/${shopTarget}/dashboard` : '/shop'
         return [
-            { labelKey: 'dashboard',  customLabel: 'Dashboard',  to: storePath, icon: Odometer },
+            { labelKey: 'dashboard',  customLabel: 'Dashboard',  to: shopPath, icon: Odometer },
         ]
     }
 
-    // Super/Owner not in store context → show only store list
+    // Super/Owner not in shop context → show only shop list
     return [
-        { labelKey: 'store', customLabel: 'My Stores', to: '/store', icon: Shop },
+        { labelKey: 'shop', customLabel: 'My Shops', to: '/shop', icon: Shop },
     ]
 })
 
@@ -119,14 +119,14 @@ const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value
 }
 
-const goBackToStores = () => router.push('/store')
+const goBackToShops = () => router.push('/shop')
 
 const pendingInviteCount = ref(0)
 
 const fetchPendingInvites = async () => {
     if (!authToken.value) return
     try {
-        const res = await fetch('/api/stores/store-requests')
+        const res = await fetch('/api/shops/shop-requests')
         if (res && res.data) {
             pendingInviteCount.value = res.data.filter((r) => r.type === 'invite' && r.status === 'pending').length
         }

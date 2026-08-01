@@ -65,8 +65,9 @@ const syncProfile = (user) => {
     profile.role = 'Unassigned Role'
   }
 
-  profile.storeCode = user.store_code && user.store_code !== 'N/A' ? user.store_code : 'Unassigned'
-  profile.bio = user.bio || `${profile.role} • Store Code: ${profile.storeCode}`
+  const userShopCode = user.shop_code || user.store_code
+  profile.storeCode = userShopCode && userShopCode !== 'N/A' ? userShopCode : 'Unassigned'
+  profile.bio = user.bio || `${profile.role} • Shop Code: ${profile.storeCode}`
   if (user.created_at) {
     const date = new Date(user.created_at)
     const options = { year: 'numeric', month: 'long', day: 'numeric' }
@@ -212,7 +213,7 @@ const invitations = ref([])
 
 const fetchInvitations = async () => {
   try {
-    const res = await fetch('/api/stores/store-requests')
+    const res = await fetch('/api/shops/shop-requests')
     // Filter type == invite and status == pending
     invitations.value = (res.data || []).filter(item => item.type === 'invite' && item.status === 'pending')
   } catch (error) {
@@ -222,7 +223,7 @@ const fetchInvitations = async () => {
 
 const acceptInvite = async (id) => {
   try {
-    await fetch(`/api/stores/store-requests/${id}`, {
+    await fetch(`/api/shops/shop-requests/${id}`, {
       method: 'PUT',
       body: { status: 'approved' }
     })
@@ -237,7 +238,7 @@ const acceptInvite = async (id) => {
       message: 'You have successfully joined the store!'
     })
     
-    window.location.href = '/store'
+    window.location.href = '/shop'
   } catch (error) {
     ElNotification.error({
       title: 'Action Failed',
@@ -248,7 +249,7 @@ const acceptInvite = async (id) => {
 
 const rejectInvite = async (id) => {
   try {
-    await fetch(`/api/stores/store-requests/${id}`, {
+    await fetch(`/api/shops/shop-requests/${id}`, {
       method: 'PUT',
       body: { status: 'rejected' }
     })
@@ -311,7 +312,7 @@ const submitJoinStoreRequest = async () => {
 
   submittingJoinRequest.value = true
   try {
-    await fetch('/api/stores/store-requests', {
+    await fetch('/api/shops/shop-requests', {
       method: 'POST',
       body: {
         type: 'request',
@@ -539,24 +540,24 @@ onMounted(() => {
         </div>
 
         <div class="space-y-4">
-          <!-- Store Membership -->
-          <el-card v-if="authUser?.store_code" class="!rounded-2xl border-0 shadow-sm">
+          <!-- Shop Membership -->
+          <el-card v-if="authUser?.shop_code || authUser?.store_code" class="!rounded-2xl border-0 shadow-sm">
             <div class="mb-5">
               <h2 class="text-xl font-semibold">
-                Store Membership
+                Shop Membership
               </h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                You are currently clocked into a store.
+                You are currently assigned to a shop.
               </p>
             </div>
             <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 flex flex-col gap-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <div class="text-sm font-semibold">Current Store</div>
-                  <div class="text-xs text-slate-500 mt-1">Code: {{ authUser.store_code }}</div>
+                  <div class="text-sm font-semibold">Current Shop</div>
+                  <div class="text-xs text-slate-500 mt-1">Code: {{ authUser.shop_code || authUser.store_code }}</div>
                 </div>
                 <el-button type="danger" plain round size="small" @click="leaveStore">
-                  Leave Store
+                  Leave Shop
                 </el-button>
               </div>
             </div>

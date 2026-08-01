@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useShopStore } from '~/stores/shop'
 import type { ShopForm, Shop } from '~/stores/shop'
-import StoreTable      from './components/StoreTable.vue'
-import StoreFormDialog from './components/StoreFormDialog.vue'
+import ShopTable      from './components/ShopTable.vue'
+import ShopFormDialog from './components/ShopFormDialog.vue'
 
 import { Bell, House } from '@element-plus/icons-vue'
 
@@ -19,7 +19,7 @@ const pendingRequestsCount = ref(0)
 const fetchPendingRequestsCount = async () => {
   if (isStaff.value) return
   try {
-    const res = await fetch<{ data: any[] }>('/api/stores/store-requests')
+    const res = await fetch<{ data: any[] }>('/api/shops/shop-requests')
     if (res?.data) {
       pendingRequestsCount.value = res.data.length
     }
@@ -32,18 +32,18 @@ const fetchPendingRequestsCount = async () => {
 onMounted(async () => {
   await shopStore.fetchShops()
 
-  // Staff: redirect to their assigned store's dashboard
+  // Staff: redirect to their assigned shop's dashboard
   if (isStaff.value) {
-    const userStore = shopStore.shops.find(s => s.code === authUser.value?.store_code) || shopStore.shops[0]
-    const storeTarget = authUser.value?.store?.uuid || userStore?.uuid || authUser.value?.store_code
-    if (storeTarget) {
-      return navigateTo(`/store/${storeTarget}/dashboard`)
+    const userShop = shopStore.shops.find(s => s.code === authUser.value?.shop_code || s.code === authUser.value?.store_code) || shopStore.shops[0]
+    const shopTarget = authUser.value?.shop?.uuid || userShop?.uuid || authUser.value?.shop_code || authUser.value?.store_code
+    if (shopTarget) {
+      return navigateTo(`/shop/${shopTarget}/dashboard`)
     }
   }
 
-  // Admin/Owner with only 1 store: skip picker, go directly to that store's dashboard
+  // Admin/Owner with only 1 shop: skip picker, go directly to that shop's dashboard
   if (shopStore.shops.length === 1) {
-    return navigateTo(`/store/${shopStore.shops[0].uuid}/dashboard`)
+    return navigateTo(`/shop/${shopStore.shops[0].uuid}/dashboard`)
   }
 
   fetchPendingRequestsCount()
@@ -62,14 +62,14 @@ const dialogVisible = ref(false)
 const editingUuid   = ref<string | null>(null)
        // null = create mode, uuid string = edit mode
 
-// Open dialog for creating a new store
+// Open dialog for creating a new shop
 const openCreateDialog = () => {
   editingUuid.value   = null
   formModel.value     = emptyForm()
   dialogVisible.value = true
 }
 
-// Open dialog pre-filled with an existing store's data
+// Open dialog pre-filled with an existing shop's data
 const openEditDialog = (row: Shop) => {
   editingUuid.value = row.uuid
   formModel.value   = {
@@ -108,18 +108,18 @@ const submitShop = async () => {
         <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
             <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">
-              Stores
+              Shops
             </p>
-            <h1 class="text-4xl font-semibold tracking-tight">Store Directory</h1>
+            <h1 class="text-4xl font-semibold tracking-tight">Shop Directory</h1>
             <p class="mt-4 text-base leading-7 text-slate-600">
-              Manage all store branches and booking locations. Click a row or use the
-              <strong>Products</strong> button to view items for each store.
+              Manage all shop branches and booking locations. Click a row or use the
+              <strong>Products</strong> button to view items for each shop.
             </p>
           </div>
 
           <div class="flex flex-wrap gap-3 items-center">
             <el-button v-if="!isStaff" type="primary" size="large" round @click="openCreateDialog">
-              Add Store
+              Add Shop
             </el-button>
             <el-tooltip content="Back to Dashboard" placement="bottom">
               <NuxtLink to="/dashboard">
@@ -144,17 +144,17 @@ const submitShop = async () => {
 
       <div v-if="!shopStore.loading && shopStore.shops.length === 0" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-6">
         <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🛒</div>
-        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">No Assigned Store Found</h2>
-        <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">You are not currently assigned to any store branch. Request to join a store to view its products and management controls.</p>
-        <NuxtLink to="/join-store">
-          <el-button type="primary" round>Request to Join a Store</el-button>
+        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">No Assigned Shop Found</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">You are not currently assigned to any shop branch. Request to join a shop to view its products and management controls.</p>
+        <NuxtLink to="/join-shop">
+          <el-button type="primary" round>Request to Join a Shop</el-button>
         </NuxtLink>
       </div>
 
       <!-- ── Stat cards ──────────────────────────────────────────────────────── -->
       <div class="grid gap-4 md:grid-cols-3">
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Total Stores</p>
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Total Shops</p>
           <p class="mt-3 text-3xl font-semibold">{{ shopStore.totalShops }}</p>
         </el-card>
 
@@ -173,19 +173,19 @@ const submitShop = async () => {
         </el-card>
       </div>
 
-      <!-- ── StoreTable component ───────────────────────────────────────────── -->
-      <StoreTable
+      <!-- ── ShopTable component ───────────────────────────────────────────── -->
+      <ShopTable
         :shops="shopStore.shops"
         :loading="shopStore.loading"
-        @row-click="(row) => router.push(`/store/${row.uuid}/dashboard`)"
-        @view-products="(row) => router.push(`/store/${row.uuid}/products`)"
+        @row-click="(row) => router.push(`/shop/${row.uuid}/dashboard`)"
+        @view-products="(row) => router.push(`/shop/${row.uuid}/products`)"
         @edit="openEditDialog"
         @delete="shopStore.deleteShop"
       />
     </div>
 
-    <!-- ── StoreFormDialog component ─────────────────────────────────────────── -->
-    <StoreFormDialog
+    <!-- ── ShopFormDialog component ─────────────────────────────────────────── -->
+    <ShopFormDialog
       v-model="dialogVisible"
       v-model:form="formModel"
       :editing-uuid="editingUuid"

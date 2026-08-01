@@ -9,7 +9,8 @@ export interface ProductForm {
   stock: string
   status: string
   description: string
-  store_code: string
+  shop_code: string
+  store_code?: string
 }
 
 export const useProductStore = defineStore('product', () => {
@@ -32,7 +33,7 @@ export const useProductStore = defineStore('product', () => {
     try {
       let url = `/api/products?paginate=true&page=${page}&per_page=${limit}`
       if (storeCode) {
-        url += `&filter[store_code]=${storeCode}`
+        url += `&filter[shop_code]=${storeCode}`
       }
       if (search) {
         url += `&search[product_name]=${encodeURIComponent(search)}`
@@ -87,7 +88,8 @@ export const useProductStore = defineStore('product', () => {
     try {
       // Map frontend flat structure to backend payload
       const payload = {
-        store_code: form.store_code,
+        shop_code: form.shop_code || form.store_code,
+        store_code: form.shop_code || form.store_code,
         category_code: form.category,
         product_name: form.name,
         description: form.description,
@@ -100,7 +102,7 @@ export const useProductStore = defineStore('product', () => {
         method: 'POST',
         body: payload,
       })
-      await fetchProducts(form.store_code, currentPage.value, perPage.value, searchKey.value)
+      await fetchProducts(form.shop_code || form.store_code, currentPage.value, perPage.value, searchKey.value)
       ElNotification({ title: 'Success', message: 'Product created successfully', type: 'success' })
       return true
     } catch (e) {
@@ -113,7 +115,8 @@ export const useProductStore = defineStore('product', () => {
   const updateProduct = async (uuid: string, form: ProductForm) => {
     try {
       const payload = {
-        store_code: form.store_code,
+        shop_code: form.shop_code || form.store_code,
+        store_code: form.shop_code || form.store_code,
         category_code: form.category,
         product_name: form.name,
         description: form.description,
@@ -126,7 +129,7 @@ export const useProductStore = defineStore('product', () => {
         method: 'PUT',
         body: payload,
       })
-      await fetchProducts(form.store_code, currentPage.value, perPage.value, searchKey.value)
+      await fetchProducts(form.shop_code || form.store_code, currentPage.value, perPage.value, searchKey.value)
       ElNotification({ title: 'Success', message: 'Product updated successfully', type: 'success' })
       return true
     } catch (e) {

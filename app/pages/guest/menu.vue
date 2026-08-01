@@ -48,7 +48,7 @@ const token = computed(() => {
 })
 
 const storeUuid = computed(() => {
-  const s = route.query.store_uuid || route.query.store
+  const s = route.query.shop_uuid || route.query.store_uuid || route.query.shop || route.query.store
   return Array.isArray(s) ? s[0] : (s as string) || ''
 })
 
@@ -333,6 +333,8 @@ const submitOrder = async () => {
     const payload = {
       device_token: deviceToken,
       device_info: deviceSummary,
+      shop_uuid: storeUuid.value,
+      shop_code: storeInfo.value?.code,
       store_uuid: storeUuid.value,
       store_code: storeInfo.value?.code,
       guest_link_code: guestData.value?.guest_link?.code || null,

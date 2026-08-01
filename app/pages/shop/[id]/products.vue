@@ -95,7 +95,7 @@ const allProducts = computed(() => productStore.products)
 
 // ── CRUD dialog ───────────────────────────────────────────────────────────────
 const emptyForm = () => ({
-  name: '', sku: '', category: '', price: '', stock: '', status: 'Published', description: '', store_code: currentShop.value?.code
+  name: '', sku: '', category: '', price: '', stock: '', status: 'Published', description: '', shop_code: currentShop.value?.code, store_code: currentShop.value?.code
 })
 
 const formModel = ref(emptyForm())
@@ -128,6 +128,7 @@ const openEditDialog = (row) => {
     stock: row.stock,
     status: row.status,
     description: row.description ?? '',
+    shop_code: currentShop.value?.code,
     store_code: currentShop.value?.code
   }
   dialogVisible.value = true
@@ -167,11 +168,11 @@ const statusTag = (s) =>
         class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
         !</div>
       <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this store. You must be an
-        assigned staff member or store owner to view this store's products.</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this shop. You must be an
+        assigned staff member or shop owner to view this shop's products.</p>
       <div class="flex justify-center gap-3">
-        <el-button type="primary" round @click="router.push('/join-store')">Join a Store</el-button>
-        <el-button plain round @click="router.push('/store')">Back to Stores</el-button>
+        <el-button type="primary" round @click="router.push('/join-shop')">Join a Shop</el-button>
+        <el-button plain round @click="router.push('/shop')">Back to Shops</el-button>
       </div>
     </div>
 
@@ -180,11 +181,11 @@ const statusTag = (s) =>
       <!-- ── Header Banner ────────────────────────────────────────────────── -->
       <el-card class="!rounded-2xl border-0 shadow-sm relative overflow-hidden">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <!-- Left: Store Title & Metadata -->
+          <!-- Left: Shop Title & Metadata -->
           <div class="space-y-2.5 max-w-xl">
             <div class="flex items-center gap-2.5">
               <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/50">
-                Store Branch
+                Shop Branch
               </span>
               <span v-if="currentShop.code" class="text-xs font-mono font-semibold text-slate-400">
                 {{ currentShop.code }}
@@ -194,14 +195,14 @@ const statusTag = (s) =>
               {{ currentShop.name }}
             </h1>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              Products, services, and booking items assigned to this store.
+              Products, services, and booking items assigned to this shop.
             </p>
           </div>
 
           <!-- Right: Grouped Action Buttons -->
           <div class="flex flex-wrap items-center gap-2.5 shrink-0">
             <!-- Customer Menu Group -->
-            <NuxtLink :to="`/guest/menu?store_uuid=${shopUuid}`" target="_blank">
+            <NuxtLink :to="`/guest/menu?shop_uuid=${shopUuid}`" target="_blank">
               <el-button type="primary" size="default" round class="shadow-sm font-semibold">
                 <el-icon class="mr-1.5"><Open /></el-icon> View Customer Menu
               </el-button>
@@ -211,15 +212,15 @@ const statusTag = (s) =>
               <el-icon class="mr-1.5"><CopyDocument /></el-icon> Copy Menu Link
             </el-button>
 
-            <!-- Store Admin Group -->
-            <NuxtLink v-if="canManageStaff" :to="`/store/${shopUuid}/staff`">
+            <!-- Shop Admin Group -->
+            <NuxtLink v-if="canManageStaff" :to="`/shop/${shopUuid}/staff`">
               <el-button size="default" plain round class="font-medium">
                 <el-icon class="mr-1.5"><User /></el-icon> Staff
               </el-button>
             </NuxtLink>
 
             <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'"
-              :to="`/store/${shopUuid}/roles`">
+              :to="`/shop/${shopUuid}/roles`">
               <el-button size="default" plain round class="font-medium">
                 <el-icon class="mr-1.5"><Key /></el-icon> Roles & Permissions
               </el-button>

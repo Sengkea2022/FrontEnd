@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
-// Dashboard is now store-scoped. Redirect to /store so user picks a store.
-await navigateTo('/store', { replace: true })
+// Dashboard is now shop-scoped. Redirect to /shop so user picks a shop.
+await navigateTo('/shop', { replace: true })
 </script>
 <template><div /></template>

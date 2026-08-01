@@ -13,7 +13,7 @@ const isAdminOrSuperAdmin = computed(() =>
 const fetchStore = async () => {
   loading.value = true
   try {
-    const res = await fetch('/api/stores/' + storeId.value)
+    const res = await fetch('/api/shops/' + storeId.value)
     store.value = res?.data || res
   } catch (e) { console.error(e) } finally { loading.value = false }
 }

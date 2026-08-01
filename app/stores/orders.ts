@@ -32,7 +32,9 @@ export interface Order {
   id: number
   uuid: string
   code: string
-  store_code: string
+  shop_code?: string
+  store_code?: string
+  shop?: OrderStoreRelation | string
   store?: OrderStoreRelation | string
   customer_code: string
   customer?: OrderCustomerRelation | string
@@ -46,7 +48,8 @@ export interface Order {
 }
 
 export interface OrderForm {
-  store_code: string
+  shop_code?: string
+  store_code?: string
   customer_code: string
   currency_code: string
   status: OrderStatus
@@ -85,7 +88,7 @@ export const useOrderStore = defineStore('orders', {
   actions: {
     /**
      * GET /api/orders
-     * Fetch orders from the backend with optional store filter.
+     * Fetch orders from the backend with optional shop filter.
      */
     async fetchOrders(storeCode?: string) {
       const { fetch } = useApi()
@@ -93,7 +96,7 @@ export const useOrderStore = defineStore('orders', {
       this.error = null
 
       try {
-        const url = storeCode ? `/api/orders?filter[store_code]=${storeCode}` : '/api/orders'
+        const url = storeCode ? `/api/orders?filter[shop_code]=${storeCode}&filter[store_code]=${storeCode}` : '/api/orders'
         const response = await fetch<any>(url)
         this.orders = response.data ?? (Array.isArray(response) ? response : [])
       } catch (err: any) {

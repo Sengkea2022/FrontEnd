@@ -39,7 +39,7 @@ const handleStatusChange = async (row: any, newStatus: string) => {
 const formatStoreName = (row: any) => {
   if (typeof row.store === 'object' && row.store?.name) return row.store.name
   if (typeof row.store === 'string') return row.store
-  return row.store_code || 'N/A'
+  return row.shop_code || row.store_code || 'N/A'
 }
 
 const formatCustomerName = (row: any) => {

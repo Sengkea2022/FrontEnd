@@ -24,7 +24,7 @@ const pendingInviteCount = ref(0)
 const fetchPendingInvites = async () => {
   if (!authToken.value) return
   try {
-    const res = await fetch('/api/stores/store-requests')
+    const res = await fetch('/api/shops/shop-requests')
     if (res && res.data) {
       pendingInviteCount.value = res.data.filter((r) => r.type === 'invite' && r.status === 'pending').length
     }
@@ -56,7 +56,8 @@ const logout = async () => {
 const routeKeyMap = {
   '/': 'home',
   '/dashboard': 'dashboard',
-  '/store': 'store',
+  '/shop': 'shop',
+  '/store': 'shop',
   '/orders': 'orders',
   '/guest-links': 'guestLinks',
   '/guest/login': 'login',
@@ -66,7 +67,7 @@ const routeKeyMap = {
   '/settings': 'settings',
 }
 
-// Last-segment labels for store-scoped routes
+// Last-segment labels for shop-scoped routes
 const storeSegmentMap = {
   'dashboard':   'dashboard',
   'orders':      'orders',
@@ -77,10 +78,10 @@ const storeSegmentMap = {
   'settings':    'settings',
 }
 
-// Detect /store/[uuid]/page
+// Detect /shop/[uuid]/page or /store/[uuid]/page
 const storeContextId = computed(() => {
   const parts = route.path.split('/').filter(Boolean)
-  if (parts[0] === 'store' && parts.length >= 3) return parts[1]
+  if ((parts[0] === 'shop' || parts[0] === 'store') && parts.length >= 3) return parts[1]
   return null
 })
 
@@ -121,7 +122,7 @@ const pageTitle = computed(() => {
     <div class="flex-1 flex items-center min-w-0">
       <!-- Store breadcrumb: Store Name / Page -->
       <el-breadcrumb v-if="storeContextId && currentStoreName" separator="/">
-        <el-breadcrumb-item :to="{ path: '/store' }">
+        <el-breadcrumb-item :to="{ path: '/shop' }">
           <span class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-orange-500 transition-colors">
             {{ currentStoreName }}
           </span>

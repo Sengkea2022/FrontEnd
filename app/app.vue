@@ -6,11 +6,12 @@ const route = useRoute()
 const appConfig = useAppConfig()
 const shopStore = useShopStore()
 
-// Detect active store UUID from route path or query param
+// Detect active shop UUID from route path or query param
 const activeStoreUuid = computed(() => {
+  if (route.query.shop_uuid) return String(route.query.shop_uuid)
   if (route.query.store_uuid) return String(route.query.store_uuid)
   const parts = route.path.split('/').filter(Boolean)
-  if (parts[0] === 'store' && parts[1] && parts[1].length > 10) return parts[1]
+  if ((parts[0] === 'shop' || parts[0] === 'store') && parts[1] && parts[1].length > 10) return parts[1]
   return null
 })
 

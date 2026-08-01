@@ -20,7 +20,7 @@ const pendingRequests = computed(() => userRequests.value.filter(r => r.type ===
 
 const fetchMyRequests = async () => {
   try {
-    const res = await fetch<{ data: any[] }>('/api/stores/store-requests')
+    const res = await fetch<{ data: any[] }>('/api/shops/shop-requests')
     userRequests.value = res.data || []
   } catch (e) {
     console.error('Failed to fetch user requests:', e)
@@ -34,11 +34,11 @@ const refreshUserSession = async () => {
       authUser.value = { ...authUser.value, ...res.user }
       const roleSlug = res.user.role?.slug
       const isSuperAdmin = ['superadmin', 'admin'].includes(roleSlug)
-      const hasStore = !!(res.user.store_code && res.user.store_code !== 'N/A' && res.user.store_code !== '') || !!res.user.store
+      const hasShop = !!(res.user.shop_code || res.user.store_code) && res.user.shop_code !== 'N/A'
 
-      if (!isSuperAdmin && roleSlug === 'staff' && hasStore) {
-        const storeTarget = res.user.store?.uuid || res.user.store_code
-        const redirectPath = storeTarget ? `/store/${storeTarget}/products` : '/store'
+      if (!isSuperAdmin && roleSlug === 'staff' && hasShop) {
+        const shopTarget = res.user.shop?.uuid || res.user.shop_code || res.user.store_code
+        const redirectPath = shopTarget ? `/shop/${shopTarget}/products` : '/shop'
         return navigateTo(redirectPath)
       }
     }
@@ -66,13 +66,13 @@ const filteredShops = computed(() => {
   )
 })
 
-const hasPendingRequestFor = (storeCode: string) => {
-  return pendingRequests.value.some(r => r.store?.code === storeCode || r.store?.uuid === storeCode)
+const hasPendingRequestFor = (shopCode: string) => {
+  return pendingRequests.value.some(r => r.shop?.code === shopCode || r.shop?.uuid === shopCode || r.store?.code === shopCode || r.store?.uuid === shopCode)
 }
 
 const acceptInvite = async (id: number) => {
   try {
-    const res = await fetch<{ message: string; user?: any }>(`/api/stores/store-requests/${id}`, {
+    const res = await fetch<{ message: string; user?: any }>(`/api/shops/shop-requests/${id}`, {
       method: 'PUT',
       body: { status: 'approved' }
     })
@@ -83,10 +83,10 @@ const acceptInvite = async (id: number) => {
     
     ElNotification.success({
       title: 'Invitation Accepted',
-      message: 'You have successfully joined the store!'
+      message: 'You have successfully joined the shop!'
     })
 
-    window.location.href = '/store'
+    window.location.href = '/shop'
   } catch (e: any) {
     ElNotification.error({
       title: 'Failed',
@@ -97,7 +97,7 @@ const acceptInvite = async (id: number) => {
 
 const rejectInvite = async (id: number) => {
   try {
-    await fetch(`/api/stores/store-requests/${id}`, {
+    await fetch(`/api/shops/shop-requests/${id}`, {
       method: 'PUT',
       body: { status: 'rejected' }
     })
@@ -110,7 +110,7 @@ const rejectInvite = async (id: number) => {
 
 const cancelRequest = async (id: number) => {
   try {
-    await fetch(`/api/stores/store-requests/${id}`, { method: 'DELETE' })
+    await fetch(`/api/shops/shop-requests/${id}`, { method: 'DELETE' })
     ElNotification.info({ title: 'Cancelled', message: 'Join request cancelled.' })
     fetchMyRequests()
   } catch (e) {
@@ -121,25 +121,27 @@ const cancelRequest = async (id: number) => {
 const submitRequest = async () => {
   if (!selectedStoreId.value) {
     ElNotification.warning({
-      title: 'No Store Selected',
-      message: 'Please select a store to join.'
+      title: 'No Shop Selected',
+      message: 'Please select a shop to join.'
     })
     return
   }
 
   submitting.value = true
   try {
-    await fetch('/api/stores/store-requests', {
+    const targetShop = shopStore.shops.find(s => s.code === selectedStoreId.value || s.uuid === selectedStoreId.value)
+    await fetch('/api/shops/shop-requests', {
       method: 'POST',
       body: {
         type: 'request',
-        store_code: selectedStoreId.value
+        shop_id: targetShop?.id || selectedStoreId.value,
+        shop_code: selectedStoreId.value
       }
     })
 
     ElNotification.success({
       title: 'Request Submitted',
-      message: 'Your join request has been sent to the store owner.'
+      message: 'Your join request has been sent to the shop owner.'
     })
 
     selectedStoreId.value = null

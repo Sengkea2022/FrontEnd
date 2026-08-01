@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
-// Guest links are now store-scoped. Redirect to /store.
-await navigateTo('/store', { replace: true })
+// Guest links are now shop-scoped. Redirect to /shop.
+await navigateTo('/shop', { replace: true })
 </script>
 <template><div /></template>

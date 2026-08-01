@@ -5,8 +5,8 @@
       <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
       <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You have not been assigned to a store yet. Please request to join a store to get access.</p>
       <div class="flex justify-center gap-3">
-        <el-button type="primary" round @click="$router.push('/join-store')">Join a Store</el-button>
-        <el-button plain round @click="$router.push('/store')">Back to Stores</el-button>
+        <el-button type="primary" round @click="$router.push('/join-shop')">Join a Shop</el-button>
+        <el-button plain round @click="$router.push('/shop')">Back to Shops</el-button>
       </div>
     </div>
 
@@ -17,11 +17,11 @@
         <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your team, staff groups/departments, and review join requests.</p>
       </div>
       <div class="flex gap-3">
-        <el-button v-if="isStoreOwner" plain round @click="$router.push(`/store/${shopUuid}/roles`)">
+        <el-button v-if="isStoreOwner" plain round @click="$router.push(`/shop/${shopUuid}/roles`)">
           Roles & Permissions
         </el-button>
-        <el-button plain round @click="$router.push(`/store/${shopUuid}/products`)">
-          ← Back to Store
+        <el-button plain round @click="$router.push(`/shop/${shopUuid}/products`)">
+          ← Back to Shop
         </el-button>
         <el-button v-if="canCreateUser" type="primary" round class="shadow-lg shadow-primary-500/20" @click="inviteDialogVisible = true">
           + Invite Staff
@@ -458,10 +458,10 @@ const fetchStaff = async () => {
 const fetchRequests = async () => {
   loadingRequests.value = true
   try {
-    const res = await fetch<any>(`/api/stores/store-requests?store_uuid=${shopUuid}`)
+    const res = await fetch<any>(`/api/shops/shop-requests?shop_uuid=${shopUuid}`)
     requestsList.value = res?.data || res?.requests || (Array.isArray(res) ? res : [])
   } catch (e) {
-    console.error('Failed to fetch store requests:', e)
+    console.error('Failed to fetch shop requests:', e)
   } finally {
     loadingRequests.value = false
   }
@@ -469,7 +469,7 @@ const fetchRequests = async () => {
 
 const fetchRoles = async () => {
   try {
-    const res = await fetch<{ data: any[] }>(`/api/role-permission/roles?paginate=false&store_uuid=${shopUuid}`)
+    const res = await fetch<{ data: any[] }>(`/api/role-permission/roles?paginate=false&shop_uuid=${shopUuid}`)
     roles.value = res.data || []
   } catch (e) {
     console.error(e)
@@ -529,11 +529,12 @@ const saveStaffEdit = async () => {
 const sendInvite = async () => {
   sendingInvite.value = true
   try {
-    await fetch('/api/stores/store-requests', {
+    await fetch('/api/shops/shop-requests', {
       method: 'POST',
       body: {
         type: 'invite',
-        store_uuid: shopUuid,
+        shop_id: shopUuid,
+        shop_uuid: shopUuid,
         email: inviteEmail.value,
         role_id: inviteRoleId.value,
         department: userDepartmentScope.value || inviteDepartment.value
@@ -562,7 +563,7 @@ const openApproveDialog = (req: any) => {
 const approveRequest = async () => {
   processingRequest.value = true
   try {
-    await fetch(`/api/stores/store-requests/${selectedRequest.value.id}`, {
+    await fetch(`/api/shops/shop-requests/${selectedRequest.value.id}`, {
       method: 'PUT',
       body: {
         status: 'approved',
@@ -584,7 +585,7 @@ const approveRequest = async () => {
 const rejectRequest = async (id: number) => {
   if (!confirm('Are you sure you want to reject this request?')) return
   try {
-    await fetch(`/api/stores/store-requests/${id}`, {
+    await fetch(`/api/shops/shop-requests/${id}`, {
       method: 'PUT',
       body: { status: 'rejected' }
     })
@@ -598,7 +599,7 @@ const rejectRequest = async (id: number) => {
 const cancelInvite = async (id: number) => {
   if (!confirm('Cancel this invitation?')) return
   try {
-    await fetch(`/api/stores/store-requests/${id}`, { method: 'DELETE' })
+    await fetch(`/api/shops/shop-requests/${id}`, { method: 'DELETE' })
     ElNotification({ title: 'Success', message: 'Invite cancelled', type: 'success' })
     fetchRequests()
   } catch (e) {

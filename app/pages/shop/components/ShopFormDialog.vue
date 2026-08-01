@@ -239,22 +239,22 @@ const submit = () => {
 <template>
   <el-dialog
     v-model="visible"
-    :title="editingUuid ? 'Edit Store' : 'Add Store'"
+    :title="editingUuid ? 'Edit Shop' : 'Add Shop'"
     width="700px"
     class="!rounded-2xl"
   >
     <el-form label-position="top" class="grid gap-4 md:grid-cols-2">
 
-      <!-- Store Name -->
-      <el-form-item label="Store Name" :class="isSuperAdmin && !editingUuid ? '' : 'md:col-span-2'">
-        <el-input v-model="localForm.name" placeholder="Enter store name" size="large" />
+      <!-- Shop Name -->
+      <el-form-item label="Shop Name" :class="isSuperAdmin && !editingUuid ? '' : 'md:col-span-2'">
+        <el-input v-model="localForm.name" placeholder="Enter shop name" size="large" />
       </el-form-item>
 
-      <!-- Store Owner (Only for SuperAdmin when creating) -->
-      <el-form-item v-if="isSuperAdmin && !editingUuid" label="Assign Store Owner">
+      <!-- Shop Owner (Only for SuperAdmin when creating) -->
+      <el-form-item v-if="isSuperAdmin && !editingUuid" label="Assign Shop Owner">
         <el-select
           v-model="localForm.user_code"
-          placeholder="Select a store owner"
+          placeholder="Select a shop owner"
           size="large"
           class="w-full"
           filterable

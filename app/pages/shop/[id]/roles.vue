@@ -6,11 +6,11 @@
         <p class="text-slate-500 dark:text-slate-400 mt-1">Manage store roles, permissions, and staff group department scopes.</p>
       </div>
       <div class="flex gap-3">
-        <el-button plain round @click="$router.push(`/store/${shopUuid}/staff`)">
+        <el-button plain round @click="$router.push(`/shop/${shopUuid}/staff`)">
           Staff Management
         </el-button>
-        <el-button plain round @click="$router.push(`/store/${shopUuid}/products`)">
-          ← Back to Store
+        <el-button plain round @click="$router.push(`/shop/${shopUuid}/products`)">
+          ← Back to Shop
         </el-button>
       </div>
     </div>

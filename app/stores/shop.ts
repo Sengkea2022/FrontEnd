@@ -89,7 +89,7 @@ export const useShopStore = defineStore('shop', {
       this.loading = true
       this.error   = null
       try {
-        const response = await fetch<any>('/api/stores', {
+        const response = await fetch<any>('/api/shops', {
           query: {
             filter,
             search,
@@ -99,7 +99,7 @@ export const useShopStore = defineStore('shop', {
         })
         this.shops = response.data ?? response
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to fetch stores.'
+        this.error = err?.data?.message ?? 'Failed to fetch shops.'
         console.error('[ShopStore] fetchShops:', err)
       } finally {
         this.loading = false
@@ -107,14 +107,14 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * POST /api/stores
+     * POST /api/shops
      */
     async createShop(form: ShopForm): Promise<boolean> {
       const { fetch } = useApi()
       this.submitting = true
       this.error      = null
       try {
-        const response = await fetch<any>('/api/stores', {
+        const response = await fetch<any>('/api/shops', {
           method: 'POST',
           body:   form,
         })
@@ -122,7 +122,7 @@ export const useShopStore = defineStore('shop', {
         this.shops.unshift(created)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to create store.'
+        this.error = err?.data?.message ?? 'Failed to create shop.'
         console.error('[ShopStore] createShop:', err)
         return false
       } finally {
@@ -131,14 +131,14 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * PUT /api/stores/:uuid
+     * PUT /api/shops/:uuid
      */
     async updateShop(uuid: string, form: ShopForm): Promise<boolean> {
       const { fetch } = useApi()
       this.submitting = true
       this.error      = null
       try {
-        const response = await fetch<any>(`/api/stores/${uuid}`, {
+        const response = await fetch<any>(`/api/shops/${uuid}`, {
           method: 'PUT',
           body:   form,
         })
@@ -147,7 +147,7 @@ export const useShopStore = defineStore('shop', {
         if (index !== -1) this.shops[index] = updated
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to update store.'
+        this.error = err?.data?.message ?? 'Failed to update shop.'
         console.error('[ShopStore] updateShop:', err)
         return false
       } finally {
@@ -156,17 +156,17 @@ export const useShopStore = defineStore('shop', {
     },
 
     /**
-     * DELETE /api/stores/:uuid
+     * DELETE /api/shops/:uuid
      */
     async deleteShop(uuid: string): Promise<boolean> {
       const { fetch } = useApi()
       this.error = null
       try {
-        await fetch(`/api/stores/${uuid}`, { method: 'DELETE' })
+        await fetch(`/api/shops/${uuid}`, { method: 'DELETE' })
         this.shops = this.shops.filter((s) => s.uuid !== uuid)
         return true
       } catch (err: any) {
-        this.error = err?.data?.message ?? 'Failed to delete store.'
+        this.error = err?.data?.message ?? 'Failed to delete shop.'
         console.error('[ShopStore] deleteShop:', err)
         return false
       }

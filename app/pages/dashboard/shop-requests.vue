@@ -11,7 +11,7 @@ const loading = ref(false)
 const fetchRequests = async () => {
   loading.value = true
   try {
-    const res = await fetch<any>('/api/stores/store-requests')
+    const res = await fetch<any>('/api/shops/shop-requests')
     requests.value = res?.data || res?.requests || (Array.isArray(res) ? res : [])
   } catch (e: any) {
     console.error('Failed to fetch store requests:', e)
@@ -43,7 +43,7 @@ const confirmApproveRequest = async () => {
   if (!selectedRequest.value) return
   submittingApproval.value = true
   try {
-    await fetch(`/api/stores/store-requests/${selectedRequest.value.id}`, {
+    await fetch(`/api/shops/shop-requests/${selectedRequest.value.id}`, {
       method: 'PUT',
       body: {
         status: 'approved',
@@ -72,7 +72,7 @@ const confirmApproveRequest = async () => {
 
 const rejectRequest = async (id: number) => {
   try {
-    await fetch(`/api/stores/store-requests/${id}`, {
+    await fetch(`/api/shops/shop-requests/${id}`, {
       method: 'PUT',
       body: { status: 'rejected' }
     })
