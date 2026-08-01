@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useShopStore } from '~/stores/shop'
 import { useProductStore } from '~/stores/product'
+import { Open, CopyDocument, Search, Refresh } from '@element-plus/icons-vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -10,6 +11,13 @@ const router    = useRouter()
 const shopStore = useShopStore()
 const productStore = useProductStore()
 const authUser  = useCookie<any>('auth_user')
+
+const copyCustomerMenuUrl = () => {
+  if (!process.client) return
+  const url = `${window.location.origin}/guest/menu?store_uuid=${shopUuid}`
+  navigator.clipboard.writeText(url)
+  ElMessage.success('Copied Store Customer Menu URL to clipboard!')
+}
 
 const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
 const canManageStaff = computed(() => {
@@ -36,12 +44,46 @@ const shopUuid = route.params.id
 // ── Resolve current shop name from the Pinia store cache ─────────────────────
 // If shops haven't been loaded yet (e.g. user opened this page directly),
 // fetch them first so we can show the shop name in the header.
+// ── Pagination & Search State ──────────────────────────────────────────────────
+const currentPage = ref(1)
+const pageSize = ref(10)
+const searchQuery = ref('')
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value)
+}
+
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  currentPage.value = 1
+  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value)
+}
+
+let searchDebounceTimer: any = null
+const handleSearch = () => {
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    currentPage.value = 1
+    productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value)
+  }, 300)
+}
+
+const paginationFrom = computed(() => {
+  if (productStore.totalProducts === 0) return 0
+  return (productStore.currentPage - 1) * productStore.perPage + 1
+})
+
+const paginationTo = computed(() => {
+  return Math.min(productStore.currentPage * productStore.perPage, productStore.totalProducts)
+})
+
 onMounted(async () => {
   if (shopStore.shops.length === 0) {
     await shopStore.fetchShops()
   }
   await productStore.fetchCategories()
-  await productStore.fetchProducts(currentShop.value?.code)
+  await productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value)
 })
 
 const currentShop = computed(
@@ -124,7 +166,7 @@ const statusTag = (s) =>
       <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
       <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this store. You must be an assigned staff member or store owner to view this store's products.</p>
       <div class="flex justify-center gap-3">
-        <el-button type="primary" round @click="router.push('/dashboard/join-store')">Join a Store</el-button>
+        <el-button type="primary" round @click="router.push('/join-store')">Join a Store</el-button>
         <el-button plain round @click="router.push('/store')">Back to Stores</el-button>
       </div>
     </div>
@@ -154,6 +196,14 @@ const statusTag = (s) =>
             <el-button type="primary" size="large" round @click="openCreateDialog">
               Add Product
             </el-button>
+            <el-button type="warning" size="large" plain round @click="copyCustomerMenuUrl">
+              <el-icon class="mr-1"><CopyDocument /></el-icon> Copy Menu Link
+            </el-button>
+            <NuxtLink :to="`/guest/menu?store_uuid=${shopUuid}`" target="_blank">
+              <el-button type="warning" size="large" round>
+                <el-icon class="mr-1"><Open /></el-icon> View Customer Menu
+              </el-button>
+            </NuxtLink>
             <NuxtLink v-if="canManageStaff" :to="`/store/${shopUuid}/staff`">
               <el-button size="large" plain round>Staff Management</el-button>
             </NuxtLink>
@@ -191,35 +241,73 @@ const statusTag = (s) =>
 
       <!-- ── Product table ───────────────────────────────────────────────────── -->
       <el-card class="!rounded-2xl border-0 shadow-sm" v-loading="productStore.loading">
-        <div class="mb-5">
-          <h2 class="text-xl font-semibold">Product Directory</h2>
-          <p class="mt-1 text-sm text-slate-500">
-            All products and services for <strong>{{ currentShop.name }}</strong>.
-          </p>
+        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 class="text-xl font-semibold">Product Directory</h2>
+            <p class="mt-1 text-sm text-slate-500">
+              All products and services for <strong>{{ currentShop.name }}</strong>.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <el-input
+              v-model="searchQuery"
+              placeholder="Search product name..."
+              clearable
+              class="w-64"
+              :prefix-icon="Search"
+              @input="handleSearch"
+              @clear="handleSearch"
+            />
+            <el-button round size="default" @click="handlePageChange(currentPage)">
+              <el-icon class="mr-1"><Refresh /></el-icon> Refresh
+            </el-button>
+          </div>
         </div>
 
-        <el-empty v-if="allProducts.length === 0" description="No products yet for this store." />
+        <el-empty v-if="allProducts.length === 0" description="No products found." />
 
-        <el-table v-else :data="allProducts" stripe class="w-full">
-          <el-table-column prop="name"     label="Product Name" min-width="220" />
-          <el-table-column prop="sku"      label="SKU"          min-width="120" />
-          <el-table-column prop="category" label="Category"     min-width="130" />
-          <el-table-column prop="price"    label="Price"        min-width="100" />
-          <el-table-column prop="stock"    label="Stock"        min-width="130" />
-          <el-table-column label="Status"                       min-width="130">
-            <template #default="{ row }">
-              <el-tag :type="statusTag(row.status)" round>{{ row.status }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="Actions" min-width="160" fixed="right">
-            <template #default="{ row }">
-              <div class="flex gap-2">
-                <el-button size="small" type="primary" plain round @click="openEditDialog(row)">Edit</el-button>
-                <el-button size="small" type="danger"  plain round :disabled="isStaff" @click="deleteProduct(row.uuid)">Delete</el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div v-else>
+          <el-table :data="allProducts" stripe class="w-full">
+            <el-table-column prop="name"     label="Product Name" min-width="220" />
+            <el-table-column prop="sku"      label="SKU"          min-width="120" />
+            <el-table-column prop="category" label="Category"     min-width="130" />
+            <el-table-column prop="price"    label="Price"        min-width="100" />
+            <el-table-column prop="stock"    label="Stock"        min-width="130" />
+            <el-table-column label="Status"                       min-width="130">
+              <template #default="{ row }">
+                <el-tag :type="statusTag(row.status)" round>{{ row.status }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="Actions" min-width="160" fixed="right">
+              <template #default="{ row }">
+                <div class="flex gap-2">
+                  <el-button size="small" type="primary" plain round @click="openEditDialog(row)">Edit</el-button>
+                  <el-button size="small" type="danger"  plain round :disabled="isStaff" @click="deleteProduct(row.uuid)">Delete</el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <!-- ── Pagination ───────────────────────────────────────────────── -->
+          <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div class="text-xs text-slate-500">
+              Showing <span class="font-medium text-slate-700 dark:text-slate-300">{{ paginationFrom }}</span> to
+              <span class="font-medium text-slate-700 dark:text-slate-300">{{ paginationTo }}</span> of
+              <span class="font-medium text-slate-700 dark:text-slate-300">{{ productStore.totalProducts }}</span> items
+            </div>
+            <el-pagination
+              v-model:current-page="currentPage"
+              v-model:page-size="pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              :total="productStore.totalProducts"
+              layout="sizes, prev, pager, next, jumper"
+              background
+              @size-change="handleSizeChange"
+              @current-change="handlePageChange"
+            />
+          </div>
+        </div>
       </el-card>
     </div>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Shop } from '~/stores/shop'
 import type { TableColumn } from '~/components/AppTable.vue'
+import { Goods, Edit, Delete } from '@element-plus/icons-vue'
 
 // ── Props & Emits ───────────────────────────────────────────────────────────────
 defineProps<{
@@ -65,16 +66,22 @@ const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
 
       <!-- Actions column (AppTable renders this as a fixed-right column) -->
       <template #actions="{ row }">
-        <div class="flex flex-wrap gap-2">
-          <el-button size="small" type="primary" round @click="emit('view-products', row)">
-            Products
-          </el-button>
-          <el-button v-if="!isStaff" size="small" type="warning" plain round @click="emit('edit', row)">
-            Edit
-          </el-button>
-          <el-button v-if="!isStaff" size="small" type="danger" plain round @click="emit('delete', row.uuid)">
-            Delete
-          </el-button>
+        <div class="flex items-center gap-1">
+          <el-tooltip content="Products" placement="top">
+            <el-button size="small" type="primary" circle @click.stop="emit('view-products', row)">
+              <el-icon><Goods /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip v-if="!isStaff" content="Edit" placement="top">
+            <el-button size="small" type="warning" plain circle @click.stop="emit('edit', row)">
+              <el-icon><Edit /></el-icon>
+            </el-button>
+          </el-tooltip>
+          <el-tooltip v-if="!isStaff" content="Delete" placement="top">
+            <el-button size="small" type="danger" plain circle @click.stop="emit('delete', row.uuid)">
+              <el-icon><Delete /></el-icon>
+            </el-button>
+          </el-tooltip>
         </div>
       </template>
     </AppTable>

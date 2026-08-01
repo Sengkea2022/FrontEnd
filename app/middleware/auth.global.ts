@@ -2,6 +2,11 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const authToken = useCookie('auth_token')
   const authUser = useCookie<any>('auth_user')
 
+  // Public store menu is accessible by everyone (logged-in or unauthenticated guests)
+  if (to.path.startsWith('/guest/menu')) {
+    return
+  }
+
   const isGuestRoute = to.path.startsWith('/guest/')
 
   // 1. Unauthenticated users: must go to login
@@ -18,7 +23,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   // Check if user is assigned to a store (either by store_code OR owns a store)
   const hasStore = !!(authUser.value?.store_code && authUser.value.store_code !== 'N/A' && authUser.value.store_code !== '') || !!authUser.value?.store
 
-  // 2. Authenticated user visiting guest routes
+  // 2. Authenticated user visiting guest auth routes (login, register, etc.)
   if (isGuestRoute) {
     if (!isSuperAdmin && !hasStore) {
       return navigateTo('/join-store')

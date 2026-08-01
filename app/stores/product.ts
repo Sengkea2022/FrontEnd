@@ -16,13 +16,29 @@ export const useProductStore = defineStore('product', () => {
   const products = ref<any[]>([])
   const loading = ref(false)
   const categories = ref<any[]>([])
+  const currentPage = ref(1)
+  const perPage = ref(10)
+  const totalProducts = ref(0)
+  const lastPage = ref(1)
+  const searchKey = ref('')
+
   const { fetch, loading: apiLoading } = useApi()
 
-  const fetchProducts = async (storeCode?: string) => {
+  const fetchProducts = async (storeCode?: string, page: number = 1, limit: number = 10, search: string = '') => {
     loading.value = true
+    currentPage.value = page
+    perPage.value = limit
+    searchKey.value = search
     try {
-      const url = storeCode ? `/api/products?filter[store_code]=${storeCode}` : '/api/products'
-      const res = await fetch<{ data: any[] }>(url)
+      let url = `/api/products?paginate=true&page=${page}&per_page=${limit}`
+      if (storeCode) {
+        url += `&filter[store_code]=${storeCode}`
+      }
+      if (search) {
+        url += `&search[product_name]=${encodeURIComponent(search)}`
+      }
+      
+      const res = await fetch<{ data: any[]; meta?: any }>(url)
       
       // Map backend structure to frontend structure
       products.value = (res.data || []).map(p => ({
@@ -37,6 +53,16 @@ export const useProductStore = defineStore('product', () => {
         status: p.is_active ? 'Published' : 'Draft',
         description: p.description
       }))
+
+      if (res.meta) {
+        currentPage.value = res.meta.current_page ?? page
+        perPage.value = res.meta.per_page ?? limit
+        totalProducts.value = res.meta.total ?? products.value.length
+        lastPage.value = res.meta.last_page ?? 1
+      } else {
+        totalProducts.value = products.value.length
+        lastPage.value = 1
+      }
     } catch (e) {
       console.error('Failed to fetch products:', e)
       ElNotification({ title: 'Error', message: 'Could not load products', type: 'error' })
@@ -74,7 +100,7 @@ export const useProductStore = defineStore('product', () => {
         method: 'POST',
         body: payload,
       })
-      await fetchProducts(form.store_code)
+      await fetchProducts(form.store_code, currentPage.value, perPage.value, searchKey.value)
       ElNotification({ title: 'Success', message: 'Product created successfully', type: 'success' })
       return true
     } catch (e) {
@@ -100,7 +126,7 @@ export const useProductStore = defineStore('product', () => {
         method: 'PUT',
         body: payload,
       })
-      await fetchProducts(form.store_code)
+      await fetchProducts(form.store_code, currentPage.value, perPage.value, searchKey.value)
       ElNotification({ title: 'Success', message: 'Product updated successfully', type: 'success' })
       return true
     } catch (e) {
@@ -115,7 +141,7 @@ export const useProductStore = defineStore('product', () => {
       await fetch(`/api/products/${uuid}`, {
         method: 'DELETE',
       })
-      await fetchProducts(storeCode)
+      await fetchProducts(storeCode, currentPage.value, perPage.value, searchKey.value)
       ElNotification({ title: 'Success', message: 'Product deleted successfully', type: 'success' })
       return true
     } catch (e) {
@@ -130,6 +156,11 @@ export const useProductStore = defineStore('product', () => {
     loading,
     apiLoading,
     categories,
+    currentPage,
+    perPage,
+    totalProducts,
+    lastPage,
+    searchKey,
     fetchProducts,
     fetchCategories,
     createProduct,

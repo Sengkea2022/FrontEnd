@@ -4,7 +4,7 @@ import type { ShopForm, Shop } from '~/stores/shop'
 import StoreTable      from './components/StoreTable.vue'
 import StoreFormDialog from './components/StoreFormDialog.vue'
 
-import { Bell } from '@element-plus/icons-vue'
+import { Bell, House } from '@element-plus/icons-vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -31,13 +31,21 @@ const fetchPendingRequestsCount = async () => {
 // ── Load shops when page opens ────────────────────────────────────────────────
 onMounted(async () => {
   await shopStore.fetchShops()
+
+  // Staff: redirect to their assigned store's dashboard
   if (isStaff.value) {
     const userStore = shopStore.shops.find(s => s.code === authUser.value?.store_code) || shopStore.shops[0]
     const storeTarget = authUser.value?.store?.uuid || userStore?.uuid || authUser.value?.store_code
     if (storeTarget) {
-      return navigateTo(`/store/${storeTarget}/products`)
+      return navigateTo(`/store/${storeTarget}/dashboard`)
     }
   }
+
+  // Admin/Owner with only 1 store: skip picker, go directly to that store's dashboard
+  if (shopStore.shops.length === 1) {
+    return navigateTo(`/store/${shopStore.shops[0].uuid}/dashboard`)
+  }
+
   fetchPendingRequestsCount()
 })
 
@@ -108,13 +116,17 @@ const submitShop = async () => {
             </p>
           </div>
 
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-3 items-center">
             <el-button v-if="!isStaff" type="primary" size="large" round @click="openCreateDialog">
               Add Store
             </el-button>
-            <NuxtLink to="/dashboard">
-              <el-button size="large" plain round>Back to Dashboard</el-button>
-            </NuxtLink>
+            <el-tooltip content="Back to Dashboard" placement="bottom">
+              <NuxtLink to="/dashboard">
+                <el-button circle plain size="large">
+                  <el-icon><House /></el-icon>
+                </el-button>
+              </NuxtLink>
+            </el-tooltip>
           </div>
         </div>
       </el-card>
@@ -133,7 +145,7 @@ const submitShop = async () => {
         <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🛒</div>
         <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">No Assigned Store Found</h2>
         <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">You are not currently assigned to any store branch. Request to join a store to view its products and management controls.</p>
-        <NuxtLink to="/dashboard/join-store">
+        <NuxtLink to="/join-store">
           <el-button type="primary" round>Request to Join a Store</el-button>
         </NuxtLink>
       </div>
@@ -164,7 +176,7 @@ const submitShop = async () => {
       <StoreTable
         :shops="shopStore.shops"
         :loading="shopStore.loading"
-        @row-click="(row) => router.push(`/store/${row.uuid}/products`)"
+        @row-click="(row) => router.push(`/store/${row.uuid}/dashboard`)"
         @view-products="(row) => router.push(`/store/${row.uuid}/products`)"
         @edit="openEditDialog"
         @delete="shopStore.deleteShop"
