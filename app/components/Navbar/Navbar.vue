@@ -7,6 +7,9 @@ import {
   Avatar,
   SwitchButton,
   Bell,
+  Tools,
+  Sunny,
+  ChatLineRound,
 } from '@element-plus/icons-vue'
 import { ElNotification } from 'element-plus'
 
@@ -115,35 +118,36 @@ const pageTitle = computed(() => {
 
 <template>
   <nav class="sticky top-0 z-40 h-[65px] flex items-center shrink-0
-           border-b border-slate-200/70 dark:border-slate-800/70
-           bg-white/80 dark:bg-slate-900/80 backdrop-blur-md
-           px-6 gap-4">
+           border-b border-slate-200/80 dark:border-slate-800/80
+           bg-white/80 dark:bg-[#1d2024]/80 backdrop-blur-xl
+           px-3 sm:px-6 gap-2">
     <!-- Left: Breadcrumb / Page Title -->
-    <div class="flex-1 flex items-center min-w-0">
+    <div class="flex-1 min-w-0 overflow-hidden flex items-center">
       <!-- Store breadcrumb: Store Name / Page -->
-      <el-breadcrumb v-if="storeContextId && currentStoreName" separator="/">
+      <el-breadcrumb v-if="storeContextId && currentStoreName" separator="/" class="w-full min-w-0">
         <el-breadcrumb-item :to="{ path: '/shop' }">
-          <span class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-orange-500 transition-colors">
+          <span class="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium hover:text-orange-500 transition-colors max-w-[60px] sm:max-w-[200px] truncate inline-block align-bottom">
             {{ currentStoreName }}
           </span>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
-          <span class="text-slate-800 dark:text-slate-100 text-sm font-semibold">
+          <span class="text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold max-w-[60px] sm:max-w-[200px] truncate inline-block align-bottom">
             {{ currentPageLabel }}
           </span>
         </el-breadcrumb-item>
       </el-breadcrumb>
 
       <!-- Plain title for other pages -->
-      <h1 v-else class="text-base font-semibold text-slate-800 dark:text-slate-100 truncate select-none">
+      <h1 v-else class="text-xs sm:text-base font-semibold text-slate-800 dark:text-slate-100 truncate select-none">
         {{ pageTitle }}
       </h1>
     </div>
 
-    <!-- Right: Language, Theme Switcher & User Profile -->
-    <div class="flex items-center flex-shrink-0 space-x-3">
-      <LanguageSelector />
-      <ThemeSwitcher v-bind="{ isLabel: false }" />
+    <!-- Right: Language (desktop only) & User Profile -->
+    <div class="flex items-center flex-shrink-0 gap-1 sm:gap-3">
+      <div class="hidden sm:block">
+        <LanguageSelector />
+      </div>
 
       <!-- User Profile Popover (When Authenticated) -->
       <div v-if="authToken && authUser" class="flex items-center">
@@ -158,7 +162,7 @@ const pageTitle = computed(() => {
           <template #reference>
             <button
               type="button"
-              class="flex items-center gap-2.5 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none border border-slate-200/60 dark:border-slate-700/60"
+              class="flex items-center gap-1 sm:gap-2.5 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer select-none border border-slate-200/60 dark:border-slate-700/60"
             >
               <div class="h-8 w-8 rounded-full flex items-center justify-center text-white overflow-hidden flex-shrink-0 shadow-xs">
                 <img v-if="authUser.avatar" :src="authUser.avatar" alt="Avatar" class="h-full w-full object-cover" />
@@ -173,7 +177,7 @@ const pageTitle = computed(() => {
               <span class="hidden sm:inline-block text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[100px] truncate">
                 {{ authUser.name }}
               </span>
-              <el-icon class="text-xs text-slate-400 mr-1.5"><ArrowDown /></el-icon>
+              <el-icon class="hidden sm:flex text-xs text-slate-400 mr-1.5"><ArrowDown /></el-icon>
             </button>
           </template>
 
@@ -198,7 +202,23 @@ const pageTitle = computed(() => {
             </div>
           </div>
 
-          <!-- 2. Actions -->
+          <!-- 2. Quick Settings: Theme + Language -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700/60">
+            <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <el-icon class="text-[15px] text-slate-400"><Sunny /></el-icon>
+              <span class="text-xs font-medium">{{ t('themeMode') }}</span>
+            </div>
+            <ThemeSwitcher v-bind="{ isLabel: false }" />
+          </div>
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700/60">
+            <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <el-icon class="text-[15px] text-slate-400"><ChatLineRound /></el-icon>
+              <span class="text-xs font-medium">{{ t('language') }}</span>
+            </div>
+            <LanguageSelector />
+          </div>
+
+          <!-- 3. Actions -->
           <div class="px-2 py-1.5 space-y-1">
             <NuxtLink
               to="/profile"
@@ -206,7 +226,7 @@ const pageTitle = computed(() => {
             >
               <div class="flex items-center gap-2.5">
                 <el-icon class="text-[15px] text-amber-500"><Bell /></el-icon>
-                <span>Notifications & Invites</span>
+                <span>{{ t('notificationsAndInvites') }}</span>
               </div>
               <span v-if="pendingInviteCount > 0" class="px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
                 {{ pendingInviteCount }}
@@ -219,6 +239,14 @@ const pageTitle = computed(() => {
             >
               <el-icon class="text-[15px] text-slate-400"><Avatar /></el-icon>
               <span>{{ t('profile') }}</span>
+            </NuxtLink>
+
+            <NuxtLink
+              to="/settings"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150"
+            >
+              <el-icon class="text-[15px] text-orange-500"><Tools /></el-icon>
+              <span>{{ t('developerSystemSettings') }}</span>
             </NuxtLink>
 
             <button

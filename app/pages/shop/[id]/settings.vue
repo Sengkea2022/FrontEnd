@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { useShopStore } from '~/stores/shop'
+
 definePageMeta({ middleware: 'auth' })
+
 const route = useRoute()
 const { fetch } = useApi()
+const { t } = useI18n()
 const authUser = useCookie('auth_user')
 const storeId = computed(() => route.params.id)
 const store = ref(null)
@@ -36,7 +39,11 @@ const fetchStore = async () => {
     store.value = data
     currentThemeColor.value = data?.theme_color || 'orangered'
     appConfig.theme.primary = currentThemeColor.value
-  } catch (e) { console.error(e) } finally { loading.value = false }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
 }
 
 const updateStoreColor = async (newColor?: string) => {
@@ -61,19 +68,19 @@ onMounted(() => fetchStore())
 </script>
 
 <template>
-  <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto flex max-w-7xl flex-col gap-6">
+  <section class="px-4 py-4 sm:px-6 lg:px-8">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4">
 
       <!-- Header -->
       <el-card class="overflow-hidden !rounded-2xl border-0 shadow-sm" v-loading="loading">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div class="max-w-3xl">
-            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-4 py-1 text-xs font-semibold uppercase tracking-[0.28em]">
-              {{ store?.name || 'Shop' }}
+            <p class="mb-2 inline-flex rounded-full border border-orange-200 bg-orange-50 text-orange-600 px-3 py-0.5 text-xs font-semibold uppercase tracking-[0.28em]">
+              {{ store?.name || t('store') }}
             </p>
-            <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">Settings</h1>
-            <p class="mt-4 text-base leading-7 text-slate-600 md:text-lg">
-              Manage staff, roles, and shop configuration for <strong>{{ store?.name }}</strong>.
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{{ t('settings') }}</h1>
+            <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
+              {{ t('shopSettingsSub') }} <strong>{{ store?.name }}</strong>.
             </p>
           </div>
         </div>
@@ -92,10 +99,10 @@ onMounted(() => fetchStore())
               </div>
               <div>
                 <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200 group-hover:text-orange-500 transition-colors">
-                  Staff Management
+                  {{ t('staffManagement') }}
                 </h2>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Invite, manage staff members, departments and view join requests.
+                  {{ t('staffManagementSub') }}
                 </p>
               </div>
             </div>
@@ -111,10 +118,10 @@ onMounted(() => fetchStore())
               </div>
               <div>
                 <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200 group-hover:text-purple-500 transition-colors">
-                  Roles & Permissions
+                  {{ t('rolesPermissions') }}
                 </h2>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Configure roles and access control for your team.
+                  {{ t('rolesPermissionsSub') }}
                 </p>
               </div>
             </div>
@@ -130,10 +137,10 @@ onMounted(() => fetchStore())
               </div>
               <div>
                 <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200 group-hover:text-teal-500 transition-colors">
-                  Guest Menu Links
+                  {{ t('guestMenuLinks') }}
                 </h2>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  View and copy the public customer menu link for this store.
+                  {{ t('guestMenuLinksSub') }}
                 </p>
               </div>
             </div>
@@ -146,10 +153,10 @@ onMounted(() => fetchStore())
             <div>
               <h2 class="text-base font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 <span>🎨</span>
-                <span>Store Brand Theme Color</span>
+                <span>{{ t('storeBrandThemeColor') }}</span>
               </h2>
               <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Customize the primary accent color for <strong>{{ store?.name }}</strong> and its public guest menu.
+                {{ t('storeBrandThemeColorSub') }}
               </p>
             </div>
 

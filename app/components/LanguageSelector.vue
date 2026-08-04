@@ -60,7 +60,7 @@ const selectLanguage = (code) => {
       <template #reference>
         <button
           type="button"
-          class="inline-flex items-center justify-between gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
+          class="inline-flex items-center justify-center sm:justify-between gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-semibold
                  bg-white/80 dark:bg-slate-800/80 backdrop-blur-md
                  border border-slate-200/80 dark:border-slate-700/70
                  text-slate-700 dark:text-slate-200
@@ -68,11 +68,11 @@ const selectLanguage = (code) => {
                  shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer select-none"
           :style="{ width: props.width }"
         >
-          <span class="flex items-center gap-1.5">
+          <span class="flex items-center gap-1 sm:gap-1.5">
             <span class="text-base leading-none">{{ currentLanguage.flag }}</span>
-            <span class="font-bold tracking-tight uppercase">{{ currentLanguage.code }}</span>
+            <span class="hidden sm:inline uppercase tracking-wider font-bold text-[11px] sm:text-xs">{{ currentLanguage.code }}</span>
           </span>
-          <el-icon class="text-[10px] text-slate-400 transition-transform duration-200"><ArrowDown /></el-icon>
+          <el-icon class="hidden sm:flex text-[10px] text-slate-400 transition-transform duration-200"><ArrowDown /></el-icon>
         </button>
       </template>
 

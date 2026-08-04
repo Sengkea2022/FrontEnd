@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 max-w-7xl mx-auto">
+  <div class="p-4 sm:p-6 max-w-7xl mx-auto">
     <div v-if="!hasStoreAccess" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
       <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
       <h2 class="text-xl font-bold text-slate-800 dark:text-slate-200 mb-2">Access Restricted</h2>
@@ -11,19 +11,19 @@
     </div>
 
     <div v-else>
-      <div class="mb-8 flex items-center justify-between">
+      <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200">Staff Management</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your team, staff groups/departments, and review join requests.</p>
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ t('staffManagement') }}</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Manage your team, staff groups/departments, and review join requests.</p>
       </div>
-      <div class="flex gap-3">
-        <el-button v-if="isStoreOwner" plain round @click="$router.push(`/shop/${shopUuid}/roles`)">
-          Roles & Permissions
+      <div class="flex flex-wrap gap-2.5">
+        <el-button v-if="isStoreOwner" plain round size="default" @click="$router.push(`/shop/${shopUuid}/roles`)">
+          {{ t('rolesPermissions') }}
         </el-button>
-        <el-button plain round @click="$router.push(`/shop/${shopUuid}/products`)">
-          ← Back to Shop
+        <el-button plain round size="default" @click="$router.push(`/shop/${shopUuid}/products`)">
+          ← {{ t('products') }}
         </el-button>
-        <el-button v-if="canCreateUser" type="primary" round class="shadow-lg shadow-primary-500/20" @click="inviteDialogVisible = true">
+        <el-button v-if="canCreateUser" type="primary" round size="default" class="shadow-lg shadow-primary-500/20" @click="inviteDialogVisible = true">
           + Invite Staff
         </el-button>
       </div>
@@ -326,6 +326,7 @@ const shopUuid = route.params.id as string
 
 const { fetch } = useApi()
 const authUser = useCookie<any>('auth_user')
+const { t } = useI18n()
 const activeTab = ref('staff')
 
 // Data

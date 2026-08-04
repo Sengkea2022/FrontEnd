@@ -1,10 +1,16 @@
 <script setup>
-import { computed, watchEffect } from 'vue'
+import { computed, watchEffect, onMounted } from 'vue'
 import { useShopStore } from '~/stores/shop'
+import { useSystemSettingStore } from '~/stores/systemSetting'
 
 const route = useRoute()
 const appConfig = useAppConfig()
 const shopStore = useShopStore()
+const systemSettingStore = useSystemSettingStore()
+
+onMounted(() => {
+  systemSettingStore.fetchSettings()
+})
 
 // Detect active shop UUID from route path or query param
 const activeStoreUuid = computed(() => {
@@ -15,7 +21,7 @@ const activeStoreUuid = computed(() => {
   return null
 })
 
-// Dynamically apply store-level theme color or fallback to default 'orangered'
+// Dynamically apply shop-level theme color or fallback to system default primary color from DB
 watchEffect(() => {
   if (activeStoreUuid.value) {
     const foundStore = shopStore.shops.find(s => s.uuid === activeStoreUuid.value)
@@ -24,7 +30,7 @@ watchEffect(() => {
       return
     }
   }
-  appConfig.theme.primary = 'orangered'
+  appConfig.theme.primary = systemSettingStore.defaultPrimaryColor || 'orangered'
 })
 
 const elementThemeStyle = computed(() => {

@@ -62,6 +62,11 @@ export const useOrderStore = defineStore('orders', {
   // ── State ──────────────────────────────────────────────────────────────────
   state: () => ({
     orders: [] as Order[],
+    totalOrdersCount: 0,
+    pendingOrdersCount: 0,
+    completedOrdersCount: 0,
+    currentPage: 1,
+    perPage: 10,
     loading: false,
     submitting: false,
     error: null as string | null,
@@ -69,7 +74,11 @@ export const useOrderStore = defineStore('orders', {
 
   // ── Getters ────────────────────────────────────────────────────────────────
   getters: {
-    totalOrders: (state) => state.orders.length,
+    totalOrders: (state) => state.totalOrdersCount || state.orders.length,
+
+    pendingCount: (state) => state.pendingOrdersCount,
+
+    completedCount: (state) => state.completedOrdersCount,
 
     pendingOrders: (state) =>
       state.orders.filter((o) => o.status === 'pending'),
@@ -88,17 +97,34 @@ export const useOrderStore = defineStore('orders', {
   actions: {
     /**
      * GET /api/orders
-     * Fetch orders from the backend with optional shop filter.
+     * Fetch orders from the backend with optional shop filter and pagination.
      */
-    async fetchOrders(storeCode?: string) {
+    async fetchOrders(storeCode?: string, page = 1, perPage = 10) {
       const { fetch } = useApi()
       this.loading = true
       this.error = null
+      this.currentPage = page
+      this.perPage = perPage
 
       try {
-        const url = storeCode ? `/api/orders?filter[shop_code]=${storeCode}&filter[store_code]=${storeCode}` : '/api/orders'
+        let url = `/api/orders?page=${page}&per_page=${perPage}`
+        if (storeCode) {
+          url += `&shop_uuid=${encodeURIComponent(storeCode)}`
+        }
         const response = await fetch<any>(url)
-        this.orders = response.data ?? (Array.isArray(response) ? response : [])
+        if (response?.meta) {
+          this.orders = response.data ?? []
+          this.totalOrdersCount = response.meta.total ?? response.data.length
+          this.pendingOrdersCount = response.meta.pending_count ?? this.orders.filter(o => o.status === 'pending').length
+          this.completedOrdersCount = response.meta.completed_count ?? this.orders.filter(o => o.status === 'completed').length
+          this.currentPage = response.meta.current_page ?? page
+          this.perPage = response.meta.per_page ?? perPage
+        } else {
+          this.orders = response.data ?? (Array.isArray(response) ? response : [])
+          this.totalOrdersCount = this.orders.length
+          this.pendingOrdersCount = this.orders.filter(o => o.status === 'pending').length
+          this.completedOrdersCount = this.orders.filter(o => o.status === 'completed').length
+        }
       } catch (err: any) {
         this.error = err?.data?.message ?? 'Failed to fetch orders.'
         console.error('[OrderStore] fetchOrders:', err)
@@ -123,6 +149,9 @@ export const useOrderStore = defineStore('orders', {
         })
         const created = res.data ?? res
         this.orders.unshift(created)
+        this.totalOrdersCount++
+        if (created.status === 'pending') this.pendingOrdersCount++
+        if (created.status === 'completed') this.completedOrdersCount++
         return true
       } catch (err: any) {
         this.error = err?.data?.message ?? 'Failed to create order.'
@@ -149,7 +178,17 @@ export const useOrderStore = defineStore('orders', {
         })
         const updated = res.data ?? res
         const index = this.orders.findIndex((o) => o.uuid === uuid)
-        if (index !== -1) this.orders[index] = updated
+        if (index !== -1) {
+          const oldStatus = this.orders[index].status
+          const newStatus = updated.status
+          if (oldStatus !== newStatus) {
+            if (oldStatus === 'pending') this.pendingOrdersCount = Math.max(0, this.pendingOrdersCount - 1)
+            if (oldStatus === 'completed') this.completedOrdersCount = Math.max(0, this.completedOrdersCount - 1)
+            if (newStatus === 'pending') this.pendingOrdersCount++
+            if (newStatus === 'completed') this.completedOrdersCount++
+          }
+          this.orders[index] = updated
+        }
         return true
       } catch (err: any) {
         this.error = err?.data?.message ?? 'Failed to update order.'
@@ -170,7 +209,13 @@ export const useOrderStore = defineStore('orders', {
 
       try {
         await fetch(`/api/orders/${uuid}`, { method: 'DELETE' })
+        const target = this.orders.find(o => o.uuid === uuid)
+        if (target) {
+          if (target.status === 'pending') this.pendingOrdersCount = Math.max(0, this.pendingOrdersCount - 1)
+          if (target.status === 'completed') this.completedOrdersCount = Math.max(0, this.completedOrdersCount - 1)
+        }
         this.orders = this.orders.filter((o) => o.uuid !== uuid)
+        this.totalOrdersCount = Math.max(0, this.totalOrdersCount - 1)
         return true
       } catch (err: any) {
         this.error = err?.data?.message ?? 'Failed to delete order.'

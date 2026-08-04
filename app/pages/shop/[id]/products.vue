@@ -11,6 +11,7 @@ const router = useRouter()
 const shopStore = useShopStore()
 const productStore = useProductStore()
 const authUser = useCookie<any>('auth_user')
+const { t } = useI18n()
 
 const copyCustomerMenuUrl = () => {
   if (!process.client) return
@@ -161,7 +162,7 @@ const statusTag = (s) =>
 </script>
 
 <template>
-  <section class="px-4 py-6 sm:px-6 lg:px-8">
+  <section class="px-4 py-4 sm:px-6 lg:px-8">
     <div v-if="!hasStoreAccess"
       class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-12">
       <div
@@ -176,7 +177,7 @@ const statusTag = (s) =>
       </div>
     </div>
 
-    <div v-else class="mx-auto flex max-w-7xl flex-col gap-6">
+    <div v-else class="mx-auto flex max-w-7xl flex-col gap-4">
 
       <!-- ── Header Banner ────────────────────────────────────────────────── -->
       <el-card class="!rounded-2xl border-0 shadow-sm relative overflow-hidden">
@@ -204,25 +205,25 @@ const statusTag = (s) =>
             <!-- Customer Menu Group -->
             <NuxtLink :to="`/guest/menu?shop_uuid=${shopUuid}`" target="_blank">
               <el-button type="primary" size="default" round class="shadow-sm font-semibold">
-                <el-icon class="mr-1.5"><Open /></el-icon> View Customer Menu
+                <el-icon class="mr-1.5"><Open /></el-icon> {{ t('viewCustomerMenu') }}
               </el-button>
             </NuxtLink>
 
             <el-button type="warning" plain size="default" round @click="copyCustomerMenuUrl">
-              <el-icon class="mr-1.5"><CopyDocument /></el-icon> Copy Menu Link
+              <el-icon class="mr-1.5"><CopyDocument /></el-icon> {{ t('copyMenuLink') }}
             </el-button>
 
             <!-- Shop Admin Group -->
             <NuxtLink v-if="canManageStaff" :to="`/shop/${shopUuid}/staff`">
               <el-button size="default" plain round class="font-medium">
-                <el-icon class="mr-1.5"><User /></el-icon> Staff
+                <el-icon class="mr-1.5"><User /></el-icon> {{ t('staff') }}
               </el-button>
             </NuxtLink>
 
             <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'"
               :to="`/shop/${shopUuid}/roles`">
               <el-button size="default" plain round class="font-medium">
-                <el-icon class="mr-1.5"><Key /></el-icon> Roles & Permissions
+                <el-icon class="mr-1.5"><Key /></el-icon> {{ t('rolesPermissions') }}
               </el-button>
             </NuxtLink>
           </div>
@@ -232,19 +233,19 @@ const statusTag = (s) =>
       <!-- ── Stat cards ──────────────────────────────────────────────────────── -->
       <div class="grid gap-4 md:grid-cols-3">
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Total Items</p>
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">{{ t('totalItems') }}</p>
           <p class="mt-3 text-3xl font-semibold">{{ productStore.totalProducts }}</p>
         </el-card>
 
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Published</p>
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">{{ t('published') }}</p>
           <p class="mt-3 text-3xl font-semibold" :style="{ color: appConfig.theme.primary }">
             {{ productStore.totalProducts }}
           </p>
         </el-card>
 
         <el-card class="!rounded-2xl border-0 shadow-sm">
-          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">Booking Items</p>
+          <p class="text-sm uppercase tracking-[0.22em] text-slate-400">{{ t('bookingItems') }}</p>
           <p class="mt-3 text-3xl font-semibold">
             0
           </p>
@@ -255,7 +256,7 @@ const statusTag = (s) =>
       <el-card class="rounded-2xl! border-0 shadow-sm" v-loading="productStore.loading">
         <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 class="text-xl font-semibold">Product Directory</h2>
+            <h2 class="text-xl font-semibold">{{ t('productDirectory') }}</h2>
             <p class="mt-1 text-sm text-slate-500">
               All products and services for <strong>{{ currentShop.name }}</strong>.
             </p>
@@ -264,7 +265,7 @@ const statusTag = (s) =>
           <div class="flex items-center gap-3">
             <el-input
               v-model="searchQuery"
-              placeholder="Search product name..."
+              :placeholder="t('searchProductName')"
               clearable
               round
               class="w-64 [&_.el-input\_\_wrapper]:!rounded-full"
@@ -275,10 +276,10 @@ const statusTag = (s) =>
             <el-button round size="default" @click="handlePageChange(currentPage)">
               <el-icon class="mr-1">
                 <Refresh />
-              </el-icon> Refresh
+              </el-icon> {{ t('refresh') }}
             </el-button>
             <el-button type="primary" size="default" round @click="openCreateDialog">
-              + Add Product
+              + {{ t('addProduct') }}
             </el-button>
           </div>
         </div>
@@ -286,13 +287,13 @@ const statusTag = (s) =>
         <el-empty v-if="allProducts.length === 0" description="No products found." />
 
         <div v-else>
-          <el-table :data="allProducts" stripe class="w-full" max-height="200">
-            <el-table-column prop="name" label="Product Name" min-width="220" />
-            <el-table-column prop="sku" label="SKU" min-width="120" />
-            <el-table-column prop="category" label="Category" min-width="130" />
-            <el-table-column prop="price" label="Price" min-width="100" />
-            <el-table-column prop="stock" label="Stock" min-width="130" />
-            <el-table-column label="Status" min-width="130">
+          <el-table :data="allProducts" stripe class="w-full" max-height="calc(100vh - 670px)">
+            <el-table-column prop="name" :label="t('productName')" min-width="220" />
+            <el-table-column prop="sku" :label="t('sku')" min-width="120" />
+            <el-table-column prop="category" :label="t('category')" min-width="130" />
+            <el-table-column prop="price" :label="t('price')" min-width="100" />
+            <el-table-column prop="stock" :label="t('stock')" min-width="130" />
+            <el-table-column :label="t('status')" min-width="130">
               <template #default="{ row }">
                 <el-tag :type="statusTag(row.status)" round>{{ row.status }}</el-tag>
               </template>

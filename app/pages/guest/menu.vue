@@ -22,6 +22,7 @@ definePageMeta({
 
 const route = useRoute()
 const config = useRuntimeConfig()
+const { t, locale, setLocale } = useI18n()
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -55,12 +56,21 @@ const storeUuid = computed(() => {
 const storeInfo = computed(() => guestData.value?.store || {})
 const rawProducts = computed(() => guestData.value?.products || [])
 
+const appConfig = useAppConfig()
+const storeThemeColor = computed(() => storeInfo.value?.theme_color || 'orangered')
+
+watchEffect(() => {
+  if (storeInfo.value?.theme_color) {
+    appConfig.theme.primary = storeInfo.value.theme_color
+  }
+})
+
 const dbCategories = computed(() => guestData.value?.categories || [])
 
 // Categories list sourced from DB categories table & product counts
 const categories = computed(() => {
   const map = new Map<string, { id: string; name: string; count: number }>()
-  map.set('all', { id: 'all', name: 'All Products', count: rawProducts.value.length })
+  map.set('all', { id: 'all', name: t('allProducts'), count: rawProducts.value.length })
 
   // 1. Populate categories from DB table
   dbCategories.value.forEach((cat: any) => {
@@ -439,7 +449,7 @@ onMounted(async () => {
       <!-- Store Header -->
       <div class="p-5 border-b border-slate-100 dark:border-slate-800">
         <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-orange-500 to-amber-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-orange-500/20 shrink-0">
+          <div class="w-11 h-11 rounded-lg text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0" :style="{ backgroundColor: appConfig.theme.primary }">
             <template v-if="storeInfo.logo_path">
               <img :src="storeInfo.logo_path" :alt="storeInfo.name" class="w-full h-full object-cover rounded-lg" />
             </template>
@@ -453,7 +463,7 @@ onMounted(async () => {
             </h1>
             <p class="text-xs text-slate-500 dark:text-slate-400 truncate flex items-center gap-1 mt-0.5">
               <el-icon class="text-slate-400"><Location /></el-icon>
-              <span>{{ storeInfo.city || storeInfo.address || 'Store Branch' }}</span>
+              <span>{{ storeInfo.city || storeInfo.address || t('storeBranch') }}</span>
             </p>
           </div>
         </div>
@@ -463,9 +473,9 @@ onMounted(async () => {
       <div class="flex-1 overflow-y-auto p-4 space-y-1.5 scrollbar-thin">
         <div class="flex items-center justify-between px-3 mb-2">
           <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-            <el-icon class="text-orange-500"><CollectionTag /></el-icon> Categories
+            <el-icon :style="{ color: appConfig.theme.primary }"><CollectionTag /></el-icon> {{ t('categories') }}
           </p>
-          <span class="text-xs text-slate-400 font-semibold">{{ categories.length - 1 }} Types</span>
+          <span class="text-xs text-slate-400 font-semibold">{{ categories.length - 1 }} {{ t('types') }}</span>
         </div>
 
         <button
@@ -474,13 +484,14 @@ onMounted(async () => {
           class="w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-sm font-medium transition-all group"
           :class="[
             selectedCategory === cat.id
-              ? 'bg-orange-500 text-white font-semibold shadow-md shadow-orange-500/20'
+              ? 'text-white font-semibold shadow-md'
               : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
           ]"
+          :style="selectedCategory === cat.id ? { backgroundColor: appConfig.theme.primary, color: '#ffffff' } : {}"
           @click="selectedCategory = cat.id"
         >
           <div class="flex items-center gap-2.5 truncate">
-            <el-icon :class="selectedCategory === cat.id ? 'text-white' : 'text-slate-400 group-hover:text-orange-500'"><Folder /></el-icon>
+            <el-icon :class="selectedCategory === cat.id ? 'text-white' : 'text-slate-400'"><Folder /></el-icon>
             <span class="truncate">{{ cat.name }}</span>
           </div>
           <span
@@ -500,7 +511,7 @@ onMounted(async () => {
       <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 py-3 sm:px-6 flex items-center justify-between gap-3 shadow-xs">
         <!-- Store Brand on Mobile/Tablet -->
         <div class="flex items-center gap-2.5 lg:hidden min-w-0 flex-1">
-          <div class="w-9 h-9 rounded-md bg-orange-500 text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+          <div class="w-9 h-9 rounded-md text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0" :style="{ backgroundColor: appConfig.theme.primary }">
             <template v-if="storeInfo.logo_path">
               <img :src="storeInfo.logo_path" :alt="storeInfo.name" class="w-full h-full object-cover rounded-md" />
             </template>
@@ -512,7 +523,7 @@ onMounted(async () => {
             <h1 class="text-sm font-bold truncate text-slate-900 dark:text-white leading-tight">
               {{ storeInfo.name || 'Store Menu' }}
             </h1>
-            <p class="text-[11px] text-slate-400 truncate">Menu Catalog</p>
+            <p class="text-[11px] text-slate-400 truncate">{{ t('menuCatalog') }}</p>
           </div>
         </div>
 
@@ -520,7 +531,7 @@ onMounted(async () => {
         <div class="hidden sm:block flex-1 max-w-md">
           <el-input
             v-model="searchQuery"
-            placeholder="Search food & drinks..."
+            :placeholder="t('searchFoodAndDrinks')"
             clearable
             round
             class="w-full [&_.el-input\_\_wrapper]:!rounded-full"
@@ -576,9 +587,10 @@ onMounted(async () => {
           class="flex items-center gap-2 px-4 py-2 sm:px-4.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all shrink-0 active:scale-95 shadow-2xs"
           :class="[
             selectedCategory === cat.id
-              ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-500/30'
+              ? 'text-white shadow-md'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
           ]"
+          :style="selectedCategory === cat.id ? { backgroundColor: appConfig.theme.primary, color: '#ffffff' } : {}"
           @click="selectedCategory = cat.id"
         >
           <span>{{ cat.name }}</span>
@@ -595,7 +607,7 @@ onMounted(async () => {
       <main class="p-4 sm:p-6 flex-1 max-w-7xl w-full mx-auto pb-24 lg:pb-8">
         <!-- Loading State -->
         <div v-if="loading" class="py-24 text-center">
-          <el-icon class="is-loading text-5xl text-orange-500 mb-4"><Goods /></el-icon>
+          <el-icon class="is-loading text-5xl mb-4" :style="{ color: appConfig.theme.primary }"><Goods /></el-icon>
           <p class="text-base text-slate-500 font-medium">Loading store menu and catalog...</p>
         </div>
 
@@ -619,21 +631,22 @@ onMounted(async () => {
             <!-- Title Banner -->
             <div class="flex items-center justify-between bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-xs">
               <div>
-                <span class="text-[11px] uppercase font-bold tracking-widest text-orange-600 bg-orange-50 dark:bg-orange-950/40 px-3 py-1 rounded-full">
+                <span class="text-[11px] uppercase font-bold tracking-widest px-3 py-1 rounded-full"
+                  :style="{ backgroundColor: `color-mix(in srgb, ${appConfig.theme.primary} 12%, transparent)`, color: appConfig.theme.primary }">
                   {{ storeInfo.name }}
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold mt-2 text-slate-900 dark:text-white leading-tight">
                   {{ currentCategoryName }}
                 </h2>
-                <p class="text-xs text-slate-500 mt-1">Showing {{ filteredProducts.length }} food items ready for ordering.</p>
+                <p class="text-xs text-slate-500 mt-1">{{ t('showingItems') }} {{ filteredProducts.length }} {{ t('itemsReadyForOrdering') }}</p>
               </div>
             </div>
 
             <!-- Empty Products State -->
             <div v-if="filteredProducts.length === 0" class="p-12 text-center bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 text-slate-400">
               <el-icon class="text-4xl text-slate-300 mb-2"><Goods /></el-icon>
-              <p class="text-base font-semibold">No products found</p>
-              <p class="text-xs text-slate-400 mt-1">Select another category or adjust your search.</p>
+              <p class="text-base font-semibold">{{ t('noProductsFound') }}</p>
+              <p class="text-xs text-slate-400 mt-1">{{ t('selectAnotherCategory') }}</p>
             </div>
 
             <!-- Product Category Sections with el-divider -->
@@ -645,9 +658,10 @@ onMounted(async () => {
                 <!-- Category Subheader -->
                 <div v-if="selectedCategory === 'all'" class="flex items-center justify-between pt-1">
                   <h3 class="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <el-icon class="text-orange-500 text-sm sm:text-base"><CollectionTag /></el-icon>
+                    <el-icon class="text-sm sm:text-base" :style="{ color: appConfig.theme.primary }"><CollectionTag /></el-icon>
                     <span>{{ group.name }}</span>
-                    <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400">
+                    <span class="text-xs px-2 py-0.5 rounded-full font-bold"
+                      :style="{ backgroundColor: `color-mix(in srgb, ${appConfig.theme.primary} 15%, transparent)`, color: appConfig.theme.primary }">
                       {{ group.products.length }}
                     </span>
                   </h3>
@@ -659,11 +673,7 @@ onMounted(async () => {
                     v-for="item in group.products"
                     :key="item.id"
                     class="bg-white dark:bg-slate-900 rounded-xl border p-4 flex flex-col justify-between hover:shadow-md active:scale-[0.99] transition-all duration-200 group overflow-hidden cursor-pointer select-none relative"
-                    :class="[
-                      getCartItemQty(item) > 0
-                        ? 'border-orange-500 dark:border-orange-500 bg-orange-50/20 dark:bg-orange-950/20 shadow-xs'
-                        : 'border-slate-100 dark:border-slate-800'
-                    ]"
+                    :style="getCartItemQty(item) > 0 ? { borderColor: appConfig.theme.primary } : {}"
                     @click="addToCart(item)"
                   >
                     <div>
@@ -681,8 +691,9 @@ onMounted(async () => {
 
                         <!-- Checkmark / Selection Badge (Top Right of Image) -->
                         <div
-                          v-if="getCartItemQty(item) > 0"
-                          class="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md"
+                          v-if="getCartItemQty(item)"
+                          class="absolute top-2 right-2 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md"
+                          :style="{ backgroundColor: appConfig.theme.primary }"
                         >
                           <el-icon class="text-xs font-bold"><Check /></el-icon>
                           <span>{{ getCartItemQty(item) }}</span>
@@ -690,7 +701,7 @@ onMounted(async () => {
                       </div>
 
                       <div class="flex justify-between items-start mb-1.5">
-                        <h3 class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-orange-500 transition-colors leading-snug">
+                        <h3 class="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 transition-colors leading-snug">
                           {{ item.product_name || item.name }}
                         </h3>
                         <span class="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md shrink-0 ml-2">
@@ -704,8 +715,8 @@ onMounted(async () => {
 
                     <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
                       <div>
-                        <span class="text-[10px] uppercase font-bold text-slate-400 block">Price</span>
-                        <p class="text-base sm:text-lg font-bold text-orange-600">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block">{{ t('price') }}</span>
+                        <p class="text-base sm:text-lg font-bold" :style="{ color: appConfig.theme.primary }">
                           ${{ getProductPrice(item) }}
                         </p>
                       </div>
@@ -713,10 +724,11 @@ onMounted(async () => {
                       <!-- Selected Status Indicator Badge -->
                       <div
                         v-if="getCartItemQty(item) > 0"
-                        class="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/60 px-2.5 py-1 rounded-full"
+                        class="flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full"
+                        :style="{ backgroundColor: `color-mix(in srgb, ${appConfig.theme.primary} 15%, transparent)`, color: appConfig.theme.primary }"
                       >
                         <el-icon><Check /></el-icon>
-                        <span>{{ getCartItemQty(item) }} in Order</span>
+                        <span>{{ getCartItemQty(item) }} {{ t('inOrder') }}</span>
                       </div>
                     </div>
                   </div>
@@ -730,11 +742,12 @@ onMounted(async () => {
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
               <h3 class="text-lg font-bold mb-4 flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <span class="flex items-center gap-2">
-                  <el-icon class="text-orange-500"><ShoppingBag /></el-icon>
-                  <span>Your Order</span>
+                  <el-icon :style="{ color: appConfig.theme.primary }"><ShoppingBag /></el-icon>
+                  <span>{{ t('yourOrder') }}</span>
                 </span>
-                <span v-if="cartTotalCount > 0" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400">
-                  {{ cartTotalCount }} Items
+                <span v-if="cartTotalCount > 0" class="text-xs font-bold px-2.5 py-0.5 rounded-full"
+                  :style="{ backgroundColor: `color-mix(in srgb, ${appConfig.theme.primary} 15%, transparent)`, color: appConfig.theme.primary }">
+                  {{ cartTotalCount }} {{ t('items') }}
                 </span>
               </h3>
 
@@ -743,15 +756,15 @@ onMounted(async () => {
                 <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
                   <el-icon><Check /></el-icon>
                 </div>
-                <h4 class="font-bold text-lg">Order Placed!</h4>
+                <h4 class="font-bold text-lg">{{ t('orderPlaced') }}</h4>
                 <p class="text-xs font-mono bg-emerald-100 dark:bg-emerald-900/60 py-1 px-2 rounded-lg inline-block font-bold">
                   {{ createdOrderCode }}
                 </p>
                 <p class="text-xs text-slate-600 dark:text-slate-300">
-                  Thank you! {{ storeInfo.name }} has received your order.
+                  {{ t('thankYouOrderReceived') }}
                 </p>
                 <el-button class="mt-3 w-full" type="primary" plain round size="small" @click="orderSuccess = false">
-                  Place Another Order
+                  {{ t('placeAnotherOrder') }}
                 </el-button>
               </div>
 
@@ -759,8 +772,8 @@ onMounted(async () => {
               <div v-else>
                 <div v-if="cart.length === 0" class="py-10 text-center text-slate-400 text-xs">
                   <el-icon class="text-3xl text-slate-300 mb-2"><ShoppingBag /></el-icon>
-                  <p>Your order is empty.</p>
-                  <p class="text-[11px] text-slate-400 mt-1">Select items from the catalog to build your order.</p>
+                  <p>{{ t('yourOrderIsEmpty') }}</p>
+                  <p class="text-[11px] text-slate-400 mt-1">{{ t('selectItemsToBuild') }}</p>
                 </div>
 
                 <div v-else class="space-y-3 mb-5 max-h-56 overflow-y-auto pr-1">
@@ -773,7 +786,7 @@ onMounted(async () => {
                       <p class="font-bold text-slate-800 dark:text-slate-200 leading-tight">
                         {{ item.product.product_name || item.product.name }}
                       </p>
-                      <p class="text-orange-600 font-bold mt-0.5">
+                      <p class="font-bold mt-0.5" :style="{ color: appConfig.theme.primary }">
                         ${{ (parseFloat(getProductPrice(item.product)) * item.qty).toFixed(2) }}
                       </p>
                     </div>
@@ -788,12 +801,12 @@ onMounted(async () => {
                 <!-- Total Summary -->
                 <div v-if="cart.length > 0" class="border-t border-slate-100 dark:border-slate-800 pt-3 mb-5">
                   <div class="flex justify-between items-center text-xs text-slate-500 mb-1">
-                    <span>Total Items</span>
+                    <span>{{ t('totalItems') }}</span>
                     <span class="font-bold">{{ cartTotalCount }}</span>
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-sm font-bold text-slate-800 dark:text-slate-200">Total Amount</span>
-                    <span class="text-xl font-bold text-orange-600">${{ cartTotalPrice.toFixed(2) }}</span>
+                    <span class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ t('totalAmount') }}</span>
+                    <span class="text-xl font-bold" :style="{ color: appConfig.theme.primary }">${{ cartTotalPrice.toFixed(2) }}</span>
                   </div>
                 </div>
 
@@ -801,23 +814,23 @@ onMounted(async () => {
                 <div v-if="cart.length > 0" class="space-y-3 mb-5">
                   <div class="grid grid-cols-2 gap-2">
                     <div>
-                      <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Table / Room No</label>
-                      <el-input v-model="tableNo" placeholder="e.g. Table 05" size="small" />
+                      <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('tableOrRoomNo') }}</label>
+                      <el-input v-model="tableNo" :placeholder="t('tablePlaceholder')" size="small" />
                     </div>
                     <div>
-                      <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Your Name</label>
-                      <el-input v-model="customerName" placeholder="e.g. Sok Dara" size="small" />
+                      <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('yourName') }}</label>
+                      <el-input v-model="customerName" :placeholder="t('namePlaceholder')" size="small" />
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Phone Number (Optional)</label>
-                    <el-input v-model="customerPhone" placeholder="e.g. 012 345 678" size="small" />
+                    <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('phoneOptional') }}</label>
+                    <el-input v-model="customerPhone" :placeholder="t('phonePlaceholder')" size="small" />
                   </div>
 
                   <div>
-                    <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Order Note / Address</label>
-                    <el-input v-model="orderNote" type="textarea" :rows="2" placeholder="e.g. Extra spicy / Delivery address" size="small" />
+                    <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('orderNoteAddress') }}</label>
+                    <el-input v-model="orderNote" type="textarea" :rows="2" :placeholder="t('notePlaceholder')" size="small" />
                   </div>
                 </div>
 
@@ -835,7 +848,7 @@ onMounted(async () => {
                     Please wait {{ cooldownSeconds }}s before next order...
                   </span>
                   <span v-else>
-                    Submit Order to {{ storeInfo.name }}
+                    {{ t('placeOrderNow') }}
                   </span>
                 </el-button>
               </div>
@@ -846,10 +859,10 @@ onMounted(async () => {
               <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <h4 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <el-icon class="text-orange-500"><Clock /></el-icon>
-                  <span>Order History</span>
+                  <span>{{ t('orderManagement') }}</span>
                 </h4>
                 <button class="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1" @click="fetchGuestOrders">
-                  <el-icon><Refresh /></el-icon> Refresh
+                  <el-icon><Refresh /></el-icon> {{ t('refresh') }}
                 </button>
               </div>
 
@@ -891,12 +904,12 @@ onMounted(async () => {
         class="lg:hidden fixed bottom-4 left-4 right-4 z-40 bg-slate-900 text-white p-3.5 rounded-lg shadow-xl border border-slate-800 flex items-center justify-between gap-3 animate-bounce-short"
       >
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-md bg-orange-500 flex items-center justify-center font-bold text-base shadow-sm">
+          <div class="w-10 h-10 rounded-md flex items-center justify-center font-bold text-base shadow-sm" :style="{ backgroundColor: appConfig.theme.primary }">
             {{ cartTotalCount }}
           </div>
           <div>
-            <p class="text-xs text-slate-400">Total Amount</p>
-            <p class="text-base font-bold text-orange-400">${{ cartTotalPrice.toFixed(2) }}</p>
+            <p class="text-xs text-slate-400">{{ t('totalAmount') }}</p>
+            <p class="text-base font-bold" :style="{ color: appConfig.theme.primary }">${{ cartTotalPrice.toFixed(2) }}</p>
           </div>
         </div>
 
@@ -907,7 +920,7 @@ onMounted(async () => {
           class="shadow-sm font-bold"
           @click="mobileCartDrawer = true"
         >
-          View Order & Checkout →
+          {{ t('viewOrderCheckout') }}
         </el-button>
       </div>
 
@@ -923,8 +936,8 @@ onMounted(async () => {
     >
       <template #header>
         <div class="max-w-xl mx-auto w-full flex items-center gap-2">
-          <el-icon class="text-orange-500 text-xl"><ShoppingBag /></el-icon>
-          <span class="font-bold text-lg text-slate-900 dark:text-white">Your Order Summary</span>
+          <el-icon class="text-xl" :style="{ color: appConfig.theme.primary }"><ShoppingBag /></el-icon>
+          <span class="font-bold text-lg text-slate-900 dark:text-white">{{ t('orderSummary') }}</span>
         </div>
       </template>
 
@@ -961,7 +974,7 @@ onMounted(async () => {
                 <p class="font-bold text-slate-800 dark:text-slate-200 leading-tight">
                   {{ item.product.product_name || item.product.name }}
                 </p>
-                <p class="text-orange-600 font-bold mt-0.5">
+                <p class="font-bold mt-0.5" :style="{ color: appConfig.theme.primary }">
                   ${{ (parseFloat(getProductPrice(item.product)) * item.qty).toFixed(2) }}
                 </p>
               </div>
@@ -976,12 +989,12 @@ onMounted(async () => {
           <!-- Total Summary -->
           <div v-if="cart.length > 0" class="border-t border-slate-100 dark:border-slate-800 pt-3 mb-5">
             <div class="flex justify-between items-center text-xs text-slate-500 mb-1">
-              <span>Total Items</span>
+              <span>{{ t('totalItems') }}</span>
               <span class="font-bold">{{ cartTotalCount }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="text-sm font-bold text-slate-800 dark:text-slate-200">Total Amount</span>
-              <span class="text-xl font-bold text-orange-600">${{ cartTotalPrice.toFixed(2) }}</span>
+              <span class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ t('totalAmount') }}</span>
+              <span class="text-xl font-bold" :style="{ color: appConfig.theme.primary }">${{ cartTotalPrice.toFixed(2) }}</span>
             </div>
           </div>
 
@@ -989,23 +1002,23 @@ onMounted(async () => {
           <div v-if="cart.length > 0" class="space-y-3 mb-5">
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Table / Room No</label>
-                <el-input v-model="tableNo" placeholder="e.g. Table 05" size="small" />
+                <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('tableOrRoomNo') }}</label>
+                <el-input v-model="tableNo" :placeholder="t('tablePlaceholder')" size="small" />
               </div>
               <div>
-                <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Your Name</label>
-                <el-input v-model="customerName" placeholder="e.g. Sok Dara" size="small" />
+                <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('yourName') }}</label>
+                <el-input v-model="customerName" :placeholder="t('namePlaceholder')" size="small" />
               </div>
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Phone Number (Optional)</label>
-              <el-input v-model="customerPhone" placeholder="e.g. 012 345 678" size="small" />
+              <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('phoneOptional') }}</label>
+              <el-input v-model="customerPhone" :placeholder="t('phonePlaceholder')" size="small" />
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">Order Note / Address</label>
-              <el-input v-model="orderNote" type="textarea" :rows="2" placeholder="e.g. Extra spicy / Delivery address" size="small" />
+              <label class="block text-[11px] font-semibold uppercase text-slate-400 mb-1">{{ t('orderNoteAddress') }}</label>
+              <el-input v-model="orderNote" type="textarea" :rows="2" :placeholder="t('notePlaceholder')" size="small" />
             </div>
           </div>
 
@@ -1022,7 +1035,7 @@ onMounted(async () => {
               Please wait {{ cooldownSeconds }}s before next order...
             </span>
             <span v-else>
-              Submit Order to {{ storeInfo.name }}
+              {{ t('placeOrderNow') }}
             </span>
           </el-button>
 

@@ -69,10 +69,10 @@ const navItems = computed(() => {
     if (isInShopContext.value) {
         const id = shopContextId.value
         return [
-            { labelKey: 'dashboard', customLabel: 'Dashboard', to: `/shop/${id}/dashboard`, icon: Odometer },
-            { labelKey: 'products',  customLabel: 'Products',  to: `/shop/${id}/products`,  icon: Goods },
-            { labelKey: 'orders',    customLabel: 'Orders',    to: `/shop/${id}/orders`,    icon: Tickets },
-            { labelKey: 'settings',  customLabel: 'Settings',  to: `/shop/${id}/settings`,  icon: Setting },
+            { labelKey: 'dashboard', to: `/shop/${id}/dashboard`, icon: Odometer },
+            { labelKey: 'products',  to: `/shop/${id}/products`,  icon: Goods },
+            { labelKey: 'orders',    to: `/shop/${id}/orders`,    icon: Tickets },
+            { labelKey: 'settings',  to: `/shop/${id}/settings`,  icon: Setting },
         ]
     }
 
@@ -80,19 +80,19 @@ const navItems = computed(() => {
     if (!isSuperOrOwner.value) {
         // Staff without shop
         if (!hasShop.value) {
-            return [{ labelKey: 'shop', customLabel: 'Join Shop', to: '/join-shop', icon: Shop }]
+            return [{ labelKey: 'joinShop', to: '/join-shop', icon: Shop }]
         }
         // Staff with shop → auto redirect handled by shop/index.vue
         const shopTarget = authUser.value?.shop?.uuid || authUser.value?.shop_code || authUser.value?.store_code
         const shopPath = shopTarget ? `/shop/${shopTarget}/dashboard` : '/shop'
         return [
-            { labelKey: 'dashboard',  customLabel: 'Dashboard',  to: shopPath, icon: Odometer },
+            { labelKey: 'dashboard', to: shopPath, icon: Odometer },
         ]
     }
 
     // Super/Owner not in shop context → show only shop list
     return [
-        { labelKey: 'shop', customLabel: 'My Shops', to: '/shop', icon: Shop },
+        { labelKey: 'myShops', to: '/shop', icon: Shop },
     ]
 })
 

@@ -1,16 +1,16 @@
 <template>
-  <div class="p-6 max-w-7xl mx-auto">
-    <div class="mb-8 flex items-center justify-between">
+  <div class="p-4 sm:p-6 max-w-7xl mx-auto">
+    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200">Roles & Permissions</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage store roles, permissions, and staff group department scopes.</p>
+        <h1 class="text-2xl font-bold text-slate-800 dark:text-slate-200">{{ t('rolesPermissions') }}</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">Manage store roles, permissions, and staff group department scopes.</p>
       </div>
-      <div class="flex gap-3">
-        <el-button plain round @click="$router.push(`/shop/${shopUuid}/staff`)">
-          Staff Management
+      <div class="flex flex-wrap gap-2.5">
+        <el-button plain round size="default" @click="$router.push(`/shop/${shopUuid}/staff`)">
+          {{ t('staffManagement') }}
         </el-button>
-        <el-button plain round @click="$router.push(`/shop/${shopUuid}/products`)">
-          ← Back to Shop
+        <el-button plain round size="default" @click="$router.push(`/shop/${shopUuid}/products`)">
+          ← {{ t('products') }}
         </el-button>
       </div>
     </div>
@@ -24,9 +24,9 @@
       :closable="false"
     />
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- Roles Sidebar -->
-      <div class="md:col-span-1">
+      <div class="lg:col-span-1">
         <el-card shadow="never" class="border-slate-200! dark:border-slate-700! bg-white! dark:bg-slate-800!">
           <div class="flex items-center justify-between mb-4 px-2">
             <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Roles</h2>
@@ -226,6 +226,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { Lock, User, Setting } from '@element-plus/icons-vue'
+
+const { t } = useI18n()
 
 const dbStoreDepartments = ref<string[]>([])
 
