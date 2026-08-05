@@ -40,3 +40,19 @@
   }
 
 }
+
+:root {
+  --app-button-radius: 9999px;
+  --app-input-radius: 4px;
+}
+
+/* ── Element Plus Global UI Consistency Overrides ── */
+.el-button {
+  border-radius: var(--app-button-radius) !important;
+}
+
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  border-radius: var(--app-input-radius) !important;
+}

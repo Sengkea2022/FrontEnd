@@ -154,6 +154,24 @@ export const useProductStore = defineStore('product', () => {
     }
   }
 
+  const createCategory = async (name: string) => {
+    try {
+      const res = await fetch<{ data: any }>('/api/categories', {
+        method: 'POST',
+        body: { name }
+      })
+      if (res && res.data) {
+        await fetchCategories()
+        ElNotification({ title: 'Success', message: `Category "${name}" created!`, type: 'success' })
+        return res.data
+      }
+    } catch (e: any) {
+      console.error('Failed to create category:', e)
+      ElNotification({ title: 'Error', message: e?.data?.message || 'Could not create category', type: 'error' })
+      return null
+    }
+  }
+
   return {
     products,
     loading,
@@ -166,6 +184,7 @@ export const useProductStore = defineStore('product', () => {
     searchKey,
     fetchProducts,
     fetchCategories,
+    createCategory,
     createProduct,
     updateProduct,
     deleteProduct

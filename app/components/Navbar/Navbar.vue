@@ -36,6 +36,11 @@ const fetchPendingInvites = async () => {
   }
 }
 
+const isDeveloper = computed(() => {
+  const slug = authUser.value?.role?.slug
+  return slug === 'developer' || slug === 'shop-owner'
+})
+
 onMounted(() => {
   fetchPendingInvites()
 })

@@ -243,11 +243,11 @@ const submit = () => {
     width="700px"
     class="!rounded-2xl"
   >
-    <el-form label-position="top" class="grid gap-4 md:grid-cols-2">
+    <el-form label-position="top" size="small" class="grid gap-3 md:grid-cols-2">
 
       <!-- Shop Name -->
       <el-form-item label="Shop Name" :class="isSuperAdmin && !editingUuid ? '' : 'md:col-span-2'">
-        <el-input v-model="localForm.name" placeholder="Enter shop name" size="large" />
+        <el-input v-model="localForm.name" placeholder="Enter shop name" size="small" />
       </el-form-item>
 
       <!-- Shop Owner (Only for SuperAdmin when creating) -->
@@ -255,7 +255,7 @@ const submit = () => {
         <el-select
           v-model="localForm.user_code"
           placeholder="Select a shop owner"
-          size="large"
+          size="small"
           class="w-full"
           filterable
           clearable
@@ -274,7 +274,7 @@ const submit = () => {
         <el-select
           v-model="localForm.country"
           placeholder="Select country"
-          size="large"
+          size="small"
           class="w-full"
           filterable
           clearable
@@ -293,7 +293,7 @@ const submit = () => {
         <el-select
           v-model="localForm.state"
           placeholder="Select or type state / province"
-          size="large"
+          size="small"
           class="w-full"
           filterable
           allow-create
@@ -313,7 +313,7 @@ const submit = () => {
         <el-select
           v-model="localForm.city"
           placeholder="Select or type city / district"
-          size="large"
+          size="small"
           class="w-full"
           filterable
           allow-create
@@ -333,7 +333,7 @@ const submit = () => {
         <el-select
           v-model="localForm.commune"
           placeholder="Type commune / sangkat name to search"
-          size="large"
+          size="small"
           class="w-full"
           filterable
           remote
@@ -366,7 +366,7 @@ const submit = () => {
         <el-select
           v-model="localForm.village"
           placeholder="Type village / phum name to search"
-          size="large"
+          size="small"
           class="w-full"
           filterable
           remote
@@ -396,7 +396,7 @@ const submit = () => {
 
       <!-- Type -->
       <el-form-item label="Type">
-        <el-select v-model="localForm.type" placeholder="Select type" size="large" class="w-full">
+        <el-select v-model="localForm.type" placeholder="Select type" size="small" class="w-full">
           <el-option label="Retail"   value="Retail" />
           <el-option label="Booking"  value="Booking" />
           <el-option label="Service"  value="Service" />
@@ -405,7 +405,7 @@ const submit = () => {
 
       <!-- Status -->
       <el-form-item label="Status">
-        <el-select v-model="localForm.status" placeholder="Select status" size="large" class="w-full">
+        <el-select v-model="localForm.status" placeholder="Select status" size="small" class="w-full">
           <el-option label="Active"      value="Active" />
           <el-option label="Inactive"    value="Inactive" />
           <el-option label="Maintenance" value="Maintenance" />
@@ -417,7 +417,7 @@ const submit = () => {
         <el-select
           v-model="localForm.manager_id"
           placeholder="Select manager"
-          size="large"
+          size="small"
           class="w-full"
           clearable
         >
@@ -435,7 +435,7 @@ const submit = () => {
         <el-input
           v-model="localForm.address"
           placeholder="Auto-filled from location fields above"
-          size="large"
+          size="small"
           type="textarea"
           :autosize="{ minRows: 2, maxRows: 3 }"
         />
@@ -471,7 +471,7 @@ const submit = () => {
           collapse-tags
           collapse-tags-tooltip
           placeholder="Select staff members to assign"
-          size="large"
+          size="small"
           class="w-full"
         >
           <el-option
@@ -486,9 +486,9 @@ const submit = () => {
     </el-form>
 
     <template #footer>
-      <div class="flex justify-end gap-3">
-        <el-button round @click="visible = false">Cancel</el-button>
-        <el-button type="primary" round :loading="loading" @click="submit">
+      <div class="flex justify-end gap-2">
+        <el-button round size="small" @click="visible = false">Cancel</el-button>
+        <el-button type="primary" round size="small" :loading="loading" @click="submit">
           {{ editingUuid ? 'Update' : 'Save' }}
         </el-button>
       </div>

@@ -193,11 +193,11 @@
       v-model="createDialogVisible"
       title="Create New Role"
       width="450px"
-      class="rounded-2xl!"
+      class="!rounded-2xl"
     >
-      <el-form label-position="top" @submit.prevent="createRole">
+      <el-form label-position="top" size="small" @submit.prevent="createRole">
         <el-form-item label="Role Name">
-          <el-input v-model="newRoleName" placeholder="e.g. Sales Manager, Claims Manager, Cashier" size="large" />
+          <el-input v-model="newRoleName" placeholder="e.g. Sales Manager, Claims Manager, Cashier" size="small" />
         </el-form-item>
         <el-form-item label="Department Management Scope">
           <p class="text-xs text-slate-500 mb-2">Specify which department staff this role is allowed to manage (e.g. Sale, Claim). Leave blank for non-management roles or all departments.</p>
@@ -207,7 +207,7 @@
             filterable 
             allow-create 
             clearable 
-            size="large" 
+            size="small" 
             class="w-full"
           >
             <el-option label="All Departments (Unrestricted)" value="" />
@@ -216,9 +216,9 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <div class="flex justify-end gap-3">
-          <el-button round @click="createDialogVisible = false">Cancel</el-button>
-          <el-button type="primary" round :loading="creatingRole" @click="createRole" :disabled="!newRoleName.trim()">
+        <div class="flex justify-end gap-2">
+          <el-button round size="small" @click="createDialogVisible = false">Cancel</el-button>
+          <el-button type="primary" round size="small" :loading="creatingRole" @click="createRole" :disabled="!newRoleName.trim()">
             Create Role
           </el-button>
         </div>

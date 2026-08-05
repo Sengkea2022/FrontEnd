@@ -113,6 +113,8 @@ const searchCategory = async (query: string) => {
   loadingCategory.value = false
 }
 
+
+
 const openCreateDialog = () => {
   editingUuid.value = null
   formModel.value = emptyForm()
@@ -137,6 +139,15 @@ const openEditDialog = (row) => {
 
 const submitProduct = async () => {
   submitting.value = true
+
+  // Auto-create category if typed value is not in database list
+  if (formModel.value.category && !productStore.categories.some(c => c.code === formModel.value.category || c.name === formModel.value.category)) {
+    const created = await productStore.createCategory(formModel.value.category)
+    if (created) {
+      formModel.value.category = created.code || created.name
+    }
+  }
+
   let success = false
   if (editingUuid.value) {
     success = await productStore.updateProduct(editingUuid.value, formModel.value)
@@ -315,56 +326,71 @@ const statusTag = (s) =>
     </div>
 
     <!-- ── Create / Edit Product Dialog ──────────────────────────────────────── -->
-    <el-dialog v-model="dialogVisible" :title="editingUuid ? 'Edit Product' : 'Add Product'" width="600px"
-      class="!rounded-2xl">
-      <el-form label-position="top" class="grid gap-4 md:grid-cols-2" @submit.prevent="submitProduct">
-        <div class="md:col-span-2">
-          <p class="mb-1 text-sm font-medium text-slate-600">Product Name</p>
-          <el-input v-model="formModel.name" placeholder="Enter product or service name" />
-        </div>
+    <el-dialog
+      v-model="dialogVisible"
+      :title="editingUuid ? 'Edit Product' : 'Add Product'"
+      width="550px"
+      class="!rounded-2xl"
+    >
+      <el-form label-position="top" size="small" class="grid gap-3 md:grid-cols-2" @submit.prevent="submitProduct">
+        <el-form-item label="Product Name" class="md:col-span-2">
+          <el-input v-model="formModel.name" placeholder="Enter product or service name" size="small" />
+        </el-form-item>
 
         <el-form-item label="Product Code (SKU)">
-          <el-input v-model="formModel.sku" placeholder="Auto-generated (e.g. PR-0001)" size="large" readonly />
+          <el-input v-model="formModel.sku" placeholder="Auto-generated (e.g. PR-0001)" size="small" readonly />
         </el-form-item>
 
         <el-form-item label="Category">
-          <el-select v-model="formModel.category" placeholder="Search category" size="large" class="w-full" filterable
-            remote reserve-keyword :remote-method="searchCategory" :loading="loadingCategory">
-            <!-- Show the current category name if it exists but isn't in options -->
-            <el-option v-if="formModel.category && !productStore.categories.some(c => c.code === formModel.category)"
+          <el-select
+            v-model="formModel.category"
+            placeholder="Select or type new category"
+            size="small"
+            class="w-full"
+            filterable
+            allow-create
+            default-first-option
+            :loading="loadingCategory"
+          >
+            <!-- Show current category name if not in backend list -->
+            <el-option
+              v-if="formModel.category && !productStore.categories.some(c => c.code === formModel.category || c.name === formModel.category)"
               :key="formModel.category"
               :label="productStore.products.find(p => p.category_code === formModel.category)?.category || formModel.category"
-              :value="formModel.category" />
-            <el-option v-for="cat in productStore.categories" :key="cat.code" :label="cat.name" :value="cat.code" />
+              :value="formModel.category"
+            />
+            <el-option
+              v-for="cat in productStore.categories"
+              :key="cat.code || cat.id"
+              :label="cat.name"
+              :value="cat.code || cat.name"
+            />
           </el-select>
         </el-form-item>
 
-        <div>
-          <p class="mb-1 text-sm font-medium text-slate-600">Price</p>
-          <el-input v-model="formModel.price" type="number" placeholder="0.00" />
-        </div>
+        <el-form-item label="Price">
+          <el-input v-model="formModel.price" type="number" placeholder="0.00" size="small" />
+        </el-form-item>
 
-        <div>
-          <p class="mb-1 text-sm font-medium text-slate-600">Status</p>
-          <el-select v-model="formModel.status" placeholder="Select status" class="w-full">
+        <el-form-item label="Status">
+          <el-select v-model="formModel.status" placeholder="Select status" size="small" class="w-full">
             <el-option v-for="s in statusOptions" :key="s" :label="s" :value="s" />
           </el-select>
-        </div>
+        </el-form-item>
 
-        <div class="md:col-span-2">
-          <p class="mb-1 text-sm font-medium text-slate-600">Stock / Availability</p>
-          <el-input v-model="formModel.stock" placeholder="Available / 12 Units / etc." />
-        </div>
-        <div class="md:col-span-2">
-          <p class="mb-1 text-sm font-medium text-slate-600">Description</p>
-          <el-input v-model="formModel.description" type="textarea" :rows="3" placeholder="Enter description" />
-        </div>
+        <el-form-item label="Stock / Availability" class="md:col-span-2">
+          <el-input v-model="formModel.stock" placeholder="Available / 12 Units / etc." size="small" />
+        </el-form-item>
+
+        <el-form-item label="Description" class="md:col-span-2">
+          <el-input v-model="formModel.description" type="textarea" :rows="2" placeholder="Enter description" size="small" />
+        </el-form-item>
       </el-form>
 
       <template #footer>
-        <div class="flex justify-end gap-3">
-          <el-button size="large" @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" size="large" :loading="submitting" @click="submitProduct">
+        <div class="flex justify-end gap-2">
+          <el-button round size="small" @click="dialogVisible = false">Cancel</el-button>
+          <el-button type="primary" round size="small" :loading="submitting" @click="submitProduct">
             {{ editingUuid ? 'Update' : 'Create' }}
           </el-button>
         </div>

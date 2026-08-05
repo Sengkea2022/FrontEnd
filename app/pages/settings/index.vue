@@ -30,7 +30,8 @@ const customColor = ref<string>(selectedColor.value.startsWith('#') ? selectedCo
 const authUser = useCookie<any>('auth_user')
 
 onMounted(async () => {
-  if (authUser.value?.role?.slug !== 'developer') {
+  const slug = authUser.value?.role?.slug
+  if (!['developer', 'shop-owner'].includes(slug)) {
     return navigateTo('/profile', { replace: true })
   }
   await systemSettingStore.fetchSettings()
@@ -77,6 +78,8 @@ const saveSystemDefault = async () => {
   saving.value = true
   try {
     await systemSettingStore.updateSetting('default_primary_color', selectedColor.value)
+    await systemSettingStore.updateSetting('button_radius', systemSettingStore.buttonRadius)
+    await systemSettingStore.updateSetting('input_radius', systemSettingStore.inputRadius)
     appConfig.theme.primary = selectedColor.value
     ElNotification.success({
       title: t('saveSystemDefault'),
@@ -97,7 +100,11 @@ const resetToFactoryDefault = async () => {
   try {
     selectedColor.value = 'orangered'
     customColor.value = '#ff4500'
+    systemSettingStore.setButtonRadius('9999px')
+    systemSettingStore.setInputRadius('4px')
     await systemSettingStore.updateSetting('default_primary_color', 'orangered')
+    await systemSettingStore.updateSetting('button_radius', '9999px')
+    await systemSettingStore.updateSetting('input_radius', '4px')
     appConfig.theme.primary = 'orangered'
     ElNotification.info({
       title: t('resetDefault'),
@@ -112,6 +119,20 @@ const resetToFactoryDefault = async () => {
     saving.value = false
   }
 }
+
+const buttonRadiusOptions = [
+  { label: 'Pill (Full)', value: '9999px' },
+  { label: 'Smooth (12px)', value: '0.75rem' },
+  { label: 'Standard (6px)', value: '0.375rem' },
+  { label: 'Sharp (0px)', value: '0px' }
+]
+
+const inputRadiusOptions = [
+  { label: 'Default (4px)', value: '4px' },
+  { label: 'Smooth (12px)', value: '0.75rem' },
+  { label: 'Pill (Full)', value: '9999px' },
+  { label: 'Sharp (0px)', value: '0px' }
+]
 </script>
 
 <template>
@@ -210,6 +231,75 @@ const resetToFactoryDefault = async () => {
                 <div class="flex items-center gap-3">
                   <el-color-picker v-model="customColor" size="large" @change="onCustomColorChange" />
                   <el-input v-model="customColor" placeholder="#ff4500" size="default" class="w-28 font-mono text-xs" @change="onCustomColorChange" />
+                </div>
+              </div>
+            </div>
+          </el-card>
+
+          <!-- UI Border Radius Customizer Card -->
+          <el-card class="!rounded-2xl border-0 shadow-sm">
+            <template #header>
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/50 text-orange-600 flex items-center justify-center font-bold">
+                  <el-icon><Tools /></el-icon>
+                </div>
+                <div>
+                  <h2 class="text-base font-bold text-slate-900 dark:text-white">
+                    UI Component Corner Rounding
+                  </h2>
+                  <p class="text-xs text-slate-500">
+                    Customize button and form input rounded corner styles across the entire application.
+                  </p>
+                </div>
+              </div>
+            </template>
+
+            <div class="space-y-5 text-xs">
+              <!-- Button Rounding Control -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Button Rounded Style
+                </label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    v-for="opt in buttonRadiusOptions"
+                    :key="opt.value"
+                    type="button"
+                    class="p-2.5 rounded-xl border text-center font-semibold transition-all active:scale-95 cursor-pointer"
+                    :class="[
+                      systemSettingStore.buttonRadius === opt.value
+                        ? 'border-orange-500 bg-orange-50/80 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-bold ring-2 ring-orange-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300'
+                    ]"
+                    @click="systemSettingStore.setButtonRadius(opt.value)"
+                  >
+                    {{ opt.label }}
+                  </button>
+                </div>
+              </div>
+
+              <el-divider class="!my-4" />
+
+              <!-- Input Rounding Control -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Form Input Rounded Style
+                </label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    v-for="opt in inputRadiusOptions"
+                    :key="opt.value"
+                    type="button"
+                    class="p-2.5 rounded-xl border text-center font-semibold transition-all active:scale-95 cursor-pointer"
+                    :class="[
+                      systemSettingStore.inputRadius === opt.value
+                        ? 'border-orange-500 bg-orange-50/80 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-bold ring-2 ring-orange-500/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300'
+                    ]"
+                    @click="systemSettingStore.setInputRadius(opt.value)"
+                  >
+                    {{ opt.label }}
+                  </button>
                 </div>
               </div>
             </div>

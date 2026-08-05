@@ -187,13 +187,13 @@
       </el-tabs>
 
       <!-- Invite Staff Dialog -->
-      <el-dialog v-model="inviteDialogVisible" title="Invite Staff Member" width="450px" class="rounded-2xl!">
-        <el-form label-position="top">
+      <el-dialog v-model="inviteDialogVisible" title="Invite Staff Member" width="450px" class="!rounded-2xl">
+        <el-form label-position="top" size="small">
           <el-form-item label="User Email Address">
-            <el-input v-model="inviteEmail" placeholder="user@example.com" size="large" />
+            <el-input v-model="inviteEmail" placeholder="user@example.com" size="small" />
           </el-form-item>
           <el-form-item label="Assign Role">
-            <el-select v-model="inviteRoleId" placeholder="Select a role" size="large" class="w-full">
+            <el-select v-model="inviteRoleId" placeholder="Select a role" size="small" class="w-full">
               <el-option 
                 v-for="role in availableRoles" 
                 :key="role.id" 
@@ -209,7 +209,7 @@
               placeholder="Select or enter department" 
               filterable 
               allow-create
-              size="large" 
+              size="small" 
               class="w-full"
               :disabled="!!userDepartmentScope"
             >
@@ -219,9 +219,9 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <div class="flex justify-end gap-3">
-            <el-button round @click="inviteDialogVisible = false">Cancel</el-button>
-            <el-button type="primary" round :loading="sendingInvite" @click="sendInvite" :disabled="!inviteEmail || !inviteRoleId">
+          <div class="flex justify-end gap-2">
+            <el-button round size="small" @click="inviteDialogVisible = false">Cancel</el-button>
+            <el-button type="primary" round size="small" :loading="sendingInvite" @click="sendInvite" :disabled="!inviteEmail || !inviteRoleId">
               Send Invite
             </el-button>
           </div>
@@ -229,14 +229,14 @@
       </el-dialog>
 
       <!-- Edit Staff Dialog -->
-      <el-dialog v-model="editStaffDialogVisible" title="Edit Staff Member" width="450px" class="rounded-2xl!">
+      <el-dialog v-model="editStaffDialogVisible" title="Edit Staff Member" width="450px" class="!rounded-2xl">
         <div v-if="editingStaff" class="mb-4">
           <div class="font-bold text-slate-800 dark:text-slate-100">{{ editingStaff.name }}</div>
           <div class="text-xs text-slate-500">{{ editingStaff.email }}</div>
         </div>
-        <el-form label-position="top">
+        <el-form label-position="top" size="small">
           <el-form-item label="Role">
-            <el-select v-model="editRoleId" placeholder="Select a role" size="large" class="w-full">
+            <el-select v-model="editRoleId" placeholder="Select a role" size="small" class="w-full">
               <el-option 
                 v-for="role in availableRoles" 
                 :key="role.id" 
@@ -251,7 +251,7 @@
               placeholder="Select or enter department" 
               filterable 
               allow-create
-              size="large" 
+              size="small" 
               class="w-full"
               :disabled="!!userDepartmentScope"
             >
@@ -259,16 +259,16 @@
             </el-select>
           </el-form-item>
           <el-form-item label="Status (Enable / Disable)">
-            <el-radio-group v-model="editActiveStatus" size="large">
+            <el-radio-group v-model="editActiveStatus" size="small">
               <el-radio-button label="active">Active (Enabled)</el-radio-button>
               <el-radio-button label="inactive">Disabled</el-radio-button>
             </el-radio-group>
           </el-form-item>
         </el-form>
         <template #footer>
-          <div class="flex justify-end gap-3">
-            <el-button round @click="editStaffDialogVisible = false">Cancel</el-button>
-            <el-button type="primary" round :loading="savingStaffEdit" @click="saveStaffEdit">
+          <div class="flex justify-end gap-2">
+            <el-button round size="small" @click="editStaffDialogVisible = false">Cancel</el-button>
+            <el-button type="primary" round size="small" :loading="savingStaffEdit" @click="saveStaffEdit">
               Save Changes
             </el-button>
           </div>
@@ -276,13 +276,13 @@
       </el-dialog>
 
       <!-- Approve Request Dialog -->
-      <el-dialog v-model="approveDialogVisible" title="Approve Join Request" width="450px" class="rounded-2xl!">
-        <div class="mb-4 text-slate-600 dark:text-slate-300">
+      <el-dialog v-model="approveDialogVisible" title="Approve Join Request" width="450px" class="!rounded-2xl">
+        <div class="mb-4 text-slate-600 dark:text-slate-300 text-sm">
           You are approving <span class="font-bold">{{ selectedRequest?.user?.name }}</span> to join the store. Please assign them a role and department.
         </div>
-        <el-form label-position="top">
+        <el-form label-position="top" size="small">
           <el-form-item label="Assign Role">
-            <el-select v-model="approveRoleId" placeholder="Select a role" size="large" class="w-full">
+            <el-select v-model="approveRoleId" placeholder="Select a role" size="small" class="w-full">
               <el-option 
                 v-for="role in availableRoles" 
                 :key="role.id" 
@@ -297,7 +297,7 @@
               placeholder="Select or enter department" 
               filterable 
               allow-create
-              size="large" 
+              size="small" 
               class="w-full"
               :disabled="!!userDepartmentScope"
             >
@@ -306,9 +306,9 @@
           </el-form-item>
         </el-form>
         <template #footer>
-          <div class="flex justify-end gap-3">
-            <el-button round @click="approveDialogVisible = false">Cancel</el-button>
-            <el-button type="success" round :loading="processingRequest" @click="approveRequest" :disabled="!approveRoleId">
+          <div class="flex justify-end gap-2">
+            <el-button round size="small" @click="approveDialogVisible = false">Cancel</el-button>
+            <el-button type="success" round size="small" :loading="processingRequest" @click="approveRequest" :disabled="!approveRoleId">
               Approve & Assign
             </el-button>
           </div>
