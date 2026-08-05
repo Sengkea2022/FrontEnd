@@ -22,13 +22,13 @@ const copyCustomerMenuUrl = () => {
 
 const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
 const canManageStaff = computed(() => {
-  if (authUser.value?.role?.slug === 'superadmin' || authUser.value?.role?.slug === 'store-owner') return true;
+  if (authUser.value?.role?.slug === 'developer' || authUser.value?.role?.slug === 'shop-owner') return true;
   return authUser.value?.role?.permissions?.some((p: any) => p.slug === 'edit-users' || p.slug === 'view-users');
 })
 
 const hasStoreAccess = computed(() => {
   if (!authUser.value) return false
-  if (['superadmin', 'admin', 'store-owner'].includes(authUser.value.role?.slug)) return true
+  if (['developer', 'shop-owner'].includes(authUser.value.role?.slug)) return true
   if (currentShop.value && currentShop.value.user_code === authUser.value.code) return true
   if (authUser.value.store_code && authUser.value.store_code !== 'N/A') {
     if (!currentShop.value || !currentShop.value.code) return true
@@ -220,7 +220,7 @@ const statusTag = (s) =>
               </el-button>
             </NuxtLink>
 
-            <NuxtLink v-if="authUser?.role?.slug === 'superadmin' || authUser?.role?.slug === 'store-owner'"
+            <NuxtLink v-if="authUser?.role?.slug === 'developer' || authUser?.role?.slug === 'shop-owner'"
               :to="`/shop/${shopUuid}/roles`">
               <el-button size="default" plain round class="font-medium">
                 <el-icon class="mr-1.5"><Key /></el-icon> {{ t('rolesPermissions') }}

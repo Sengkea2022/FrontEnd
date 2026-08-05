@@ -60,7 +60,7 @@ const isSingleShopUser = computed(() => shopStore.shops.length === 1)
 
 // ── Role helpers ─────────────────────────────────────────────
 const roleSlug = computed(() => authUser.value?.role?.slug)
-const isSuperOrOwner = computed(() => ['superadmin', 'admin', 'store-owner'].includes(roleSlug.value))
+const isSuperOrOwner = computed(() => ['developer', 'shop-owner'].includes(roleSlug.value))
 const hasShop = computed(() => !!(authUser.value?.shop_code || authUser.value?.store_code) && authUser.value?.shop_code !== 'N/A')
 
 // ── Nav items ────────────────────────────────────────────────

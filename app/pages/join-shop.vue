@@ -33,10 +33,10 @@ const refreshUserSession = async () => {
     if (res?.user) {
       authUser.value = { ...authUser.value, ...res.user }
       const roleSlug = res.user.role?.slug
-      const isSuperAdmin = ['superadmin', 'admin'].includes(roleSlug)
+      const isDeveloper = ['developer', 'shop-owner'].includes(roleSlug)
       const hasShop = !!(res.user.shop_code || res.user.store_code) && res.user.shop_code !== 'N/A'
 
-      if (!isSuperAdmin && roleSlug === 'staff' && hasShop) {
+      if (!isDeveloper && roleSlug === 'staff' && hasShop) {
         const shopTarget = res.user.shop?.uuid || res.user.shop_code || res.user.store_code
         const redirectPath = shopTarget ? `/shop/${shopTarget}/products` : '/shop'
         return navigateTo(redirectPath)

@@ -21,7 +21,7 @@ const { fetch } = useApi()
 // ── Form state — must be declared BEFORE any computed that references it ───
 const localForm = ref<ShopForm>({ ...props.form })
 const authUser = useCookie<any>('auth_user')
-const isSuperAdmin = computed(() => authUser.value?.role?.slug === 'superadmin')
+const isDeveloper = computed(() => authUser.value?.role?.slug === 'developer')
 
 const themePresets = [
   { name: 'Default OrangeRed', value: 'orangered' },
@@ -208,8 +208,8 @@ const fetchPersonnel = async () => {
     managersList.value = res.managers || []
     staffList.value    = res.staff    || []
     
-    if (isSuperAdmin.value) {
-      const ownersRes = await fetch<{ owners: Personnel[] }>('/api/user/store-owners')
+    if (isDeveloper.value) {
+      const ownersRes = await fetch<{ owners: Personnel[] }>('/api/user/shop-owners')
       ownersList.value = ownersRes.owners || []
     }
   } catch (e) {

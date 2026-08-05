@@ -12,7 +12,7 @@ const store = ref(null)
 const loading = ref(true)
 
 const isAdminOrSuperAdmin = computed(() =>
-  ['admin', 'superadmin', 'store-owner'].includes(authUser.value?.role?.slug)
+  ['developer', 'shop-owner'].includes(authUser.value?.role?.slug)
 )
 
 const fetchStore = async () => {

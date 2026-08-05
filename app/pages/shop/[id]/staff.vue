@@ -371,10 +371,10 @@ const approveDepartment = ref('')
 const selectedRequest = ref<any>(null)
 
 // Computed Permissions
-const isStoreOwner = computed(() => authUser.value?.role?.slug === 'store-owner' || authUser.value?.role?.slug === 'superadmin')
+const isShopOwner = computed(() => authUser.value?.role?.slug === 'shop-owner' || authUser.value?.role?.slug === 'developer')
 const hasStoreAccess = computed(() => {
   if (!authUser.value) return false
-  if (isStoreOwner.value) return true
+  if (isShopOwner.value) return true
   if (authUser.value.store_code && authUser.value.store_code !== 'N/A') return true
   return false
 })
