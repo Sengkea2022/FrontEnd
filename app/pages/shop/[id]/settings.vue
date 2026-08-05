@@ -90,7 +90,7 @@ onMounted(() => fetchStore())
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 
         <!-- Manage Staff -->
-        <NuxtLink :to="'/shop/' + storeId + '/staff'">
+        <NuxtLink :to="`/shop/${storeId}/staff`" class="block h-full no-underline">
           <el-card class="!rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full group">
             <div class="flex items-start gap-4">
               <div class="h-12 w-12 rounded-xl flex items-center justify-center text-white text-xl flex-shrink-0"
@@ -110,7 +110,7 @@ onMounted(() => fetchStore())
         </NuxtLink>
 
         <!-- Roles & Permissions -->
-        <NuxtLink v-if="isAdminOrSuperAdmin" :to="'/shop/' + storeId + '/roles'">
+        <NuxtLink v-if="isAdminOrSuperAdmin" :to="`/shop/${storeId}/roles`" class="block h-full no-underline">
           <el-card class="!rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full group">
             <div class="flex items-start gap-4">
               <div class="h-12 w-12 rounded-xl flex items-center justify-center bg-purple-500 text-white text-xl flex-shrink-0">
@@ -128,24 +128,7 @@ onMounted(() => fetchStore())
           </el-card>
         </NuxtLink>
 
-        <!-- Guest Links -->
-        <NuxtLink :to="'/shop/' + storeId + '/guest-links'">
-          <el-card class="!rounded-2xl border-0 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer h-full group">
-            <div class="flex items-start gap-4">
-              <div class="h-12 w-12 rounded-xl flex items-center justify-center bg-teal-500 text-white text-xl flex-shrink-0">
-                🔗
-              </div>
-              <div>
-                <h2 class="text-base font-semibold text-slate-800 dark:text-slate-200 group-hover:text-teal-500 transition-colors">
-                  {{ t('guestMenuLinks') }}
-                </h2>
-                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {{ t('guestMenuLinksSub') }}
-                </p>
-              </div>
-            </div>
-          </el-card>
-        </NuxtLink>
+
 
         <!-- Store Brand Theme Color Card -->
         <el-card class="!rounded-2xl border-0 shadow-sm md:col-span-2 xl:col-span-3">

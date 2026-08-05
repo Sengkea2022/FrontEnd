@@ -18,23 +18,23 @@ export default defineNuxtRouteMiddleware((to, from) => {
   }
 
   const roleSlug = authUser.value?.role?.slug
-  const isDeveloper = ['developer', 'shop-owner'].includes(roleSlug)
+  const isDeveloper = roleSlug === 'developer'
 
   // Check if user is assigned to a shop (either by shop_code/store_code OR owns a shop)
   const hasShop = !!(authUser.value?.shop_code || authUser.value?.store_code) && authUser.value?.shop_code !== 'N/A' || !!authUser.value?.shop || !!authUser.value?.store
 
   // 2. Authenticated user visiting guest auth routes (login, register, etc.)
   if (isGuestRoute) {
-    if (!isDeveloper && !hasShop) {
+    if (!hasShop && !isDeveloper) {
       return navigateTo('/join-shop')
     }
     return navigateTo('/shop')
   }
 
-  // 3. User with NO shop_code and NO shop: LOCK strictly to join-shop and profile ONLY!
-  if (!isDeveloper && !hasShop) {
-    const allowedUnassigned = ['/join-shop', '/join-store', '/profile']
-    const isAllowed = allowedUnassigned.some(path => to.path === path || to.path.startsWith(path + '/'))
+  // 3. User with NO shop: allow /join-shop and /profile, redirect everything else to /join-shop
+  if (!hasShop && !isDeveloper) {
+    const allowed = ['/join-shop', '/profile']
+    const isAllowed = allowed.some(p => to.path === p || to.path.startsWith(p + '/'))
     if (!isAllowed) {
       return navigateTo('/join-shop')
     }

@@ -32,22 +32,32 @@ const fetchPendingRequestsCount = async () => {
 onMounted(async () => {
   await shopStore.fetchShops()
 
-  // Staff: redirect to their assigned shop's dashboard
+  const roleSlug = authUser.value?.role?.slug
+  const isDeveloper = roleSlug === 'developer'
+
+  // Non-developer with 0 shops → redirect to join-shop portal
+  if (!isDeveloper && shopStore.shops.length === 0) {
+    return navigateTo('/join-shop', { replace: true })
+  }
+
+  // Staff with shop assigned → go to their shop's dashboard
   if (isStaff.value) {
     const userShop = shopStore.shops.find(s => s.code === authUser.value?.shop_code || s.code === authUser.value?.store_code) || shopStore.shops[0]
     const shopTarget = authUser.value?.shop?.uuid || userShop?.uuid || authUser.value?.shop_code || authUser.value?.store_code
     if (shopTarget) {
-      return navigateTo(`/shop/${shopTarget}/dashboard`)
+      return navigateTo(`/shop/${shopTarget}/dashboard`, { replace: true })
     }
+    return navigateTo('/profile', { replace: true })
   }
 
-  // Admin/Owner with only 1 shop: skip picker, go directly to that shop's dashboard
+  // Owner with only 1 shop: skip picker, go directly to that shop's dashboard
   if (shopStore.shops.length === 1) {
-    return navigateTo(`/shop/${shopStore.shops[0].uuid}/dashboard`)
+    return navigateTo(`/shop/${shopStore.shops[0].uuid}/dashboard`, { replace: true })
   }
 
   fetchPendingRequestsCount()
 })
+
 
 // ── Empty form template ───────────────────────────────────────────────────────
 const emptyForm = (): ShopForm => ({
@@ -142,14 +152,7 @@ const submitShop = async () => {
         @close="shopStore.clearError()"
       />
 
-      <div v-if="!shopStore.loading && shopStore.shops.length === 0" class="p-8 text-center bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm max-w-xl mx-auto my-6">
-        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold">🛒</div>
-        <h2 class="text-lg font-bold text-slate-800 dark:text-slate-200 mb-1">No Assigned Shop Found</h2>
-        <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">You are not currently assigned to any shop branch. Request to join a shop to view its products and management controls.</p>
-        <NuxtLink to="/join-shop">
-          <el-button type="primary" round>Request to Join a Shop</el-button>
-        </NuxtLink>
-      </div>
+
 
       <!-- ── Stat cards ──────────────────────────────────────────────────────── -->
       <div class="grid gap-4 md:grid-cols-3">

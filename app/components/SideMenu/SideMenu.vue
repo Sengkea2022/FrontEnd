@@ -78,11 +78,13 @@ const navItems = computed(() => {
 
     // ── Not in shop context ─────────────────────────────────
     if (!isSuperOrOwner.value) {
-        // Staff without shop
+        // Staff without shop → show Shop Portal link
         if (!hasShop.value) {
-            return [{ labelKey: 'joinShop', to: '/join-shop', icon: Shop }]
+            return [
+                { labelKey: 'joinShop', customLabel: 'Shop Portal', to: '/join-shop', icon: Shop }
+            ]
         }
-        // Staff with shop → auto redirect handled by shop/index.vue
+        // Staff with shop
         const shopTarget = authUser.value?.shop?.uuid || authUser.value?.shop_code || authUser.value?.store_code
         const shopPath = shopTarget ? `/shop/${shopTarget}/dashboard` : '/shop'
         return [
@@ -90,7 +92,13 @@ const navItems = computed(() => {
         ]
     }
 
-    // Super/Owner not in shop context → show only shop list
+    // Super/Owner not in shop context: show Shop Portal if no shop assigned yet
+    if (!hasShop.value && roleSlug.value !== 'developer') {
+        return [
+            { labelKey: 'joinShop', customLabel: 'Shop Portal', to: '/join-shop', icon: Shop }
+        ]
+    }
+
     return [
         { labelKey: 'myShops', to: '/shop', icon: Shop },
     ]

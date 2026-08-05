@@ -172,7 +172,7 @@ const statusTag = (s) =>
       <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">You are not assigned to this shop. You must be an
         assigned staff member or shop owner to view this shop's products.</p>
       <div class="flex justify-center gap-3">
-        <el-button type="primary" round @click="router.push('/join-shop')">Join a Shop</el-button>
+        <el-button type="primary" round @click="router.push('/profile')">Join a Shop</el-button>
         <el-button plain round @click="router.push('/shop')">Back to Shops</el-button>
       </div>
     </div>
@@ -213,19 +213,7 @@ const statusTag = (s) =>
               <el-icon class="mr-1.5"><CopyDocument /></el-icon> {{ t('copyMenuLink') }}
             </el-button>
 
-            <!-- Shop Admin Group -->
-            <NuxtLink v-if="canManageStaff" :to="`/shop/${shopUuid}/staff`">
-              <el-button size="default" plain round class="font-medium">
-                <el-icon class="mr-1.5"><User /></el-icon> {{ t('staff') }}
-              </el-button>
-            </NuxtLink>
 
-            <NuxtLink v-if="authUser?.role?.slug === 'developer' || authUser?.role?.slug === 'shop-owner'"
-              :to="`/shop/${shopUuid}/roles`">
-              <el-button size="default" plain round class="font-medium">
-                <el-icon class="mr-1.5"><Key /></el-icon> {{ t('rolesPermissions') }}
-              </el-button>
-            </NuxtLink>
           </div>
         </div>
       </el-card>

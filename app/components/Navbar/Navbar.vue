@@ -143,11 +143,8 @@ const pageTitle = computed(() => {
       </h1>
     </div>
 
-    <!-- Right: Language (desktop only) & User Profile -->
+    <!-- Right: User Profile -->
     <div class="flex items-center flex-shrink-0 gap-1 sm:gap-3">
-      <div class="hidden sm:block">
-        <LanguageSelector />
-      </div>
 
       <!-- User Profile Popover (When Authenticated) -->
       <div v-if="authToken && authUser" class="flex items-center">
@@ -221,7 +218,7 @@ const pageTitle = computed(() => {
           <!-- 3. Actions -->
           <div class="px-2 py-1.5 space-y-1">
             <NuxtLink
-              to="/profile"
+              to="/join-shop"
               class="flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150"
             >
               <div class="flex items-center gap-2.5">
@@ -242,6 +239,7 @@ const pageTitle = computed(() => {
             </NuxtLink>
 
             <NuxtLink
+              v-if="isDeveloper"
               to="/settings"
               class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-150"
             >

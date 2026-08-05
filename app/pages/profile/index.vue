@@ -103,8 +103,8 @@ const accountStatus = computed(() => {
 const stats = computed(() => [
   { 
     label: 'Assigned Store', 
-    value: profile.storeCode, 
-    helper: profile.storeCode !== 'Unassigned' ? 'Clocked in to branch' : 'No store assigned yet' 
+    value: assignedStoreDisplay.value, 
+    helper: assignedStoreHelper.value 
   },
   { 
     label: 'Role & Scope', 
@@ -124,7 +124,7 @@ const detailGroups = computed(() => [
   { label: 'Email Address', value: profile.email },
   { label: 'Phone Number', value: profile.phone },
   { label: 'Department', value: profile.department },
-  { label: 'Assigned Store Code', value: profile.storeCode },
+  { label: 'Assigned Store Code', value: assignedStoreDisplay.value },
   { label: 'Account Status', value: accountStatus.value.label }
 ])
 
@@ -289,72 +289,50 @@ const leaveStore = async () => {
   }
 }
 
+
+
 import { useShopStore } from '~/stores/shop'
 
 const shopStore = useShopStore()
-const joinStoreDialogVisible = ref(false)
-const selectedJoinStoreCode = ref('')
-const submittingJoinRequest = ref(false)
 
-const openJoinStoreDialog = () => {
-  shopStore.fetchShops()
-  joinStoreDialogVisible.value = true
-}
-
-const submitJoinStoreRequest = async () => {
-  if (!selectedJoinStoreCode.value) {
-    ElNotification.warning({
-      title: 'Store Selection Required',
-      message: 'Please select a store or enter a store code.'
-    })
-    return
+const userShops = computed(() => {
+  if (shopStore.shops && shopStore.shops.length > 0) {
+    return shopStore.shops
   }
-
-  submittingJoinRequest.value = true
-  try {
-    await fetch('/api/shops/shop-requests', {
-      method: 'POST',
-      body: {
-        type: 'request',
-        store_code: selectedJoinStoreCode.value
-      }
-    })
-
-    ElNotification.success({
-      title: 'Request Submitted',
-      message: 'Your join request has been sent to the store manager for approval.'
-    })
-
-    joinStoreDialogVisible.value = false
-    selectedJoinStoreCode.value = ''
-    fetchUserProfile()
-    fetchInvitations()
-  } catch (error) {
-    ElNotification.error({
-      title: 'Request Failed',
-      message: error.data?.message || 'Could not submit store join request.'
-    })
-  } finally {
-    submittingJoinRequest.value = false
+  if (authUser.value?.shop) return [authUser.value.shop]
+  const code = authUser.value?.shop_code || authUser.value?.store_code
+  if (code && code !== 'N/A') {
+    return [{ code, name: code }]
   }
-}
+  return []
+})
+
+const assignedStoreDisplay = computed(() => {
+  if (userShops.value.length > 1) {
+    return `${userShops.value.length} Shops`
+  }
+  if (userShops.value.length === 1) {
+    return userShops.value[0].code || userShops.value[0].name || profile.storeCode
+  }
+  return 'Unassigned'
+})
+
+const assignedStoreHelper = computed(() => {
+  if (userShops.value.length > 1) {
+    return userShops.value.map(s => s.code || s.name).join(', ')
+  }
+  if (userShops.value.length === 1) {
+    return 'Clocked in to branch'
+  }
+  return 'No store assigned yet'
+})
 
 const router = useRouter()
-
-const scrollToInvitations = () => {
-  const el = document.getElementById('invitations-section')
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth' })
-  } else if (!authUser.value?.store_code || authUser.value?.store_code === 'N/A') {
-    openJoinStoreDialog()
-  } else {
-    ElNotification.info({ title: 'Notifications', message: 'No new pending store invitations.' })
-  }
-}
 
 onMounted(() => {
   fetchUserProfile()
   fetchInvitations()
+  shopStore.fetchShops()
 })
 </script>
 
@@ -422,23 +400,6 @@ onMounted(() => {
             </div>
 
             <div class="mt-6 flex flex-col gap-2.5">
-              <el-button type="warning" plain round class="shadow-sm relative !w-full !ml-0 !justify-center" @click="scrollToInvitations">
-                <el-icon class="mr-1"><Bell /></el-icon>
-                Notifications
-                <span v-if="invitations.length > 0" class="ml-1.5 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse">
-                  {{ invitations.length }}
-                </span>
-              </el-button>
-              <el-button
-                v-if="!authUser?.store_code || authUser?.store_code === 'N/A'"
-                type="primary"
-                round
-                class="shadow-sm !w-full !ml-0 !justify-center"
-                @click="openJoinStoreDialog"
-              >
-                <el-icon class="mr-1"><OfficeBuilding /></el-icon>
-                Join / Request Store
-              </el-button>
               <div class="grid grid-cols-2 gap-2 w-full">
                 <el-button plain round class="!w-full !ml-0 !justify-center" @click="editProfileVisible = true">
                   <el-icon class="mr-1"><EditPen /></el-icon>
@@ -541,42 +502,60 @@ onMounted(() => {
 
         <div class="space-y-4">
           <!-- Shop Membership -->
-          <el-card v-if="authUser?.shop_code || authUser?.store_code" class="!rounded-2xl border-0 shadow-sm">
+          <el-card class="!rounded-2xl border-0 shadow-sm">
             <div class="mb-5">
               <h2 class="text-xl font-semibold">
                 Shop Membership
               </h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                You are currently assigned to a shop.
+                Manage your shop assignment or request to join a shop branch.
               </p>
             </div>
-            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 flex flex-col gap-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-sm font-semibold">Current Shop</div>
-                  <div class="text-xs text-slate-500 mt-1">Code: {{ authUser.shop_code || authUser.store_code }}</div>
+            <div class="rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50 flex flex-col gap-3">
+              <template v-if="userShops.length > 0">
+                <div v-for="shop in userShops" :key="shop.uuid || shop.code" class="flex items-center justify-between py-1 border-b last:border-b-0 border-slate-200 dark:border-slate-700/60">
+                  <div>
+                    <div class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ shop.name || shop.code }}</div>
+                    <div class="text-xs text-slate-500 mt-0.5">Code: {{ shop.code || 'N/A' }}</div>
+                  </div>
+                  <div class="flex gap-2">
+                    <NuxtLink v-if="shop.uuid" :to="`/shop/${shop.uuid}/dashboard`">
+                      <el-button type="primary" plain round size="small">Open</el-button>
+                    </NuxtLink>
+                    <el-button v-if="userShops.length === 1 && authUser?.role?.slug === 'staff'" type="danger" plain round size="small" @click="leaveStore">
+                      Leave
+                    </el-button>
+                  </div>
                 </div>
-                <el-button type="danger" plain round size="small" @click="leaveStore">
-                  Leave Shop
-                </el-button>
+              </template>
+              <div v-else class="flex items-center justify-between">
+                <div>
+                  <div class="text-sm font-semibold">No Shop Assigned</div>
+                  <div class="text-xs text-slate-500 mt-1">Visit the portal to join or create a shop</div>
+                </div>
+                <NuxtLink to="/join-shop">
+                  <el-button type="primary" round size="small">
+                    Shop Portal →
+                  </el-button>
+                </NuxtLink>
               </div>
             </div>
           </el-card>
 
-          <!-- Store Invitations -->
+          <!-- Shop Invitations -->
           <el-card id="invitations-section" v-if="invitations.length > 0" class="!rounded-2xl border-0 shadow-sm">
             <div class="mb-5">
               <h2 class="text-xl font-semibold">
-                Store Invitations
+                Shop Invitations
               </h2>
               <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                You have been invited to join the following stores.
+                You have been invited to join the following shops.
               </p>
             </div>
             <div class="space-y-3">
               <div v-for="invite in invitations" :key="invite.id" class="rounded-2xl border border-slate-200/80 p-4 dark:border-slate-700/70 flex items-center justify-between">
                 <div>
-                  <div class="font-semibold text-sm">{{ invite.store?.name }}</div>
+                  <div class="font-semibold text-sm">{{ invite.shop?.name || invite.store?.name }}</div>
                   <div class="text-xs text-slate-500 mt-1">Proposed Role: {{ invite.role?.name || 'Staff' }}</div>
                 </div>
                 <div class="flex gap-2">
@@ -691,53 +670,5 @@ onMounted(() => {
       :initial-tab="accountSettingsTab"
     />
 
-    <!-- Join Store Request Dialog -->
-    <el-dialog
-      v-model="joinStoreDialogVisible"
-      title="Request to Join a Store"
-      width="480px"
-      class="!rounded-3xl"
-    >
-      <div class="space-y-4">
-        <p class="text-sm text-slate-500 dark:text-slate-400">
-          Select the store location you would like to join below. Your request will be sent to the store owner or manager for review.
-        </p>
-
-        <div class="space-y-2 text-left">
-          <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Select Store Branch</label>
-          <el-select
-            v-model="selectedJoinStoreCode"
-            placeholder="Choose store branch..."
-            size="large"
-            class="w-full"
-            filterable
-            :loading="shopStore.loading"
-          >
-            <el-option
-              v-for="store in shopStore.shops"
-              :key="store.uuid || store.code"
-              :label="`${store.name} (${store.city || 'Branch'}) [${store.code || store.uuid}]`"
-              :value="store.code || store.uuid"
-            />
-          </el-select>
-        </div>
-
-        <div class="pt-2 text-xs text-slate-400 flex items-center justify-between">
-          <span>Need full portal view?</span>
-          <NuxtLink to="/join-store" class="text-orange-500 font-semibold hover:underline" @click="joinStoreDialogVisible = false">
-            Open Join Portal →
-          </NuxtLink>
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex justify-end gap-2">
-          <el-button round @click="joinStoreDialogVisible = false">Cancel</el-button>
-          <el-button type="primary" round :loading="submittingJoinRequest" @click="submitJoinStoreRequest">
-            Send Join Request
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
   </section>
 </template>

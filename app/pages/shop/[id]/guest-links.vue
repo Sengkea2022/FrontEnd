@@ -22,14 +22,19 @@ onMounted(() => shopStore.fetchShops())
 </script>
 <template>
   <section class="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4">
+      <!-- Top Left Back to Settings -->
+      <div>
+        <NuxtLink :to="`/shop/${storeId}/settings`">
+          <el-button plain round size="small">← Settings</el-button>
+        </NuxtLink>
+      </div>
+
       <el-card class="!rounded-2xl border-0 shadow-sm">
-        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div class="max-w-3xl">
-            <p class="mb-3 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">Store Guest Links</p>
-            <h1 class="text-4xl font-semibold tracking-tight">Store Customer Menu Link</h1>
-            <p class="mt-4 text-base leading-7 text-slate-600">Copy the public customer menu link for this store to share with customers for viewing products and placing orders.</p>
-          </div>
+        <div class="max-w-3xl">
+          <p class="mb-2 inline-flex rounded-full border border-orange-200 bg-orange-50 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-orange-600">Shop Guest Links</p>
+          <h1 class="text-3xl font-semibold tracking-tight">Shop Customer Menu Link</h1>
+          <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">Copy the public customer menu link for this shop to share with customers for viewing products and placing orders.</p>
         </div>
       </el-card>
       <el-card class="!rounded-2xl border-0 shadow-sm" v-loading="shopStore.loading">

@@ -27,7 +27,12 @@ const saving = ref(false)
 const selectedColor = ref<string>(systemSettingStore.defaultPrimaryColor || 'orangered')
 const customColor = ref<string>(selectedColor.value.startsWith('#') ? selectedColor.value : '#ff4500')
 
+const authUser = useCookie<any>('auth_user')
+
 onMounted(async () => {
+  if (authUser.value?.role?.slug !== 'developer') {
+    return navigateTo('/profile', { replace: true })
+  }
   await systemSettingStore.fetchSettings()
   selectedColor.value = systemSettingStore.defaultPrimaryColor || 'orangered'
   if (selectedColor.value.startsWith('#')) {

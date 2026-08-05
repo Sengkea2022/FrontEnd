@@ -38,7 +38,7 @@ const isStaff = computed(() => authUser.value?.role?.slug === 'staff')
 <template>
   <el-card class="!rounded-2xl border-0 shadow-sm">
     <div class="mb-5">
-      <h2 class="text-xl font-semibold">Store List</h2>
+      <h2 class="text-xl font-semibold">Shop List</h2>
       <p class="mt-1 text-sm text-slate-500">
         Click any row to browse its products, or use the action buttons.
       </p>

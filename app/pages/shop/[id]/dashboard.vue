@@ -20,20 +20,27 @@ const fetchStore = async () => {
   try {
     const res = await fetch('/api/shops/' + storeId.value)
     store.value = res?.data || res
+
+    // If user has no shop_code AND doesn't own this shop → redirect to profile
+    const userCode     = authUser.value?.code
+    const shopCode     = authUser.value?.shop_code || authUser.value?.store_code
+    const hasShopCode  = shopCode && shopCode !== 'N/A'
+    const ownsThisShop = store.value?.user_code && store.value.user_code === userCode
+
+    if (!hasShopCode && !ownsThisShop) {
+      return navigateTo('/profile', { replace: true })
+    }
   } catch (e) {
     console.error(e)
+    // On error (e.g. 403), redirect to profile
+    return navigateTo('/profile', { replace: true })
   } finally {
     loading.value = false
   }
 }
 
-const activities = [
-  { title: 'Payment batch completed', description: '143 invoices processed.', time: '10 min ago' },
-  { title: 'New team member added', description: 'Sokha joined operations.', time: '42 min ago' },
-  { title: 'API latency normalized', description: 'Response below 220ms.', time: '1 hour ago' },
-]
-
-const tasks = ["Review today's sales report", 'Approve pending registrations', 'Verify backup status']
+const activities: any[] = []
+const tasks: any[] = []
 
 onMounted(() => fetchStore())
 </script>
@@ -49,7 +56,7 @@ onMounted(() => fetchStore())
             </p>
             <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{{ t('dashboard') }}</h1>
             <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">
-              {{ t('monitorActivity') }} <strong>{{ store?.name }}</strong>.
+              {{ t('monitorActivity') }}<strong v-if="store?.name"> {{ store?.name }}</strong>.
             </p>
           </div>
           <div class="flex flex-wrap gap-3">
@@ -81,7 +88,7 @@ onMounted(() => fetchStore())
             </div>
             <el-tag effect="dark" round>Live</el-tag>
           </div>
-          <div class="space-y-4">
+          <div v-if="activities.length > 0" class="space-y-4">
             <div v-for="item in activities" :key="item.title" class="grid gap-4 rounded-xl border border-slate-200 dark:border-slate-800 p-4 md:grid-cols-[auto_1fr_auto] md:items-start">
               <span class="mt-1 inline-flex h-3 w-3 rounded-full" :style="{ backgroundColor: appConfig.theme.primary }" />
               <div>
@@ -91,6 +98,7 @@ onMounted(() => fetchStore())
               <span class="text-sm font-medium text-slate-400">{{ item.time }}</span>
             </div>
           </div>
+          <div v-else class="py-8 text-center text-sm text-slate-400">No recent activity yet.</div>
         </el-card>
 
         <article>
@@ -99,12 +107,13 @@ onMounted(() => fetchStore())
               <h2 class="text-xl font-semibold text-slate-900 dark:text-white">{{ t('priorityTasks') }}</h2>
               <p class="mt-1 text-sm text-slate-500">Immediate work queue for today.</p>
             </div>
-            <ul class="space-y-3">
+            <ul v-if="tasks.length > 0" class="space-y-3">
               <li v-for="task in tasks" :key="task" class="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300">
                 <span class="mt-1 inline-flex h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: appConfig.theme.primary }" />
                 <span>{{ task }}</span>
               </li>
             </ul>
+            <p v-else class="py-6 text-center text-sm text-slate-400">No tasks right now.</p>
           </el-card>
         </article>
       </div>
