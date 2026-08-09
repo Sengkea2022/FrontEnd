@@ -15,6 +15,8 @@ const visible = computed({
   set: (val) => emit('update:modelValue', val)
 })
 
+const appConfig = useAppConfig()
+
 const getPublicMenuUrl = computed(() => {
   if (!process.client || !props.shop?.uuid) return ''
   return `${window.location.origin}/guest/menu?store_uuid=${props.shop.uuid}`
@@ -53,7 +55,7 @@ const downloadQr = () => {
   img.src = qrImageUrl.value
 
   img.onload = () => {
-    const brandColor = props.shop?.theme_color || '#ff4500'
+    const brandColor = props.shop?.theme_color || appConfig.theme.primary
     const isDark = printTheme.value === 'dark'
 
     const cardBg = isDark ? '#0f172a' : '#ffffff'
@@ -132,6 +134,7 @@ const downloadQr = () => {
     width="440px"
     class="!rounded-3xl"
     destroy-on-close
+    align-center
   >
     <div v-if="shop" class="flex flex-col items-center">
       
@@ -159,12 +162,12 @@ const downloadQr = () => {
       <div 
         class="w-full max-w-[320px] rounded-3xl p-6 text-center border-2 shadow-lg transition-all relative overflow-hidden"
         :class="printTheme === 'dark' ? 'bg-slate-900 text-white' : 'bg-white text-slate-900'"
-        :style="{ borderColor: shop.theme_color || '#ff4500' }"
+        :style="{ borderColor: shop.theme_color || appConfig.theme.primary }"
       >
         <!-- Header Store Pill -->
         <div 
           class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-widest text-white mb-3 shadow-xs"
-          :style="{ backgroundColor: shop.theme_color || '#ff4500' }"
+          :style="{ backgroundColor: shop.theme_color || appConfig.theme.primary }"
         >
           <el-icon><Shop /></el-icon> {{ shop.type || 'RETAIL STORE' }}
         </div>
@@ -236,7 +239,7 @@ const downloadQr = () => {
       <div 
         class="w-[320px] rounded-[32px] p-9 text-center border-[3px] shadow-sm mx-auto"
         :style="{
-          borderColor: shop?.theme_color || '#ff4500',
+          borderColor: shop?.theme_color || appConfig.theme.primary,
           backgroundColor: printTheme === 'dark' ? '#0f172a' : '#ffffff',
           color: printTheme === 'dark' ? '#ffffff' : '#0f172a'
         }"
@@ -244,7 +247,7 @@ const downloadQr = () => {
         <!-- Badge -->
         <div 
           class="inline-block font-extrabold text-[11px] uppercase tracking-[2px] px-4 py-1.5 rounded-full mb-4 !text-white"
-          :style="{ backgroundColor: shop?.theme_color || '#ff4500' }"
+          :style="{ backgroundColor: shop?.theme_color || appConfig.theme.primary }"
           style="-webkit-print-color-adjust: exact; print-color-adjust: exact;"
         >
           {{ shop?.type || 'RETAIL STORE' }}

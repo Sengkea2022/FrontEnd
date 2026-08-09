@@ -63,7 +63,7 @@ onMounted(async () => {
 const emptyForm = (): ShopForm => ({
   name: '', user_code: '', country: '', state: '', city: '', commune: '', village: '',
   type: '' as ShopForm['type'], manager_id: null,
-  status: 'Active', address: '', staff_ids: [], theme_color: 'orangered',
+  status: 'Active', address: '', staff_ids: [], theme_color: appConfig.theme.primary,
 })
 
 // ── Dialog state ──────────────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ const openEditDialog = (row: Shop) => {
     status:      row.status,
     address:     row.address ?? '',
     staff_ids:   row.staff_ids ?? [],
-    theme_color: row.theme_color || 'orangered',
+    theme_color: row.theme_color || appConfig.theme.primary,
   }
   dialogVisible.value = true
 }

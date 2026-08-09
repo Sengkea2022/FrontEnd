@@ -30,11 +30,11 @@ watchEffect(() => {
       return
     }
   }
-  appConfig.theme.primary = systemSettingStore.defaultPrimaryColor || 'orangered'
+  appConfig.theme.primary = systemSettingStore.defaultPrimaryColor
 })
 
 const elementThemeStyle = computed(() => {
-  const primaryColor = appConfig.theme.primary || 'orangered'
+  const primaryColor = appConfig.theme.primary
 
   return {
     '--el-color-primary': primaryColor,

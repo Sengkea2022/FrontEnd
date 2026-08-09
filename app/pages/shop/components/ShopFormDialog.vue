@@ -17,6 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const { fetch } = useApi()
+const appConfig = useAppConfig()
 
 // ── Form state — must be declared BEFORE any computed that references it ───
 const localForm = ref<ShopForm>({ ...props.form })
@@ -24,7 +25,7 @@ const authUser = useCookie<any>('auth_user')
 const isDeveloper = computed(() => authUser.value?.role?.slug === 'developer')
 
 const themePresets = [
-  { name: 'Default OrangeRed', value: 'orangered' },
+  { name: 'Default Config', value: 'default_config' },
   { name: 'Sunset Orange',     value: '#F97316' },
   { name: 'Ocean Blue',        value: '#2563EB' },
   { name: 'Emerald Green',     value: '#10B981' },
@@ -450,10 +451,10 @@ const submit = () => {
             :key="color.value"
             type="button"
             class="h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-xs"
-            :style="{ backgroundColor: color.value, borderColor: (localForm.theme_color || 'orangered') === color.value ? '#ffffff' : 'transparent' }"
+            :style="{ backgroundColor: color.value === 'default_config' ? appConfig.theme.primary : color.value, borderColor: (localForm.theme_color || appConfig.theme.primary) === (color.value === 'default_config' ? appConfig.theme.primary : color.value) ? '#ffffff' : 'transparent' }"
             @click="localForm.theme_color = color.value"
           >
-            <span v-if="(localForm.theme_color || 'orangered') === color.value" class="text-white text-xs font-bold">✓</span>
+            <span v-if="(localForm.theme_color || appConfig.theme.primary) === (color.value === 'default_config' ? appConfig.theme.primary : color.value)" class="text-white text-xs font-bold">✓</span>
           </button>
           
           <div class="flex items-center gap-2 ml-auto">

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useSystemSettingStore = defineStore('systemSetting', () => {
-  const defaultPrimaryColor = ref<string>('orangered')
+  const defaultPrimaryColor = ref<string>('black')
   const buttonRadius = ref<string>('9999px')
   const inputRadius = ref<string>('4px')
   const isLoaded = ref(false)

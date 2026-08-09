@@ -81,7 +81,7 @@ const storeInfo = computed(() => guestData.value?.store || {})
 const rawProducts = computed(() => guestData.value?.products || [])
 
 const appConfig = useAppConfig()
-const storeThemeColor = computed(() => storeInfo.value?.theme_color || 'orangered')
+const storeThemeColor = computed(() => storeInfo.value?.theme_color || appConfig.theme.primary)
 
 watchEffect(() => {
   if (storeInfo.value?.theme_color) {

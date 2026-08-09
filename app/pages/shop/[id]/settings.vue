@@ -18,10 +18,10 @@ const isAdminOrSuperAdmin = computed(() =>
 
 const shopStore = useShopStore()
 
-const currentThemeColor = ref('orangered')
+const currentThemeColor = ref(appConfig.theme.primary)
 
 const themePresets = [
-  { name: 'Default OrangeRed', value: 'orangered' },
+  { name: 'Default Black', value: 'black' },
   { name: 'Sunset Orange',     value: '#F97316' },
   { name: 'Ocean Blue',        value: '#2563EB' },
   { name: 'Emerald Green',     value: '#10B981' },
@@ -37,7 +37,7 @@ const fetchStore = async () => {
     const res = await fetch('/api/shops/' + storeId.value)
     const data = res?.data || res
     store.value = data
-    currentThemeColor.value = data?.theme_color || 'orangered'
+    currentThemeColor.value = data?.theme_color || appConfig.theme.primary
     appConfig.theme.primary = currentThemeColor.value
   } catch (e) {
     console.error(e)
@@ -149,10 +149,10 @@ onMounted(() => fetchStore())
                 :key="color.value"
                 type="button"
                 class="h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center cursor-pointer shadow-xs"
-                :style="{ backgroundColor: color.value, borderColor: (currentThemeColor || 'orangered') === color.value ? '#ffffff' : 'transparent' }"
+                :style="{ backgroundColor: color.value, borderColor: (currentThemeColor || appConfig.theme.primary) === color.value ? '#ffffff' : 'transparent' }"
                 @click="updateStoreColor(color.value)"
               >
-                <span v-if="(currentThemeColor || 'orangered') === color.value" class="text-white text-[10px] font-bold">✓</span>
+                <span v-if="(currentThemeColor || appConfig.theme.primary) === color.value" class="text-white text-[10px] font-bold">✓</span>
               </button>
 
               <div class="flex items-center gap-2 ml-2">

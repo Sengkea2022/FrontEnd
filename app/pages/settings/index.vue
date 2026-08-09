@@ -24,8 +24,8 @@ const systemSettingStore = useSystemSettingStore()
 const saving = ref(false)
 
 // Local working state for the developer setting tool
-const selectedColor = ref<string>(systemSettingStore.defaultPrimaryColor || 'orangered')
-const customColor = ref<string>(selectedColor.value.startsWith('#') ? selectedColor.value : '#ff4500')
+const selectedColor = ref<string>(systemSettingStore.defaultPrimaryColor || 'black')
+const customColor = ref<string>(selectedColor.value.startsWith('#') ? selectedColor.value : '#000000')
 
 const authUser = useCookie<any>('auth_user')
 
@@ -35,7 +35,7 @@ onMounted(async () => {
     return navigateTo('/profile', { replace: true })
   }
   await systemSettingStore.fetchSettings()
-  selectedColor.value = systemSettingStore.defaultPrimaryColor || 'orangered'
+  selectedColor.value = systemSettingStore.defaultPrimaryColor || 'black'
   if (selectedColor.value.startsWith('#')) {
     customColor.value = selectedColor.value
   }
@@ -43,7 +43,7 @@ onMounted(async () => {
 
 // 10 Curated Preset Primary Colors with i18n
 const presetColors = computed(() => [
-  { name: t('factoryOrangered'), hex: 'orangered', displayHex: '#ff4500' },
+  { name: t('factoryDefault'), hex: 'black', displayHex: '#000000' },
   { name: t('royalBlue'), hex: '#3b82f6', displayHex: '#3b82f6' },
   { name: t('emeraldGreen'), hex: '#10b981', displayHex: '#10b981' },
   { name: t('vividPurple'), hex: '#8b5cf6', displayHex: '#8b5cf6' },
@@ -98,17 +98,17 @@ const saveSystemDefault = async () => {
 const resetToFactoryDefault = async () => {
   saving.value = true
   try {
-    selectedColor.value = 'orangered'
-    customColor.value = '#ff4500'
+    selectedColor.value = 'black'
+    customColor.value = '#000000'
     systemSettingStore.setButtonRadius('9999px')
     systemSettingStore.setInputRadius('4px')
-    await systemSettingStore.updateSetting('default_primary_color', 'orangered')
+    await systemSettingStore.updateSetting('default_primary_color', 'black')
     await systemSettingStore.updateSetting('button_radius', '9999px')
     await systemSettingStore.updateSetting('input_radius', '4px')
-    appConfig.theme.primary = 'orangered'
+    appConfig.theme.primary = 'black'
     ElNotification.info({
       title: t('resetDefault'),
-      message: `${t('factoryOrangered')}`
+      message: `${t('factoryDefault')}`
     })
   } catch (err: any) {
     ElNotification.error({
@@ -172,7 +172,7 @@ const inputRadiusOptions = [
             <template #header>
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-sm" :style="{ backgroundColor: selectedColor === 'orangered' ? '#ff4500' : selectedColor }">
+                  <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-base shadow-sm" :style="{ backgroundColor: selectedColor === 'black' ? '#000000' : selectedColor }">
                     <el-icon><Brush /></el-icon>
                   </div>
                   <div>
@@ -230,7 +230,7 @@ const inputRadiusOptions = [
                 </div>
                 <div class="flex items-center gap-3">
                   <el-color-picker v-model="customColor" size="large" @change="onCustomColorChange" />
-                  <el-input v-model="customColor" placeholder="#ff4500" size="default" class="w-28 font-mono text-xs" @change="onCustomColorChange" />
+                  <el-input v-model="customColor" placeholder="#000000" size="default" class="w-28 font-mono text-xs" @change="onCustomColorChange" />
                 </div>
               </div>
             </div>
