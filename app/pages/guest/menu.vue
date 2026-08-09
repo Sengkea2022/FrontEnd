@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   ShoppingBag,
-  Store as StoreIcon,
+  Shop as StoreIcon,
   Search,
   Check,
   Warning,
@@ -42,6 +42,30 @@ const orderNote = ref('')
 const submittingOrder = ref(false)
 const orderSuccess = ref(false)
 const createdOrderCode = ref('')
+
+const showTrackModal = ref(false)
+const trackQuery = ref('')
+const trackingLoading = ref(false)
+const trackedOrders = ref<any[]>([])
+
+const handleTrackOrders = async () => {
+  if (!trackQuery.value.trim()) return
+  trackingLoading.value = true
+  try {
+    const q = encodeURIComponent(trackQuery.value.trim())
+    const shopCode = storeInfo.value?.code || ''
+    const res = await $fetch<any>(`/api/orders?paginate=false&filter[shop_code]=${shopCode}&search=${q}`)
+    trackedOrders.value = res.data || []
+    if (trackedOrders.value.length === 0) {
+      ElMessage.info('No orders found matching your search.')
+    }
+  } catch (e) {
+    console.error('Failed to track orders:', e)
+    ElMessage.error('Could not fetch order status')
+  } finally {
+    trackingLoading.value = false
+  }
+}
 
 const token = computed(() => {
   const t = route.query.token
@@ -544,6 +568,9 @@ onMounted(async () => {
 
         <!-- Right Header Actions (Language, Theme Switcher & Mobile Cart Button) -->
         <div class="flex items-center gap-2 sm:gap-3">
+          <el-button plain round size="small" class="font-bold shrink-0" @click="showTrackModal = true">
+            <el-icon class="mr-1"><Search /></el-icon> Track Order
+          </el-button>
           <LanguageSelector />
           <ThemeSwitcher :is-label="false" />
           <div v-if="!loading && !error" class="lg:hidden">
@@ -1082,5 +1109,39 @@ onMounted(async () => {
       </div>
     </el-drawer>
 
+    <!-- Track Order Modal -->
+    <el-dialog v-model="showTrackModal" title="Track My Order" width="460px" class="!rounded-3xl" destroy-on-close>
+      <div class="space-y-4">
+        <p class="text-xs text-slate-500">Enter your phone number or Order Code to check your live order status.</p>
+        <div class="flex gap-2">
+          <el-input v-model="trackQuery" placeholder="e.g. 0987654321 or ORD-001" size="small" @keyup.enter="handleTrackOrders" />
+          <el-button type="primary" size="small" round :loading="trackingLoading" @click="handleTrackOrders">
+            Search
+          </el-button>
+        </div>
+
+        <div v-if="trackedOrders.length > 0" class="mt-4 space-y-3 max-h-[300px] overflow-y-auto pr-1">
+          <div 
+            v-for="o in trackedOrders" 
+            :key="o.id || o.uuid" 
+            class="p-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 space-y-2"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">#{{ o.order_no || o.code || 'ORD' }}</span>
+              <el-tag :type="o.status === 'completed' ? 'success' : o.status === 'pending' ? 'warning' : 'info'" round size="small" class="capitalize font-bold">
+                {{ o.status }}
+              </el-tag>
+            </div>
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span>Customer: {{ o.customer_name || 'Guest' }} ({{ o.customer_phone || 'N/A' }})</span>
+              <span class="font-extrabold text-orange-600">${{ Number(o.total_amount || 0).toFixed(2) }}</span>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Payment: {{ o.payment_type }} ({{ o.payment_status }})
+            </div>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { ElNotification } from 'element-plus'
 
 export interface ProductForm {
   name: string
@@ -25,7 +26,7 @@ export const useProductStore = defineStore('product', () => {
 
   const { fetch, loading: apiLoading } = useApi()
 
-  const fetchProducts = async (storeCode?: string, page: number = 1, limit: number = 10, search: string = '') => {
+  const fetchProducts = async (storeCode?: string, page: number = 1, limit: number = 10, search: string = '', categoryCode: string = '') => {
     loading.value = true
     currentPage.value = page
     perPage.value = limit
@@ -34,6 +35,9 @@ export const useProductStore = defineStore('product', () => {
       let url = `/api/products?paginate=true&page=${page}&per_page=${limit}`
       if (storeCode) {
         url += `&filter[shop_code]=${storeCode}`
+      }
+      if (categoryCode) {
+        url += `&filter[category_code]=${encodeURIComponent(categoryCode)}`
       }
       if (search) {
         url += `&search[product_name]=${encodeURIComponent(search)}`
@@ -156,17 +160,32 @@ export const useProductStore = defineStore('product', () => {
 
   const createCategory = async (name: string) => {
     try {
+      const trimmed = name.trim()
+      if (!trimmed) return null
+
+      // Check existing category locally (case-insensitive) first to avoid duplicate API calls
+      const existing = categories.value.find(
+        c => c.name?.toLowerCase() === trimmed.toLowerCase() || c.code?.toLowerCase() === trimmed.toLowerCase()
+      )
+      if (existing) {
+        return existing
+      }
+
       const res = await fetch<{ data: any }>('/api/categories', {
         method: 'POST',
-        body: { name }
+        body: { name: trimmed }
       })
       if (res && res.data) {
         await fetchCategories()
-        ElNotification({ title: 'Success', message: `Category "${name}" created!`, type: 'success' })
         return res.data
       }
     } catch (e: any) {
       console.error('Failed to create category:', e)
+      await fetchCategories()
+      const existing = categories.value.find(
+        c => c.name?.toLowerCase() === name.trim().toLowerCase()
+      )
+      if (existing) return existing
       ElNotification({ title: 'Error', message: e?.data?.message || 'Could not create category', type: 'error' })
       return null
     }

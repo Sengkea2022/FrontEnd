@@ -40,8 +40,7 @@ const isCollapsed = useCookie('side-menu-collapsed', {
 // True when URL is /shop/[uuid]/something
 const shopContextId = computed(() => {
     const parts = route.path.split('/')
-    // /shop/<uuid>/dashboard → parts = ['', 'shop', '<uuid>', 'dashboard']
-    if ((parts[1] === 'shop' || parts[1] === 'store') && parts[2] && parts[2].length > 10 && parts[3]) {
+    if ((parts[1] === 'shop' || parts[1] === 'store') && parts[2] && parts[2] !== '' && parts[2] !== 'index') {
         return parts[2]
     }
     return null
@@ -220,11 +219,11 @@ const logout = async () => {
         <!-- ── Navigation List ── -->
         <div class="flex-1 flex flex-col gap-1 overflow-y-auto py-4">
 
-            <!-- Back to Stores button (store context mode, multi-store only) -->
-            <div v-if="isInStoreContext && !isSingleStoreUser" class="w-full px-1 mb-2">
-                <el-tooltip content="Back to Stores" placement="right" :disabled="!isCollapsed">
+            <!-- Back to Shops button (shop context mode, multi-shop only) -->
+            <div v-if="isInShopContext && !isSingleShopUser" class="w-full px-1 mb-2">
+                <el-tooltip content="Back to Shops" placement="right" :disabled="!isCollapsed">
                     <button
-                        @click="goBackToStores"
+                        @click="goBackToShops"
                         :class="[
                             'group w-full flex items-center transition-all duration-300 select-none overflow-hidden rounded-xl',
                             isCollapsed ? 'justify-center h-10 w-10 mx-auto' : 'px-3 py-2.5 gap-3',
@@ -233,7 +232,7 @@ const logout = async () => {
                     >
                         <el-icon class="text-[18px] flex-shrink-0"><ArrowLeft /></el-icon>
                         <transition name="fade">
-                            <span v-if="!isCollapsed" class="whitespace-nowrap text-sm font-medium truncate">{{ currentStoreName }}</span>
+                            <span v-if="!isCollapsed" class="whitespace-nowrap text-sm font-medium truncate">{{ currentShopName }}</span>
                         </transition>
                     </button>
                 </el-tooltip>

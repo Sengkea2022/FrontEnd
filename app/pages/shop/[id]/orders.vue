@@ -38,10 +38,10 @@ const paginationTo = computed(() => {
 })
 
 const statusOptions = computed(() => [
-  { label: t('pending'), value: 'pending', type: 'warning' },
+  { label: 'Pending', value: 'pending', type: 'warning' },
   { label: 'Confirmed', value: 'confirmed', type: 'primary' },
   { label: 'Processing', value: 'processing', type: 'primary' },
-  { label: t('completed'), value: 'completed', type: 'success' },
+  { label: 'Completed', value: 'completed', type: 'success' },
   { label: 'Cancelled', value: 'cancelled', type: 'danger' },
   { label: 'Returned', value: 'returned', type: 'danger' },
 ])
@@ -56,7 +56,7 @@ const handleStatusChange = async (row: any, newStatus: string) => {
     row.status = oldStatus
     ElMessage.error('Failed to update order status.')
   } else {
-    ElMessage.success(`Order ${row.code} status updated to ${newStatus}`)
+    ElMessage.success(`Order ${row.code || row.order_no} status updated to ${newStatus}`)
   }
   updatingStatusUuid.value = null
 }
@@ -70,7 +70,7 @@ const formatStoreName = (row: any) => {
 const formatCustomerName = (row: any) => {
   if (typeof row.customer === 'object' && row.customer?.name) return row.customer.name
   if (typeof row.customer === 'string') return row.customer
-  return row.customer_code || 'N/A'
+  return row.customer_name || row.customer_code || 'Guest'
 }
 
 const formatCurrencyCode = (row: any) => {
@@ -128,17 +128,25 @@ onMounted(() => orderStore.fetchOrders(storeId.value as string, currentPage.valu
         <div v-if="orderStore.error" class="p-4 mb-4 text-sm text-red-700 bg-red-50 rounded-xl border border-red-200">{{ orderStore.error }}</div>
 
         <el-table :data="orderStore.orders" stripe class="w-full" max-height="calc(100vh - 610px)">
-          <el-table-column prop="code" :label="t('orderCode')" min-width="140" />
-          <el-table-column :label="t('store')" min-width="170"><template #default="{ row }">{{ formatStoreName(row) }}</template></el-table-column>
+          <el-table-column prop="code" :label="t('orderCode')" min-width="170">
+            <template #default="{ row }">
+              <span class="font-mono font-semibold">{{ row.order_no || row.code }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="t('store')" min-width="140"><template #default="{ row }">{{ formatStoreName(row) }}</template></el-table-column>
           <el-table-column :label="t('customer')" min-width="140"><template #default="{ row }">{{ formatCustomerName(row) }}</template></el-table-column>
-          <el-table-column label="Currency" min-width="100"><template #default="{ row }">{{ formatCurrencyCode(row) }}</template></el-table-column>
+          <el-table-column label="Amount" min-width="110">
+            <template #default="{ row }">
+              <span class="font-extrabold text-orange-600">${{ Number(row.total_amount || 0).toFixed(2) }}</span>
+            </template>
+          </el-table-column>
 
-          <el-table-column :label="t('status')" min-width="175">
+          <el-table-column :label="t('status')" min-width="160">
             <template #default="{ row }">
               <el-select
                 v-model="row.status"
                 size="small"
-                class="!w-36"
+                class="!w-36 text-center"
                 :disabled="updatingStatusUuid === row.uuid"
                 @change="(val: string) => handleStatusChange(row, val)"
               >
@@ -147,17 +155,17 @@ onMounted(() => orderStore.fetchOrders(storeId.value as string, currentPage.valu
                   :key="opt.value"
                   :label="opt.label"
                   :value="opt.value"
+                  class="!flex !items-center !justify-center"
                 >
-                  <div class="flex items-center justify-between gap-2">
-                    <span>{{ opt.label }}</span>
-                    <el-tag :type="opt.type" size="small" round>{{ opt.value }}</el-tag>
+                  <div class="flex items-center justify-center w-full py-0.5">
+                    <el-tag :type="opt.type" size="small" round class="font-semibold text-center">{{ opt.label }}</el-tag>
                   </div>
                 </el-option>
               </el-select>
             </template>
           </el-table-column>
 
-          <el-table-column :label="t('note')" min-width="260"><template #default="{ row }">{{ row.note || '-' }}</template></el-table-column>
+          <el-table-column :label="t('note')" min-width="200"><template #default="{ row }">{{ row.note || '-' }}</template></el-table-column>
           <el-table-column :label="t('createdAt')" min-width="170"><template #default="{ row }">{{ formatDate(row.created_at) }}</template></el-table-column>
         </el-table>
 

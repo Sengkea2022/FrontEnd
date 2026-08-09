@@ -17,7 +17,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: import.meta.env.NUXT_PUBLIC_API_BASE || ''
+      apiBase: import.meta.env.NUXT_PUBLIC_API_BASE || 'http://localhost.test'
+    }
+  },
+
+  nitro: {
+    routeRules: {
+      '/api/**': { proxy: (process.env.NUXT_PUBLIC_API_BASE || 'http://localhost.test') + '/api/**' }
     }
   },
 

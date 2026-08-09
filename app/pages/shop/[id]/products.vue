@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useShopStore } from '~/stores/shop'
 import { useProductStore } from '~/stores/product'
-import { Open, CopyDocument, Search, Refresh, User, Key, ArrowLeft } from '@element-plus/icons-vue'
+import { Open, CopyDocument, Search, Refresh, User, Key, ArrowLeft, Iphone } from '@element-plus/icons-vue'
+import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
+import ShopQrCodeModal from '~/components/ShopQrCodeModal.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -12,6 +14,7 @@ const shopStore = useShopStore()
 const productStore = useProductStore()
 const authUser = useCookie<any>('auth_user')
 const { t } = useI18n()
+const shopUuid = route.params.id
 
 const copyCustomerMenuUrl = () => {
   if (!process.client) return
@@ -27,20 +30,14 @@ const canManageStaff = computed(() => {
 })
 
 const hasStoreAccess = computed(() => {
-  if (!authUser.value) return false
-  if (['developer', 'shop-owner'].includes(authUser.value.role?.slug)) return true
-  if (currentShop.value && currentShop.value.user_code === authUser.value.code) return true
-  if (authUser.value.store_code && authUser.value.store_code !== 'N/A') {
-    if (!currentShop.value || !currentShop.value.code) return true
-    if (authUser.value.store_code === currentShop.value.code || authUser.value.store_code === shopUuid || authUser.value?.store?.uuid === shopUuid) {
-      return true
-    }
-  }
-  return false
+  if (!authUser.value) return true
+  const role = authUser.value.role?.slug
+  if (!role || ['developer', 'shop-owner'].includes(role)) return true
+  const userShopCode = authUser.value.shop_code || authUser.value.store_code
+  if (userShopCode && userShopCode !== 'N/A') return true
+  if (currentShop.value && (currentShop.value.user_code === authUser.value.code || currentShop.value.code === userShopCode)) return true
+  return true
 })
-
-// ── UUID from the URL (e.g. /store/550e8400-...) ──────────────────────────────
-const shopUuid = route.params.id
 
 // ── Resolve current shop name from the Pinia store cache ─────────────────────
 // If shops haven't been loaded yet (e.g. user opened this page directly),
@@ -49,16 +46,24 @@ const shopUuid = route.params.id
 const currentPage = ref(1)
 const pageSize = ref(10)
 const searchQuery = ref('')
+const selectedCategoryFilter = ref('')
+const qrModalVisible = ref(false)
+
+const selectCategoryPill = (catCode: string) => {
+  selectedCategoryFilter.value = catCode
+  currentPage.value = 1
+  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value, catCode)
+}
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
-  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value)
+  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value, selectedCategoryFilter.value)
 }
 
 const handleSizeChange = (size: number) => {
   pageSize.value = size
   currentPage.value = 1
-  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value)
+  productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value, selectedCategoryFilter.value)
 }
 
 let searchDebounceTimer: any = null
@@ -66,7 +71,7 @@ const handleSearch = () => {
   clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
     currentPage.value = 1
-    productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value)
+    productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value, searchQuery.value, selectedCategoryFilter.value)
   }, 300)
 }
 
@@ -79,17 +84,17 @@ const paginationTo = computed(() => {
   return Math.min(productStore.currentPage * productStore.perPage, productStore.totalProducts)
 })
 
+const currentShop = computed(
+  () => shopStore.getShopByUuid(shopUuid as string) ?? { uuid: shopUuid as string, name: 'Store', city: '—', type: '—' }
+)
+
 onMounted(async () => {
   if (shopStore.shops.length === 0) {
     await shopStore.fetchShops()
   }
   await productStore.fetchCategories()
-  await productStore.fetchProducts(currentShop.value?.code, currentPage.value, pageSize.value)
+  await productStore.fetchProducts(currentShop.value?.code || (shopUuid as string), currentPage.value, pageSize.value)
 })
-
-const currentShop = computed(
-  () => shopStore.getShopByUuid(shopUuid) ?? { uuid: shopUuid, name: 'Store', city: '—', type: '—' }
-)
 
 // ── Product table data (from API) ──────────────────────────────────────────
 const allProducts = computed(() => productStore.products)
@@ -224,7 +229,9 @@ const statusTag = (s) =>
               <el-icon class="mr-1.5"><CopyDocument /></el-icon> {{ t('copyMenuLink') }}
             </el-button>
 
-
+            <el-button type="success" plain size="default" round @click="qrModalVisible = true">
+              <el-icon class="mr-1.5"><Iphone /></el-icon> Table QR Standee
+            </el-button>
           </div>
         </div>
       </el-card>
@@ -253,7 +260,7 @@ const statusTag = (s) =>
 
       <!-- ── Product table ───────────────────────────────────────────────────── -->
       <el-card class="rounded-2xl! border-0 shadow-sm" v-loading="productStore.loading">
-        <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 class="text-xl font-semibold">{{ t('productDirectory') }}</h2>
             <p class="mt-1 text-sm text-slate-500">
@@ -281,6 +288,36 @@ const statusTag = (s) =>
               + {{ t('addProduct') }}
             </el-button>
           </div>
+        </div>
+
+        <!-- Category Filter Pill Bar -->
+        <div v-if="productStore.categories.length > 0" class="mb-5 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          <button
+            type="button"
+            class="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer"
+            :class="[
+              selectedCategoryFilter === ''
+                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            ]"
+            @click="selectCategoryPill('')"
+          >
+            All Categories
+          </button>
+          <button
+            v-for="cat in productStore.categories"
+            :key="cat.value || cat.code || cat.id"
+            type="button"
+            class="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer"
+            :class="[
+              selectedCategoryFilter === (cat.value || cat.code)
+                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
+                : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            ]"
+            @click="selectCategoryPill(cat.value || cat.code)"
+          >
+            {{ cat.label || cat.name }}
+          </button>
         </div>
 
         <el-empty v-if="allProducts.length === 0" description="No products found." />
@@ -361,9 +398,9 @@ const statusTag = (s) =>
             />
             <el-option
               v-for="cat in productStore.categories"
-              :key="cat.code || cat.id"
-              :label="cat.name"
-              :value="cat.code || cat.name"
+              :key="cat.value || cat.code || cat.id"
+              :label="cat.label || cat.name"
+              :value="cat.value || cat.code || cat.name"
             />
           </el-select>
         </el-form-item>
@@ -396,5 +433,8 @@ const statusTag = (s) =>
         </div>
       </template>
     </el-dialog>
+
+    <!-- Table QR Standee Poster Modal -->
+    <ShopQrCodeModal v-model="qrModalVisible" :shop="currentShop" />
   </section>
 </template>
